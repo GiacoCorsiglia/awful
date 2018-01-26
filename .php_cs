@@ -60,8 +60,6 @@ return PhpCsFixer\Config::create()
         'not_operator_with_successor_space' => false,
         'not_operator_with_successor_space' => false,
         'object_operator_without_whitespace' => true,
-        'ordered_class_elements' => true,
-        'ordered_class_elements' => true,
         'ordered_imports' => ['sortAlgorithm' => 'alpha'],
         'phpdoc_add_missing_param_annotation' => ['only_untyped' => false],
         'phpdoc_align' => true,
@@ -87,5 +85,5 @@ return PhpCsFixer\Config::create()
         'yoda_style' => false,
     ])
     ->setFinder($finder)
-    ->setCacheFile(__DIR__.'/.php_cs.cache')
+    ->setCacheFile(__DIR__ . '/.php_cs.cache')
 ;

@@ -32,14 +32,16 @@ class RepeaterField extends Field
         $row_class = $this->row_class;
         $new_base_key = $this->buildAcfKey($name, $base_key, false);
 
+        $resolved_sub_fields = $resolver->resolve($row_class);
         $sub_fields = [];
-        foreach ($resolver->resolve($row_class) as $sub_field_name => $sub_field) {
+        foreach ($resolved_sub_fields as $sub_field_name => $sub_field) {
             $sub_fields[] = $sub_field->toAcf($sub_field_name, $new_base_key, $resolver);
         }
         $acf['sub_fields'] = $sub_fields;
 
-        // Keyify the field name in the "collapsed" option if its set.
+        // Keyify the field name in the "collapsed" option if it's set.
         if (!empty($acf['collapsed'])) {
+            assert(isset($resolved_sub_fields[$acf['collapsed']]), 'Expected "collapsed" to be an existing sub field name');
             $acf['collapsed'] = $this->buildAcfKey($acf['collapsed'], $new_base_key, true);
         }
 

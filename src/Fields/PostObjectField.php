@@ -11,7 +11,7 @@ class PostObjectField extends Field
 {
     const ACF_TYPE = 'post_object';
 
-    public function toPhp($value, HasFields $owner)
+    public function forPhp($value, HasFields $owner)
     {
         if ($owner instanceof HasFieldsWithSource) {
             $owner = $owner->getDataSource();

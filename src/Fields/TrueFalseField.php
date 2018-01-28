@@ -8,7 +8,7 @@ class TrueFalseField
 {
     const ACF_TYPE = 'true_false';
 
-    public function toPhp($value): bool
+    public function forPhp($value): bool
     {
         return (bool) $value;
     }

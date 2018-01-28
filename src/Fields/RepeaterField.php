@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Fields;
 
+// TODO: Allow adding/modifying rows with code
 class RepeaterField extends Field
 {
     const ACF_TYPE = 'repeater';
@@ -21,34 +22,35 @@ class RepeaterField extends Field
         parent::__construct($args, $hooks);
     }
 
-    public function toAcf(string $name, string $base_key = ''): array
+    public function toAcf(string $name, string $base_key, FieldsResolver $resolver): array
     {
         $acf = parent::toAcf($name, $base_key);
 
         $row_class = $this->row_class;
-        $new_base_key = $out['key'];
+        $new_base_key = $this->buildAcfKey($name, $base_key, false);
 
         $sub_fields = [];
-        foreach ($row_class::getFields() as $sub_field_name => $sub_field) {
+        foreach ($resolver->resolve($row_class) as $sub_field_name => $sub_field) {
             $sub_fields[] = $sub_field->toAcf($sub_field_name, $new_base_key);
         }
         $acf['sub_fields'] = $sub_fields;
 
         // Keyify the field name in the "collapsed" option if its set.
         if (!empty($acf['collapsed'])) {
-            $field['collapsed'] = $this->keyify($field['collapsed'], $new_base_key, true);
+            $field['collapsed'] = $this->buildAcfKey($field['collapsed'], $new_base_key, true);
         }
 
-        return $out;
+        return $acf;
     }
 
-    public function toPhp($count, HasFields $owner, string $field_name): array
+    public function forPhp($count, HasFields $owner, string $field_name): array
     {
         if (!$count || !is_int($count)) {
             return [];
         }
 
         // NOTE: assuming it's either HasFieldsWithSource or Model.
+        // TODO: Share with FlexibleContentField.
         if ($owner instanceof HasFieldsWithSource) {
             $source = $owner->getDataSource();
             $prefix = $owner->getDataPrefix();

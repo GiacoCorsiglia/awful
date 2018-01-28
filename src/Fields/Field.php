@@ -1,8 +1,10 @@
 <?php
-namespace Awful\Models\Fields;
+namespace Awful\Fields;
+
+use Awful\Fields\Exceptions\ValidationException;
 
 /**
- * Base class for any fields that be saved on objects.
+ * Base class for any field that can be saved on a HasFields object.
  */
 abstract class Field
 {
@@ -14,35 +16,11 @@ abstract class Field
     protected const ACF_TYPE = '';
 
     /**
-     * Associative array of default field configuration.
+     * Associative array of default field configuration.  Shallow merge only.
      *
      * @var mixed[]
      */
     protected const DEFAULTS = [];
-
-    /**
-     * Enumeration of supported hooks for this field type, with the name of the
-     * hook as the array key.
-     *
-     * @var bool[]
-     */
-    protected const HOOKS = [
-        'load_value' => true,
-        'update_value' => true,
-        'validate_value' => true,
-    ];
-
-    /**
-     * ACF standard field key prefix.  Do not modify.
-     * @var string
-     */
-    private const FIELD_KEY_PREFIX = 'field_';
-
-    /**
-     * Separator used for generating nested field keys.  Do not modify.
-     * @var string
-     */
-    private const FIELD_KEY_SEPARATOR = '__';
 
     /**
      * Associative array of field configuration.
@@ -52,32 +30,74 @@ abstract class Field
     protected $args;
 
     /**
-     * Associative array of field hooks to register when registering this field;
-     * callables keyed by hook name.
-     *
-     * @var callable[]
+     * @param mixed[] $args Associative array of field configuration.
      */
-    private $hooks;
-
-    public function __construct(array $args = [], array $hooks = [])
+    public function __construct(array $args = [])
     {
         $this->args = $args + static::DEFAULTS;
-
-        // TODO: Potentially add lots more assertions for possible parameters.
-
-        foreach ($hooks as $hook => $callable) {
-            assert(!empty(static::HOOKS[$hook]), "Invalid hook: $hook");
-            assert(is_callable($callable), 'Expected callable hook');
-        }
+        // TODO: Potentially add lots of assertions to validate config.
     }
 
-    public function toAcf(string $name, string $base_key = ''): array
+    /**
+     * Filters the value of the field when it is loaded from the database by a
+     * HasFields object.
+     *
+     * @param mixed     $value      The raw value as saved in the database.
+     * @param HasFields $owner
+     * @param string    $field_name
+     *
+     * @return mixed The filtered value.
+     */
+    abstract public function forPhp($value, HasFields $owner, string $field_name);
+
+    /**
+     * Filters the value of the field when it is loaded from the database for
+     * display in the admin editor interface.
+     *
+     * @param mixed $value The raw value as saved in the database.
+     *
+     * @return mixed The filtered value.
+     */
+    public function forEditor($value)
     {
-        $key = $this->keyify($name, $base_key, true);
+        return $value;
+    }
+
+    /**
+     * Validates and optionally mutates the value before it is saved.
+     *
+     * @param mixed $value
+     *
+     * @throws ValidationException
+     *
+     * @return mixed
+     */
+    public function clean($value)
+    {
+        return $value;
+    }
+
+    /**
+     * Converts the field to an array for registration with Advanced Custom
+     * Fields and registers any filters with ACF.
+     *
+     * Due to filter registration, this method is not idempotent:  it expects to
+     * be called just once, during the ACF registration phase.
+     *
+     * @param string        $name     Name of this field as it is saved on its
+     *                                owner.
+     * @param string        $base_key Key of field parent (or post type, etc.).
+     * @param FieldResolver $resolver For resolving sub-fields, if needed.
+     *
+     * @return array Field definition for Advanced Custom Fields.
+     */
+    public function toAcf(string $name, string $base_key, FieldsResolver $resolver): array
+    {
+        $key = $this->buildAcfKey($name, $base_key, true);
 
         $acf = [
             'key' => $key,
-            'name' => "$name",
+            'name' => $name,
             'type' => static::ACF_TYPE,
         ] + $this->args;
 
@@ -86,28 +106,88 @@ abstract class Field
         if (!empty($acf['conditional_logic'])) {
             foreach ($acf['conditional_logic'] as &$condition_group) {
                 foreach ($condition_group as &$condition) {
-                    $condition['field'] = $this->keyify($condition['field'], $base_key, true);
+                    $condition['field'] = $this->buildAcfKey($condition['field'], $base_key, true);
                 }
             }
         }
+
+        // Add filters.
+        $this->addAcfFilter('load_value', $key, [$this, 'acfLoadValueFilter'], 3);
+        $this->addAcfFilter('validate_value', $key, [$this, 'acfValidateValueFilter'], 4);
+        $this->addAcfFilter('update_value', $key, [$this, 'acfUpdateValueFilter'], 3);
 
         return $acf;
     }
 
     /**
-     * Filters the value of the field when its loaded from the database.
+     * Uses the `forEditor()` method to mutate the saved value before it is
+     * displayed in the admin editor interface by ACF.
      *
-     * @param mixed     $value      The raw value.
-     * @param HasFields $owner
-     * @param string    $field_name
+     * @see https://www.advancedcustomfields.com/resources/acf-load_value/
      *
-     * @return mixed The filtered value.
+     * @param mixed      $value
+     * @param int|string $post_id
+     * @param array      $field
+     *
+     * @return mixed
      */
-    abstract public function toPhp($value, HasFields $owner, string $field_name);
-
-    protected function extend(array $args, array $hooks): self
+    final public function acfLoadValueFilter($value, $post_id, $field)
     {
-        return new static($args + $this->args, $hooks + $this->hooks);
+        return $this->forEditor($value);
+    }
+
+    /**
+     * Uses the `clean()` method to validate the value before it is saved by
+     * ACF; if invalid, the save of the entire post will be aborted.
+     *
+     * @see https://www.advancedcustomfields.com/resources/acf-validate_value/
+     *
+     * @param bool|string $valid
+     * @param mixed       $value
+     * @param array       $field
+     * @param string      $input
+     *
+     * @return bool|string
+     */
+    final public function acfValidateValueFilter($valid, $value, $field, $input)
+    {
+        if (!$valid || is_string($valid)) {
+            return $valid;
+        }
+
+        try {
+            $this->clean($value);
+        } catch (ValidationException $e) {
+            return $e->getMessage();
+        }
+
+        return $valid;
+    }
+
+    /**
+     * Uses the `clean()` method to modify the value before it is saved to the
+     * database by ACF.
+     *
+     * @see https://www.advancedcustomfields.com/resources/acf-update_value/
+     *
+     * @param mixed      $value
+     * @param int|string $post_id
+     * @param array      $field
+     *
+     * @return mixed
+     */
+    final public function acfUpdateValueFilter($value, $post_id, $field)
+    {
+        return $this->clean($value);
+    }
+
+    final protected function addAcfFilter(
+        string $filter,
+        string $field_key,
+        callable $callable,
+        int $args_count = 1
+    ): void {
+        add_filter("acf/$filter/key=$field_key", $callable, 10, $args_count);
     }
 
     /**
@@ -115,15 +195,19 @@ abstract class Field
      *
      * @param string $name     Field name.
      * @param string $base_key Key of field parent (or post type, etc.).
-     * @param bool   $prefix   Whether to prefix with the `FIELD_KEY_PREFIX`.
+     * @param bool   $prefix   Whether to prefix with 'field_'.
      *
      * @return string Field key.
      */
-    final protected function keyify(string $name, string $base_key, bool $prefix): string
+    final protected function buildAcfKey(string $name, string $base_key, bool $prefix): string
     {
-        return ($prefix ? self::FIELD_KEY_PREFIX : '')
-            . $base_key
-            . ($base_key ? self::FIELD_KEY_SEPARATOR : '')
-            . $name;
+        // ACF default field key prefix: 'field_'
+        // Separator for nested fields: '__'
+        return ($prefix ? 'field_' : '') . $base_key . ($base_key ? '__' : '') . $name;
+    }
+
+    protected function extend(array $args): self
+    {
+        return new static($args + $this->args);
     }
 }

@@ -8,7 +8,7 @@ class TextField extends Field
 {
     const ACF_TYPE = 'text';
 
-    public function toPhp($value): string
+    public function forPhp($value): string
     {
         return (string) $value;
     }

@@ -1,5 +1,5 @@
 <?php
-namespace Awful\Fields;
+namespace Awful\Models\Fields;
 
 use Awful\Models\Model;
 use Awful\Models\Posts\Post;
@@ -13,7 +13,7 @@ class PostObjectField extends Field
 
     public function forPhp($value, HasFields $owner)
     {
-        if ($owner instanceof HasFieldsWithSource) {
+        if ($owner instanceof SubModel) {
             $owner = $owner->getDataSource();
         }
         $site_id = $owner instanceof Model ? $owner->getSiteId() : 0;

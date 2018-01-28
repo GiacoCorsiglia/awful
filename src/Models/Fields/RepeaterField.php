@@ -1,5 +1,7 @@
 <?php
-namespace Awful\Fields;
+namespace Awful\Models\Fields;
+
+use Awful\Models\SubModel;
 
 // TODO: Allow adding/modifying rows with code
 class RepeaterField extends Field
@@ -17,7 +19,7 @@ class RepeaterField extends Field
         // Unset it since ACF doesn't need this.
         unset($args['row_class']);
 
-        assert(!empty(class_parents($this->row_class)[HasFieldsWithSource::class]), 'Expected row_class to be a subclass of HasFieldsWithSource');
+        assert(!empty(class_parents($this->row_class)[SubModel::class]), 'Expected row_class to be a subclass of SubModel');
 
         parent::__construct($args, $hooks);
     }
@@ -49,9 +51,9 @@ class RepeaterField extends Field
             return [];
         }
 
-        // NOTE: assuming it's either HasFieldsWithSource or Model.
+        // NOTE: assuming it's either SubModel or Model.
         // TODO: Share with FlexibleContentField.
-        if ($owner instanceof HasFieldsWithSource) {
+        if ($owner instanceof SubModel) {
             $source = $owner->getDataSource();
             $prefix = $owner->getDataPrefix();
         } else {

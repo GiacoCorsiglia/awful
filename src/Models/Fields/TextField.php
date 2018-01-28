@@ -1,5 +1,5 @@
 <?php
-namespace Awful\Fields;
+namespace Awful\Models\Fields;
 
 /**
  * A single line text field.

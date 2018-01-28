@@ -1,8 +1,6 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Fields\HasFields;
-
 abstract class ModelWithMetadata extends Model
 {
     protected $data;

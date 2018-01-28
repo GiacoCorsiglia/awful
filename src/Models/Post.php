@@ -1,8 +1,7 @@
 <?php
-namespace Awful\Models\Posts;
+namespace Awful\Models;
 
-use Awful\Models\ModelWithMetadata;
-use Awful\Query\PostQuerySet;
+use Awful\Models\Query\PostQuerySet;
 use WP_Post;
 
 abstract class Post extends ModelWithMetadata

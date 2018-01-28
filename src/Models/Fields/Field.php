@@ -1,7 +1,7 @@
 <?php
-namespace Awful\Fields;
+namespace Awful\Models\Fields;
 
-use Awful\Fields\Exceptions\ValidationException;
+use Awful\Models\Exceptions\ValidationException;
 
 /**
  * Base class for any field that can be saved on a HasFields object.

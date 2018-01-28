@@ -1,5 +1,5 @@
 <?php
-namespace Awful\Fields;
+namespace Awful\Models\Fields;
 
 use Awful\Container\Container;
 

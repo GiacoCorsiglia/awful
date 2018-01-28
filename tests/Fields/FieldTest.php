@@ -1,8 +1,8 @@
 <?php
-namespace Awful\Fields;
+namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Fields\Exceptions\ValidationException;
+use Awful\Models\Exceptions\ValidationException;
 
 class FieldTest extends AwfulTestCase
 {

@@ -1,12 +1,11 @@
 <?php
-namespace Awful\Fields;
+namespace Awful\Models;
 
 /**
  * Parent class for objects representing ACF sub-fields (repeaters and flexible
- * content fields) whose data lives on a parent object (another HasFields
- * instance).
+ * content fields) whose data lives on a parent object (a `Model` instance).
  */
-abstract class HasFieldsWithSource extends HasFields
+abstract class SubModel extends HasFields
 {
     /** @var HasFields|null */
     private $data_source;
@@ -24,11 +23,11 @@ abstract class HasFieldsWithSource extends HasFields
      *
      * ```php
      * $post             = new HasFields()
-     * $layout           = new HasFieldsWithSource($post, 'flex_1_')
-     * $repeater_row     = new HasFieldsWithSource($post, 'flex_1_repeat_0_')
+     * $layout           = new SubModel($post, 'flex_1_')
+     * $repeater_row     = new SubModel($post, 'flex_1_repeat_0_')
      * ```
      *
-     * It's perfectly possible to chain HasFieldsWithSource instances.  However,
+     * It's perfectly possible to chain SubModel instances.  However,
      * since the chain must always end at the object who actually has the fields
      * saved on it (HasFieldsInDatabase instance), we skip the
      * middle men and thread the same data source through to child field instances,
@@ -46,7 +45,7 @@ abstract class HasFieldsWithSource extends HasFields
      * NOTE: `$this->update()` and `$this->delete()` will do nothing if there's
      * no data source.
      *
-     * @param HasFields|null      $source   Parent object on which field values are
+     * @param Model|null          $source   Parent object on which field values are
      *                                      saved, if any.
      * @param string              $prefix   Prefix for field names as they are saved on $source, if any.
      * @param null|FieldsResolver $resolver Resolver to use when
@@ -65,6 +64,23 @@ abstract class HasFieldsWithSource extends HasFields
     }
 
     /**
+     * @return HasFields|null The data source object $this was initialized with, if any.
+     */
+    final public function getDataSource()
+    {
+        return $this->data_source;
+    }
+
+    /**
+     * @return string The prefix to prepend to field names when requesting them
+     *                from the data source object.  May be empty.
+     */
+    final public function getDataPrefix(): string
+    {
+        return $this->data_prefix;
+    }
+
+    /**
      * Hook to allow sub classes to run code on `__construct()` without having
      * to re-declare the constructor.
      *
@@ -75,25 +91,6 @@ abstract class HasFieldsWithSource extends HasFields
     }
 
     /**
-     * @return HasFields|null The data source object $this was initialized with, if any.
-     */
-    final protected function getDataSource()
-    {
-        return $this->data_source;
-    }
-
-    /**
-     * @return string The prefix to prepend to field names when requesting them
-     *                from the data source object.  May be empty.
-     */
-    final protected function getDataPrefix(): string
-    {
-        return $this->data_prefix;
-    }
-
-    //////// TODO
-
-    /**
      * @param  string $key Field name as registered in static::getFields()
      * @return string Prefixed field name as saved on data source object.
      */
@@ -102,38 +99,18 @@ abstract class HasFieldsWithSource extends HasFields
         return $this->data_prefix . $key;
     }
 
-    final protected function getFromData(string $key, string $as)
+    final protected function getRaw(string $key)
     {
         if (isset($this->data[$key])) {
             // Any data that was explicity added via `$this->set()`
             // lives in `$this->data`
-            return coerce($this->data[$key], $as);
+            return $this->data[$key];
         }
         if ($this->data_source) {
             return $this->data_source->get($this->prefixKey($key), $as);
         }
 
-        // Might want an empty array or something.
-        return coerce(null, $as);
-    }
-
-    final protected function getAsRepeater(string $key, string $repeater_class): Repeater
-    {
-        return new $repeater_class($this->data_source, $this->data_prefix);
-    }
-
-    final protected function getAsWrapper(string $key, string $wrapper_class)
-    {
-        if (!$this->get($key, 'raw')) {
-            return null;
-        }
-
-        return new $wrapper_class($this->data_source, $this->prefixKey($key) . '_0_');
-    }
-
-    final protected function getAsFlexibleContent(string $key, string $flexible_content_class): FlexibleContent
-    {
-        return new $flexible_content_class($this->data_source, $this->data_prefix);
+        return null;
     }
 
     final public function update(string $key, $value): HasFields

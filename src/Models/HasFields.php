@@ -1,8 +1,7 @@
 <?php
-namespace Awful\Fields;
+namespace Awful\Models;
 
 use Awful\Container\Container;
-use Awful\Models\Model;
 
 /**
  * Base class for any object with that can have Fields.
@@ -131,7 +130,7 @@ abstract class HasFields
             if ($value instanceof Model) {
                 $this->filtered_data_cache[$key] = $value;
                 $this->data[$key] = $value->getId();
-            } elseif ($value instanceof HasFieldsWithSource) {
+            } elseif ($value instanceof SubModel) {
                 // Some recursive shit
             }
             // OR

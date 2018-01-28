@@ -1,8 +1,7 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Fields\FieldsResolver;
-use Awful\Fields\HasFields;
+use Awful\Models\Fields\FieldsResolver;
 
 /**
  * Base class for a objects which represent actual database rows.

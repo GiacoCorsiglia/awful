@@ -1,0 +1,2 @@
+# Dissallow access to anything in this directory in case it's in public_html.
+Deny from all

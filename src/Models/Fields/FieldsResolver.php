@@ -2,6 +2,7 @@
 namespace Awful\Models\Fields;
 
 use Awful\Container\Container;
+use Awful\Models\HasFields;
 
 /**
  * Utility to resolve the fields defined on a `HasFields` subclass.

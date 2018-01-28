@@ -1,6 +1,8 @@
 <?php
 namespace Awful\Models;
 
+use Awful\Models\Fields\FieldsResolver;
+
 /**
  * Parent class for objects representing ACF sub-fields (repeaters and flexible
  * content fields) whose data lives on a parent object (a `Model` instance).
@@ -66,7 +68,7 @@ abstract class SubModel extends HasFields
     /**
      * @return HasFields|null The data source object $this was initialized with, if any.
      */
-    final public function getDataSource()
+    final public function getDataSource(): ?HasFields
     {
         return $this->data_source;
     }
@@ -107,31 +109,19 @@ abstract class SubModel extends HasFields
             return $this->data[$key];
         }
         if ($this->data_source) {
-            return $this->data_source->get($this->prefixKey($key), $as);
+            return $this->data_source->getRaw($this->prefixKey($key));
         }
 
         return null;
     }
 
-    final public function update(string $key, $value): HasFields
+    public function update(array $data): HasFields
     {
-        assert((bool) $key, 'Expected non-empty $key');
-
-        if ($this->data_source) {
-            $this->data_source->update($this->prefixKey($key), $value);
-        }
-
-        return $this;
+        // TODO
     }
 
-    final public function delete(string $key): HasFields
+    public function delete(string ...$keys): HasFields
     {
-        assert((bool) $key, 'Expected non-empty $key');
-
-        if ($this->data_source) {
-            $this->data_source->delete($this->prefixKey($key));
-        }
-
-        return $this;
+        // TODO
     }
 }

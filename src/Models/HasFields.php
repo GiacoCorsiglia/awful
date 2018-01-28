@@ -2,6 +2,8 @@
 namespace Awful\Models;
 
 use Awful\Container\Container;
+use Awful\Models\Fields\Field;
+use Awful\Models\Fields\FieldsResolver;
 
 /**
  * Base class for any object with that can have Fields.
@@ -167,6 +169,16 @@ abstract class HasFields
      * @return $this
      */
     abstract public function delete(string ...$keys): self;
+
+    abstract public function getDataSource(): ?self;
+
+    abstract public function getDataPrefix(): string;
+
+    public function getFieldsResolver(): FieldsResolver
+    {
+        // TODO: Consider making this final
+        return $this->fields_resolver;
+    }
 
     /**
      * Sets the FieldsResolver instance to use when resolving field definitions

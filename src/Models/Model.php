@@ -38,13 +38,17 @@ abstract class Model extends HasFields
      *
      * Will return always the same instance for the same id.
      *
-     * @param int $id
-     * @param int $site_id
+     * @param int            $id
+     * @param int            $site_id
+     * @param FieldsResolver $resolver
      *
      * @return static
      */
-    final public static function id(int $id, int $site_id = 0): self
-    {
+    final public static function id(
+        int $id,
+        int $site_id = 0,
+        FieldsResolver $resolver = null
+    ): self {
         $object_type = static::OBJECT_TYPE;
 
         if (isset(self::$instances[$object_type][$id])) {
@@ -56,7 +60,7 @@ abstract class Model extends HasFields
         }
 
         $class = static::getClassForId($id);
-        return self::$instances[$object_type][$id] = new $class($id);
+        return self::$instances[$object_type][$id] = new $class($id, $site_id, $resolver);
     }
 
     final public static function create(): self
@@ -115,6 +119,16 @@ abstract class Model extends HasFields
         }
 
         return $value;
+    }
+
+    final public function getDataSource(): HasFields
+    {
+        return $this;
+    }
+
+    final public function getDataPrefix(): string
+    {
+        return '';
     }
 
     /**

@@ -2,7 +2,6 @@
 namespace Awful\Models;
 
 use Awful\AwfulTestCase;
-use Awful\Models\Posts\BlogPost;
 
 class ModelTest extends AwfulTestCase
 {

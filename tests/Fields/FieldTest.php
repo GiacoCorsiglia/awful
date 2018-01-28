@@ -3,6 +3,7 @@ namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
 use Awful\Models\Exceptions\ValidationException;
+use Awful\Models\HasFields;
 
 class FieldTest extends AwfulTestCase
 {

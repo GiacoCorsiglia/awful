@@ -2,6 +2,7 @@
 namespace Awful\Models\Fields;
 
 use Awful\Models\Exceptions\ValidationException;
+use Awful\Models\HasFields;
 
 /**
  * Base class for any field that can be saved on a HasFields object.

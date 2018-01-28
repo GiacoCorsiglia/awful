@@ -1,5 +1,5 @@
 <?php
-namespace Awful\Models\Posts;
+namespace Awful\Models;
 
 class BlogPost extends Post
 {

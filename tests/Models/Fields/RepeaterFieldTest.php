@@ -30,23 +30,23 @@ class RepeaterFieldTest extends AwfulTestCase
         $field = new RepeaterField([
             'foo' => 'bar',
             'row_class' => $this->emptyRowClass(),
-            ]);
+        ]);
 
         $this->assertArraySubset([
-                'type' => 'repeater',
-                'key' => 'field_name',
-                'name' => 'name',
-                'foo' => 'bar',
-                'sub_fields' => [],
-            ], $field->toAcf('name', '', new FieldsResolver($this->container())));
+            'type' => 'repeater',
+            'key' => 'field_name',
+            'name' => 'name',
+            'foo' => 'bar',
+            'sub_fields' => [],
+        ], $field->toAcf('name', '', new FieldsResolver($this->container())));
     }
 
     public function testToAcfWithRowClass()
     {
         $field = new RepeaterField([
-                'foo' => 'bar',
-                'row_class' => $this->rowClass(),
-                'collapsed' => 'text_field',
+            'foo' => 'bar',
+            'row_class' => $this->rowClass(),
+            'collapsed' => 'text_field',
         ]);
 
         $this->assertArraySubset([

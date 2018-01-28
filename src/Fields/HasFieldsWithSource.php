@@ -24,9 +24,7 @@ abstract class HasFieldsWithSource extends HasFields
      *
      * ```php
      * $post             = new HasFields()
-     * $flexible_content = new HasFieldsWithSource($post)
      * $layout           = new HasFieldsWithSource($post, 'flex_1_')
-     * $repeater         = new HasFieldsWithSource($post, 'flex_1_')
      * $repeater_row     = new HasFieldsWithSource($post, 'flex_1_repeat_0_')
      * ```
      *
@@ -48,14 +46,20 @@ abstract class HasFieldsWithSource extends HasFields
      * NOTE: `$this->update()` and `$this->delete()` will do nothing if there's
      * no data source.
      *
-     * @param HasFields|null $source Parent object on which field values are
-     *                               saved, if any.
-     * @param string         $prefix Prefix for field names as they are saved on $source, if any.
+     * @param HasFields|null      $source   Parent object on which field values are
+     *                                      saved, if any.
+     * @param string              $prefix   Prefix for field names as they are saved on $source, if any.
+     * @param null|FieldsResolver $resolver Resolver to use when
      */
-    final public function __construct(HasFields $source = null, string $prefix = '')
-    {
+    final public function __construct(
+        HasFields $source = null,
+        string $prefix = '',
+        FieldsResolver $resolver = null
+    ) {
         $this->data_source = $source;
         $this->data_prefix = $prefix;
+
+        $this->setFieldsResolver($resolver);
 
         $this->initialize();
     }

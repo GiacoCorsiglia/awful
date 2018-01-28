@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Models;
 
+use Awful\Fields\FieldsResolver;
 use Awful\Fields\HasFields;
 
 /**
@@ -83,10 +84,15 @@ abstract class Model extends HasFields
     /** @var int */
     private $site_id;
 
-    protected function __construct(int $id = 0, int $site_id = 0)
-    {
+    protected function __construct(
+        int $id = 0,
+        int $site_id = 0,
+        FieldsResolver $resolver
+    ) {
         $this->id = $id;
         $this->site_id = is_multisite() ? $site_id : 0;
+
+        $this->setFieldsResolver($resolver);
     }
 
     final public function getId(): int

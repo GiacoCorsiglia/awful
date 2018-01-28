@@ -9,61 +9,37 @@ use Awful\Models\Model;
  */
 abstract class HasFields
 {
-    /** @var Container */
-    private static $container;
-
-    /** @var (Field[])[] */
-    private static $fields_cache = [];
+    /**
+     * The `FieldsResolver` to use for resolving field definitions on instances
+     * if one is not set explicitly in the constructor.
+     *
+     * Having a default makes normal model instantiation much more convenient,
+     * as it likely corresponds with the current site, and normally only one
+     * site is relevant per request.
+     *
+     * @var FieldsResolver
+     */
+    private static $default_fields_resolver;
 
     /**
-     * Sets the Container instance to use when resolving field definitions.
+     * Sets the `FieldsResolver` instance to use when resolving field
+     * definitions if none is set explicitly upon instance creation.
      *
-     * @param Container $container
+     * @param FieldsResolver $resolver
      *
      * @return void
      *
      * @internal Exposed for use internally by Awful, or for explicit testing.
      */
-    final public static function setContainer(Container $container): void
+    final public static function setDefaultFieldsResolver(FieldsResolver $resolver): void
     {
-        self::$container = $container;
-        // If the container changes, field definitions might change, so we must
-        // invalidate the cache.  Primarily for testing purposes.
-        self::$fields_cache = [];
-    }
-
-    /**
-     * Enumerates the set of fields that can be saved on this object.
-     *
-     * Excluding any built-in model fields (i.e., database columns).
-     *
-     * @return array An array of field definitions.
-     */
-    final public static function getFields(): array
-    {
-        assert(self::$container, 'Expected HasFields::setContainer() to be called before any calls to getFields()');
-
-        if (!isset(self::$fields_cache[static::class])) {
-            $fields = static::defineFields();
-
-            if (is_callable($fields)) {
-                $fields = self::$container->call($fields);
-            }
-            assert(is_array($fields), 'Expected ' . static::class . '::defineFields() to resolve to an array');
-
-            self::$fields_cache[static::class] = $fields;
-        }
-
-        return self::$fields_cache[static::class];
-    }
-
-    private static function getField(string $key): ?Field
-    {
-        return self::getFields()[$key] ?? null;
+        self::$default_fields_resolver = $resolver;
     }
 
     /**
      * Enumerates any custom fields that can be saved on this object.
+     *
+     * Enumeration excludes any built-in model fields (i.e., database columns).
      *
      * If a callable is returned, it will be invoked via the dependency
      * injection container, and is expected to return an array itself.
@@ -71,13 +47,16 @@ abstract class HasFields
      * @return array|callable Either an array of fields, or a function that
      *                        resolves to an array of fields.
      */
-    protected static function defineFields()
+    public static function getFields()
     {
         return [];
     }
 
     /** @var mixed[] Cached field values on this instance */
     protected $data = [];
+
+    /** @var FieldsResolver */
+    private $fields_resolver;
 
     /** @var mixed[] */
     private $filtered_data_cache = [];
@@ -112,7 +91,7 @@ abstract class HasFields
         }
 
         if ($field = static::getField($key)) {
-            return $this->filtered_data_cache[$key] = $field->toPhp($value, $this);
+            return $this->filtered_data_cache[$key] = $field->forPhp($value, $this, $key);
         }
 
         return $this->filtered_data_cache[$key] = $value;
@@ -148,6 +127,7 @@ abstract class HasFields
                 unset($this->filtered_data_cache[$key]);
             }
 
+            // TODO
             if ($value instanceof Model) {
                 $this->filtered_data_cache[$key] = $value;
                 $this->data[$key] = $value->getId();
@@ -188,4 +168,34 @@ abstract class HasFields
      * @return $this
      */
     abstract public function delete(string ...$keys): self;
+
+    /**
+     * Sets the FieldsResolver instance to use when resolving field definitions
+     * for this instance.
+     *
+     * @param FieldsResolver|null $resolver If null, the default will be used.
+     *
+     * @return $this
+     *
+     * @internal Exposed for use internally by Awful, or for explicit testing.
+     */
+    final protected function setFieldsResolver(FieldsResolver $resolver = null): self
+    {
+        assert(!$this->fields_resolver, 'Do not set the fields resolver more than once');
+        $this->fields_resolver = $resolver ?: self::$default_fields_resolver;
+        return $this;
+    }
+
+    /**
+     * Gets the field definition for the given key, if one is configured for
+     * the class of $this.
+     *
+     * @param string $key Field key: array key in `static::getFields()`.
+     *
+     * @return Field|null The `Field`, or `null` if it doesn't exist.
+     */
+    private function getField(string $key): ?Field
+    {
+        return $this->fields_resolver->resolve(static::class)[$key] ?? null;
+    }
 }

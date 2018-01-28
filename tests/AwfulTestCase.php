@@ -1,6 +1,7 @@
 <?php
 namespace Awful;
 
+use Awful\Container\Container;
 use WP_UnitTestCase;
 
 /**
@@ -8,4 +9,8 @@ use WP_UnitTestCase;
  */
 class AwfulTestCase extends WP_UnitTestCase
 {
+    protected function container()
+    {
+        return new Container();
+    }
 }

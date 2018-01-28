@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Models\Fields;
 
+use Awful\Models\HasFields;
 use Awful\Models\SubModel;
 
 // TODO: Support adding/modifying layouts by code.
@@ -32,7 +33,7 @@ class FlexibleContentField extends Field
 
     public function toAcf(string $field_name, string $base_key, FieldsResolver $resolver): array
     {
-        $acf = parent::toAcf($field_name, $base_key);
+        $acf = parent::toAcf($field_name, $base_key, $resolver);
 
         $new_base_key = $this->buildAcfKey($field_name, $base_key, false);
         $layouts = [];
@@ -41,7 +42,7 @@ class FlexibleContentField extends Field
 
             $sub_fields = [];
             foreach ($resolver->resolve($layout_class) as $sub_field_name => $sub_field) {
-                $sub_fields[] = $sub_field->toAcf($sub_field_name, $layout_key);
+                $sub_fields[] = $sub_field->toAcf($sub_field_name, $layout_key, $resolver);
             }
 
             $layouts[] = [
@@ -53,7 +54,7 @@ class FlexibleContentField extends Field
             ];
         }
 
-        $afc['layouts'] = $layouts;
+        $acf['layouts'] = $layouts;
 
         return $acf;
     }
@@ -110,7 +111,7 @@ class FlexibleContentField extends Field
                 continue;
             }
 
-            $layouts[] = new $layout_class($source, "${prefix}${field_name}_{$index}_");
+            $layouts[] = new $layout_class($source, "${prefix}${field_name}_{$index}_", $owner->getFieldsResolver());
         }
         return $layouts;
     }

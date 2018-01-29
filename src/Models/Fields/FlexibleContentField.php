@@ -3,6 +3,8 @@ namespace Awful\Models\Fields;
 
 use Awful\Models\HasFields;
 use Awful\Models\SubModel;
+use function Awful\every;
+use function Awful\is_associative;
 
 // TODO: Support adding/modifying layouts by code.
 class FlexibleContentField extends Field
@@ -19,14 +21,11 @@ class FlexibleContentField extends Field
     public function __construct(array $args = [], array $hooks = [])
     {
         assert(!empty($args['layout_classes']), 'Expected layout_classes');
+        assert(is_associative($args['layout_classes']), 'Expected associative array of layout classes');
+        assert(every($args['layout_classes'], 'is_subclass_of', [SubModel::class]), 'Expected each layout class to be a subclass of SubModel');
 
         $this->layout_classes = $args['layout_classes'];
         unset($args['layout_classes']);
-
-        foreach ($this->layout_classes as $name => $class) {
-            assert(is_string($name), 'Expected associative array of layout classes');
-            assert(isset(class_parents($class)[SubModel::class]), 'Expected each layout class to be a subclass of SubModel');
-        }
 
         parent::__construct($args, $hooks);
     }

@@ -41,7 +41,7 @@ final class FieldsResolver
             return $this->cache[$has_fields_subclass];
         }
 
-        assert(!empty(class_parents($has_fields_subclass)[HasFields::class]), 'Expected HasFields subclass');
+        assert(is_subclass_of($has_fields_subclass, HasFields::class), 'Expected HasFields subclass');
 
         // Load the fields.
         $fields = $has_fields_subclass::getFields();

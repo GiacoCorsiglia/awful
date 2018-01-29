@@ -8,35 +8,24 @@ namespace Awful;
  * Checks each element in `$array` against a `$predicate`; useful for verifying
  * arrays in assertions.
  *
- * @param array           $array     The array to check.
- * @param callable|string $predicate Either a callable which returns a boolean,
- *                                   or the string 'instanceof'.
- * @param array           $args      Additional positional arguments to pass to
- *                                   the $predicate after they value, key, or
- *                                   both, depending on the $flag.
- * @param int             $flag      One of `ARRAY_FILTER_USE_KEY` or
- *                                   `ARRAY_FILTER_USE_BOTH`. Defaults to 0,
- *                                   meaning only the value will be passed to
- *                                   the `$predicate`.
+ * @param array    $array     The array to check.
+ * @param callable $predicate A function which returns a bool and accepts at
+ *                            least one or two arguments, depending on `$flag`.
+ * @param array    $args      Additional positional arguments to pass to the
+ *                            $predicate after they value, key, or both,
+ *                            depending on the $flag.
+ * @param int      $flag      One of `ARRAY_FILTER_USE_KEY` or
+ *                            `ARRAY_FILTER_USE_BOTH`. Defaults to 0, meaning
+ *                            only the value will be passed to the `$predicate`.
  *
  * @return bool If each key-value pair in the array passes the predicate.
  */
 function every(
     array $array,
-    $predicate,
+    callable $predicate,
     array $args = [],
     int $flag = 0
 ): bool {
-    assert($predicate === 'instanceof' || is_callable($predicate), 'Expected callable');
-
-    if ($predicate === 'instanceof') {
-        assert(!empty($args[0]) && class_exists($args[0]));
-        assert($flag === 0);
-        $predicate = function ($value, $class) {
-            return $value instanceof $class;
-        };
-    }
-
     foreach ($array as $key => $value) {
         switch ($flag) {
             case ARRAY_FILTER_USE_BOTH:
@@ -56,20 +45,52 @@ function every(
 }
 
 /**
- * Determines if `$class is a subclass of, or is identically, `$parent_class`.
+ * Determines if `$class` is a subclass of, or is identically, `$parent_class`.
  *
  * Use instead of `is_subclass_of()` if `$class` might equal `$parent_class`.
  *
- * @param string $class
+ * @param mixed  $class        Expected to be a string, but confirms.
  * @param string $parent_class
  *
  * @return bool
  */
-function is_subclass(string $class, string $parent_class): bool
+function is_subclass($class, string $parent_class): bool
 {
-    return $class === $parent_class || is_subclass_of($class, $parent_class);
+    assert(class_exists($parent_class), 'Expected valid `$parent_class`');
+    return $class === $parent_class || (is_string($class) && is_subclass_of($class, $parent_class));
 }
 
+/**
+ * Determines if `$class` represents an implementation of `$interface`.
+ *
+ * Doesn't check if `$class` can be instantiated (e.g. if it's not abstract).
+ *
+ * @param mixed  $class     Expected to be a string, but confirms.
+ * @param string $interface
+ *
+ * @return bool
+ */
+function is_implementation($class, string $interface): bool
+{
+    assert(interface_exists($interface), 'Expected valid `$interface`');
+    return is_string($class) && !empty(class_implements($class)[$interface]);
+}
+
+/**
+ * Determines if `$object` is of the `$class_or_interface` type.
+ *
+ * Just a functional wrapper around the `instanceof` operator.
+ *
+ * @param mixed  $object             Expected to be an object, but confirms.
+ * @param string $class_or_interface
+ *
+ * @return bool
+ */
+function is_instanceof($object, string $class_or_interface): bool
+{
+    assert(class_exists($class_or_interface) || interface_exists($class_or_interface), 'Expected valid `$class_or_interface`');
+    return is_object($object) && $object instanceof $class_or_interface;
+}
 
 /**
  * Tells whether an array is purely associative by checking if all its keys are

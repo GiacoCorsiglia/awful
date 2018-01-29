@@ -11,6 +11,7 @@ namespace Awful;
  * @param array    $array     The array to check.
  * @param callable $predicate A function which returns a bool and accepts at
  *                            least one or two arguments, depending on `$flag`.
+ *                            You can leave off the Awful namespace.
  * @param array    $args      Additional positional arguments to pass to the
  *                            $predicate after they value, key, or both,
  *                            depending on the $flag.
@@ -22,10 +23,15 @@ namespace Awful;
  */
 function every(
     array $array,
-    callable $predicate,
+    $predicate,
     array $args = [],
     int $flag = 0
 ): bool {
+    if (is_string($predicate) && !is_callable($predicate)) {
+        $predicate = __NAMESPACE__ . "\\$predicate";
+    }
+    assert(is_callable($predicate), 'Expected callable `$predicate`');
+
     foreach ($array as $key => $value) {
         switch ($flag) {
             case ARRAY_FILTER_USE_BOTH:

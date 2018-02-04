@@ -2,7 +2,7 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\BlogPost;
+use Awful\Models\Post;
 use Awful\Models\SubModel;
 
 class FlexibleContentFieldTest extends AwfulTestCase
@@ -78,7 +78,7 @@ class FlexibleContentFieldTest extends AwfulTestCase
             ],
         ]);
 
-        $owner = $this->getMockBuilder(BlogPost::class)
+        $owner = $this->getMockBuilder(Post::class)
             ->disableOriginalConstructor()
             ->getMock();
 

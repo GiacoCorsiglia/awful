@@ -2,7 +2,7 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\BlogPost;
+use Awful\Models\Post;
 use Awful\Models\SubModel;
 
 class RepeaterFieldTest extends AwfulTestCase
@@ -72,7 +72,7 @@ class RepeaterFieldTest extends AwfulTestCase
             'row_class' => $row_class,
         ]);
 
-        $owner = $this->getMockBuilder(BlogPost::class)
+        $owner = $this->getMockBuilder(Post::class)
             ->disableOriginalConstructor()
             ->getMock();
 

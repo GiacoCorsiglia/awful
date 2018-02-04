@@ -13,11 +13,11 @@ class ModelTest extends AwfulTestCase
         ]);
         add_post_meta($id, 'test_meta', 'test value');
 
-        $post = BlogPost::id($id);
+        $post = Post::id($id);
 
         $this->assertSame($post->getId(), $id);
 
-        $this->assertSame(BlogPost::id($id), $post);
+        $this->assertSame(Post::id($id), $post);
 
         $this->assertSame($post->getRaw('test_meta'), 'test value');
     }
@@ -31,7 +31,7 @@ class ModelTest extends AwfulTestCase
         add_post_meta($id, 'test_meta', 'test value 1');
         add_post_meta($id, 'test_meta', 'test value 2');
 
-        $post = BlogPost::id($id);
+        $post = Post::id($id);
 
         $this->assertSame($post->getRaw('test_meta'), ['test value 1', 'test value 2']);
     }

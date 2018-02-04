@@ -2,7 +2,7 @@
 namespace Awful\Models\Fields;
 
 use Awful\Models\Model;
-use Awful\Models\Posts\Post;
+use Awful\Models\Posts\GenericPost;
 
 /**
  * Allows saving a reference to another post.
@@ -43,15 +43,15 @@ class PostObjectField extends Field
      * @param int   $site_id
      * @param mixed $value
      *
-     * @return Post|null
+     * @return GenericPost|null
      */
-    private function toPost($value, int $site_id): ?Post
+    private function toPost($value, int $site_id): ?GenericPost
     {
         $value = (int) $value;
         if (!$value) {
             return null;
         }
-        $post = Post::id($value, $site_id);
+        $post = GenericPost::id($value, $site_id);
         return $post->isSaved() ? $post : null;
     }
 }

@@ -2,70 +2,150 @@
 namespace Awful;
 
 use Awful\Container\Container;
+use Awful\Models\Fields\FieldsResolver;
+use Awful\Models\HasFields;
+use Awful\Models\Model;
+use Awful\Models\Network;
+use Awful\Models\Site;
+use Awful\Models\User;
+use Awful\Providers\Provider;
 use Awful\Templates\TemplateEngine;
 
 final class Awful
 {
+    public static function bootstrap(array $providers): self
+    {
+        return $GLOBALS['_awful_instance'] = new self($providers);
+    }
+
     /** @var Router */
     private $router;
 
-    private function __construct(string $theme_class)
+    /** @var string[] */
+    private $models = [];
+
+    /** @var string[] */
+    private $hooks = [];
+
+    /** @var string */
+    private $template_engine_class;
+
+    /** @var string */
+    private $site_class;
+
+    /** @var string */
+    private $network_class;
+
+    /** @var string */
+    private $user_class;
+
+    private function __construct(array $provider_classes)
     {
-        // Set up dependency injection.
+        assert($provider_classes, 'Expected at least one provider class');
+        assert(every($provider_classes, 'is_subclass_of', [Provider::class]), 'Expected array of `Provider` subclasses');
+
         $container = new Container();
 
-        $theme = $container->get($theme_class);
-        if (!($theme instanceof Theme)) {
-            throw new TypeError();
-        }
-        // Make sure this is the only Theme instance anyone gets, regardless of
-        // which Theme class they request.
-        $container->alias($theme_class, ...class_parents($theme));
-
-        // Bootstrap the Site class and instantiate a Site for the current site,
-        // and register it for dependency injection just as we did the theme.
-        $site_class = $theme->getSiteClass();
-        $site_class::bootstrap();
-        $current_site = new $site_class(get_current_blog_id());
-        $container->register($current_site, ...class_parents($site_class));
-
-        // Bootstrap the User class and instantiate a User for the current user,
-        // and register it for dependency injection just as we did the theme.
-        $user_class = $theme->getUserClass();
-        $user_class::bootstrap();
-        $current_user = new $user_class(wp_get_current_user());
-        $container->register($current_user, ...class_parents($user_class));
-
-        // Likewise, ensure that the router can be requested by any of its
-        // parent classes.  We won't instantiate it unless this is the frontend.
-        $router_class = $theme->getRouterClass();
-        $container->alias($router_class, ...class_parents($router_class));
-
-        // Do the same for the Theme's preferred template engine.
-        $container->alias($theme->getTemplateEngineClass(), TemplateEngine::class);
-
-        // Register post types and taxonomies.
-        foreach ($theme->getPostTypes() as $post_class) {
-            $post_class::bootstrap();
-        }
-        foreach ($theme->getTaxonomies() as $taxonomy_class) {
-            $taxonomy_class::bootstrap();
+        foreach ($provider_classes as $provider_class) {
+            (new $provider_class($this, $container))->configure();
         }
 
-        // Instantiate the hooks requested by the Theme.
-        foreach ($theme->getHooks() as $hook_class) {
-            $container->get($hook_class);
+
+        $fields_resolver = $container->get(FieldsResolver::class);
+        HasFields::setDefaultFieldsResolver($fields_resolver);
+
+
+        $site_class = $this->site_class ?: Site::class;
+        $current_site = Site::id(get_current_blog_id(), 0, $fields_resolver);
+        $container->register($current_site, Site::class);
+
+        $user_class = $this->user_class ?: User::class;
+        $current_user = User::id(get_current_user_id(), 0, $fields_resolver);
+        $container->register($current_user, User::class);
+
+        $network_class = $this->network_class ?: Network::class;
+        $current_user = Network::id(wp_get_network()->id ?? 0, 0, $fields_resolver);
+        $container->register($current_user, Network::class);
+
+
+        $field_sets = array_merge(
+            $site_class::getOptionsPages(),
+            [$user_class],
+            $this->models
+        );
+        $fields_registrar = $container->get(FieldsRegistrar::class);
+        foreach ($field_sets as $field_set) {
+            // TODO
+            $fields_registrar->register($field_set);
         }
 
-        // Bootstrap the router if required.
-        if (!is_admin()) {
-            $this->router = $container->get($router_class);
+        // TODO: Register post types, etc.
+
+        foreach ($this->hooks as $hook_class) {
+            // TODO
+            $hook = $container->get($hook_class);
+            if ($hook instanceof Bootstrapable) {
+                $hook->bootstrap();
+            }
+        }
+
+        if ($this->router_class && !is_admin()) {
+            $this->router = $container->get($this->router_class);
         }
     }
 
-    public static function bootstrap(string $theme_class): self
+    public function registerSiteClass(string $class): self
     {
-        return $GLOBALS['_awful_instance'] = new self($theme_class);
+        assert(is_subclass_of($class, Site::class), 'Expected `Site` subclass');
+
+        $this->site_class = $class;
+
+        return $this;
+    }
+
+    public function registerNetworkClass(string $class): self
+    {
+        assert(is_subclass_of($class, Network::class), 'Expected `Network` subclass');
+
+        $this->network_class = $class;
+
+        return $this;
+    }
+
+    public function registerUserClass(string $class): self
+    {
+        assert(is_subclass_of($class, User::class), 'Expected `User` subclass');
+
+        $this->user_class = $class;
+
+        return $this;
+    }
+
+    public function registerModels(array $models): self
+    {
+        assert(every($models, 'is_subclass', [Model::class]), 'Expected a list of `Model` subclasses');
+
+        $this->models = array_unique(array_merge($this->models, $models));
+
+        return $this;
+    }
+
+    public function registerHooks(array $hooks): self
+    {
+        assert(every($hooks, 'class_exists'), 'Expected a list of existing classes');
+
+        $this->hooks = array_unique(array_merge($this->hooks, $hooks));
+
+        return $this;
+    }
+
+    public function registerTemplateEngine(string $class): self
+    {
+        assert(is_subclass_of($class, TemplateEngine::class), 'Expected `TemplateEngine` subclass');
+
+        $this->template_engine_class = $class;
+
+        return $this;
     }
 
     public function render(): string

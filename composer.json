@@ -39,7 +39,8 @@
         "friendsofphp/php-cs-fixer": "^2.10",
         "johnpbloch/wordpress": "^4.9",
         "phpunit/phpunit": "5.*",
-        "psy/psysh": "^0.8.17"
+        "psy/psysh": "^0.8.17",
+        "wp-phpunit/wp-phpunit": "^4.9"
     },
     "config": {
         "sort-packages": true

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "4992408b1eb761d3313b6bacae263801",
+    "content-hash": "a4a0ce3443ecc75b5beca925dff0b3d5",
     "packages": [
         {
             "name": "nikic/fast-route",
@@ -2902,6 +2902,49 @@
                 "validate"
             ],
             "time": "2016-11-23T20:04:58+00:00"
+        },
+        {
+            "name": "wp-phpunit/wp-phpunit",
+            "version": "4.9.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wp-phpunit/wp-phpunit.git",
+                "reference": "b077a55f4a012891f6ca67c1e636a22b8e2b6dcb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wp-phpunit/wp-phpunit/zipball/b077a55f4a012891f6ca67c1e636a22b8e2b6dcb",
+                "reference": "b077a55f4a012891f6ca67c1e636a22b8e2b6dcb",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "__loaded.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Evan Mattson",
+                    "email": "me@aaemnnost.tv"
+                },
+                {
+                    "name": "WordPress Community",
+                    "homepage": "https://wordpress.org/about/"
+                }
+            ],
+            "description": "WordPress core PHPUnit library",
+            "homepage": "https://github.com/wp-phpunit",
+            "keywords": [
+                "phpunit",
+                "test",
+                "wordpress"
+            ],
+            "time": "2018-01-17T17:40:44+00:00"
         }
     ],
     "aliases": [],

@@ -10,6 +10,10 @@
             "homepage": "https://giacocorsiglia.com"
         }
     ],
+    "support": {
+        "issues": "https://github.com/GiacoCorsiglia/awful/issues",
+        "source": "https://github.com/GiacoCorsiglia/awful"
+    },
     "keywords": [
         "wordpress"
     ],

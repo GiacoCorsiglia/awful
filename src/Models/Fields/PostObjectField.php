@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Models\Fields;
 
+use Awful\Models\HasFields;
 use Awful\Models\Model;
 use Awful\Models\Posts\GenericPost;
 
@@ -11,7 +12,7 @@ class PostObjectField extends Field
 {
     const ACF_TYPE = 'post_object';
 
-    public function forPhp($value, HasFields $owner)
+    public function forPhp($value, HasFields $owner, string $field_name)
     {
         if ($owner instanceof SubModel) {
             $owner = $owner->getDataSource();

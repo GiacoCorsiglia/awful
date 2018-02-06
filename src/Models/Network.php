@@ -1,8 +1,10 @@
 <?php
 namespace Awful\Models;
 
-class Network extends Model
+class Network extends ModelWithMetadata
 {
+    protected const OBJECT_TYPE = 'site';
+
     /**
      * wp_site
      * wp_sitemeta.

@@ -60,7 +60,7 @@ abstract class SubModel extends HasFields
         $this->data_source = $source;
         $this->data_prefix = $prefix;
 
-        $this->setFieldsResolver($resolver);
+        $this->initializeFieldsResolver($resolver);
 
         $this->initialize();
     }
@@ -101,7 +101,7 @@ abstract class SubModel extends HasFields
         return $this->data_prefix . $key;
     }
 
-    final protected function getRaw(string $key)
+    final protected function getRawFieldValue(string $key)
     {
         if (isset($this->data[$key])) {
             // Any data that was explicity added via `$this->set()`
@@ -109,7 +109,7 @@ abstract class SubModel extends HasFields
             return $this->data[$key];
         }
         if ($this->data_source) {
-            return $this->data_source->getRaw($this->prefixKey($key));
+            return $this->data_source->getRawFieldValue($this->prefixKey($key));
         }
 
         return null;

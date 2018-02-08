@@ -1,9 +1,12 @@
 <?php
 namespace Awful\Models;
 
-class Comment extends ModelWithMetadata
+class Comment extends Model
 {
-    const BUILTIN_FIELDS = [
+    use ModelWithMetadata;
+    use ModelOwnedBySite;
+
+    const WORDPRESS_OBJECT_FIELDS = [
         'comment_ID' => 'int',
         'comment_post_ID' => 'int',
         'comment_author' => 'string',

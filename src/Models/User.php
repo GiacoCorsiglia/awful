@@ -1,9 +1,13 @@
 <?php
 namespace Awful\Models;
 
-class User extends ModelWithMetadata
+use Awful\Models\Traits\ModelWithMetaTable;
+
+class User extends Model
 {
-    const BUILTIN_FIELDS = [
+    use ModelWithMetaTable;
+
+    const WORDPRESS_OBJECT_FIELDS = [
         'ID' => 'int',
         'user_login' => 'string',
         'user_pass' => 'string/password',
@@ -18,4 +22,9 @@ class User extends ModelWithMetadata
         'spam' => 'bool',
         'deleted' => 'bool',
     ];
+
+    final protected function getMetaType(): string
+    {
+        return 'user';
+    }
 }

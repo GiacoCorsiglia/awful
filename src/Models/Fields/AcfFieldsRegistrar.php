@@ -1,8 +1,8 @@
 <?php
 namespace Awful\Models\Fields;
 
-use Awful\Models\HasFields;
 use Awful\Models\GenericPost;
+use Awful\Models\HasFields;
 use Awful\Models\TaxonomyTerm;
 
 class AcfFieldsRegistrar implements FieldsRegistrar

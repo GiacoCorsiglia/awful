@@ -19,7 +19,7 @@ class ModelTest extends AwfulTestCase
 
         $this->assertSame(Post::id($id), $post);
 
-        $this->assertSame($post->getRaw('test_meta'), 'test value');
+        $this->assertSame($post->getRawFieldValue('test_meta'), 'test value');
     }
 
     public function testMultipleMeta()
@@ -33,6 +33,6 @@ class ModelTest extends AwfulTestCase
 
         $post = Post::id($id);
 
-        $this->assertSame($post->getRaw('test_meta'), ['test value 1', 'test value 2']);
+        $this->assertSame($post->getRawFieldValue('test_meta'), ['test value 1', 'test value 2']);
     }
 }

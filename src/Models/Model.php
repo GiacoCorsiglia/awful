@@ -14,6 +14,8 @@ abstract class Model extends HasFields
      */
     protected const OBJECT_TYPE = '';
 
+    protected const WORDPRESS_OBJECT_FIELDS = [];
+
     /**
      * Cache of instances per object type per id.
      * @var (self[])[]
@@ -81,44 +83,23 @@ abstract class Model extends HasFields
         return static::class;
     }
 
-    /** @var int */
+    /**
+     * The primary key of this object in the database.
+     *
+     * @var int
+     */
     protected $id;
 
-    /** @var int */
-    private $site_id;
-
-    protected function __construct(
-        int $id = 0,
-        int $site_id = 0,
-        FieldsResolver $resolver = null
-    ) {
-        $this->id = $id;
-        $this->site_id = is_multisite() ? $site_id : 0;
-
-        $this->setFieldsResolver($resolver);
-    }
-
+    /**
+     * Gets the primary key of this object in the database.
+     *
+     * An unsaved object may have an ID of 0, but may also have a positive ID
+     *
+     * @return int The primary key.
+     */
     final public function getId(): int
     {
         return $this->id;
-    }
-
-    abstract public function isSaved(): bool;
-
-    public function getRaw(string $key)
-    {
-        if ($this->data === null) {
-            $this->fetchData();
-        }
-
-        $value = $this->data[$key] ?? null;
-
-        if ($value) {
-            // TODO: Consider caching this.
-            $value = maybe_unserialize($value);
-        }
-
-        return $value;
     }
 
     final public function getDataSource(): HasFields
@@ -131,6 +112,31 @@ abstract class Model extends HasFields
         return '';
     }
 
+    public function getRawFieldValue(string $key)
+    {
+        if ($this->data === null) {
+            $this->fetchData();
+        }
+
+        $value = $this->data[$key] ?? null;
+
+        if ($value) {
+            // TODO: Consider caching this.  On the other hand, the filtered
+            // value will already be cached.
+            $value = maybe_unserialize($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Determines if this model actually exists in the database.
+     *
+     * @return bool True if there is a row in the database which represents this
+     *              instance, otherwise false.
+     */
+    abstract public function exists(): bool;
+
     /**
      * Initializes `$this->data` from the database.
      *
@@ -139,28 +145,4 @@ abstract class Model extends HasFields
      * @return void
      */
     abstract protected function fetchData();
-
-    /**
-     * Calls the given function in the context of the owner site ID set for this
-     * instance, passing along the remaining args and returning the result.
-     *
-     * @param callable $callable Function to invoke.
-     * @param mixed    ...$args  Positional arguments to pass to $callable.
-     *
-     * @return mixed Return value of invoked function.
-     */
-    final protected function callInSiteContext(callable $callable, ...$args)
-    {
-        if ($this->site_id) {
-            switch_to_blog($this->site_id);
-        }
-
-        $ret = $callable(...$args);
-
-        if ($this->site_id) {
-            restore_current_blog();
-        }
-
-        return $ret;
-    }
 }

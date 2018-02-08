@@ -1,12 +1,20 @@
 <?php
 namespace Awful\Models;
 
-class TaxonomyTerm extends ModelWithMetadata
+class TaxonomyTerm extends Model
 {
-    const BUILTIN_FIELDS = [
+    use ModelOwnedBySite;
+    use ModelWithMetaTable;
+
+    const WORDPRESS_OBJECT_FIELDS = [
         'term_id' => 'int',
         'name' => 'string',
         'slug' => 'string',
         'term_group' => 'int',
     ];
+
+    final protected function getMetaType(): string
+    {
+        return 'term';
+    }
 }

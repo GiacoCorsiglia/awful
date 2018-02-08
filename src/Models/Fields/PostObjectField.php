@@ -53,6 +53,6 @@ class PostObjectField extends Field
             return null;
         }
         $post = GenericPost::id($value, $site_id);
-        return $post->isSaved() ? $post : null;
+        return $post->exists() ? $post : null;
     }
 }

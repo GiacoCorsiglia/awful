@@ -88,6 +88,9 @@ abstract class Model extends HasFields
     /** @var mixed[] */
     protected $data = [];
 
+    /** @var bool */
+    private $has_fetched_data = false;
+
     /**
      * Gets the primary key of this object in the database.
      *
@@ -112,8 +115,9 @@ abstract class Model extends HasFields
 
     public function getRawFieldValue(string $key)
     {
-        if ($this->data === null) {
+        if (!$this->has_fetched_data) {
             $this->fetchData();
+            $this->has_fetched_data = true;
         }
 
         $value = $this->data[$key] ?? null;

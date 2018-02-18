@@ -77,7 +77,7 @@ class RepeaterFieldTest extends AwfulTestCase
             ->getMock();
 
         $owner->expects($this->any())
-            ->method('getRaw')
+            ->method('getRawFieldValue')
             ->willReturnMap([
                 ['repeater_name_0_text_field', 'first buz'],
                 ['repeater_name_1_text_field', 'second buz'],

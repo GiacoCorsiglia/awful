@@ -2,7 +2,7 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\Post;
+use Awful\Models\GenericPost;
 use Awful\Models\SubModel;
 
 class FlexibleContentFieldTest extends AwfulTestCase
@@ -78,12 +78,12 @@ class FlexibleContentFieldTest extends AwfulTestCase
             ],
         ]);
 
-        $owner = $this->getMockBuilder(Post::class)
+        $owner = $this->getMockBuilder(GenericPost::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         $owner->expects($this->any())
-            ->method('getRaw')
+            ->method('getRawFieldValue')
             ->willReturnMap([
                 ['flexible_content_name_0_text_field', 'first buz'],
                 ['flexible_content_name_1_text_field', 'second buz'],

@@ -18,7 +18,7 @@ class FlexibleContentField extends Field
      */
     private $layout_classes;
 
-    public function __construct(array $args = [], array $hooks = [])
+    public function __construct(array $args = [])
     {
         assert(!empty($args['layout_classes']), 'Expected layout_classes');
         assert(is_associative($args['layout_classes']), 'Expected associative array of layout classes');
@@ -27,7 +27,7 @@ class FlexibleContentField extends Field
         $this->layout_classes = $args['layout_classes'];
         unset($args['layout_classes']);
 
-        parent::__construct($args, $hooks);
+        parent::__construct($args);
     }
 
     public function toAcf(string $field_name, string $base_key, FieldsResolver $resolver): array

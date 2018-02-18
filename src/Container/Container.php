@@ -144,8 +144,10 @@ final class Container implements ContainerInterface
         }
 
         if ($constructor = $reflection->getConstructor()) {
+            // For some reason Psalm doesn't like this.
+            /** @psalm-suppress RedundantCondition */
             if (!$constructor->isPublic()) {
-                throw new UninstantiatableClassException($class, 0, $e);
+                throw new UninstantiatableClassException($class, 0);
             }
 
             $this->currently_resolving[$class] = true;
@@ -157,7 +159,7 @@ final class Container implements ContainerInterface
             $instance = new $class();
         }
 
-
+        /** @psalm-suppress UndefinedClass */
         if (in_array(ChainedDependencies::class, $reflection->getTraitNames())) {
             $instance->injectDependencies($this->resolveChainedDependencies($class));
         }
@@ -183,30 +185,7 @@ final class Container implements ContainerInterface
             ? new ReflectionMethod($callable[0], $callable[1])
             : new ReflectionFunction($callable);
         $dependencies = $this->resolveParameters($reflection);
-        return $callable(...$dependencies, ...$args);
-    }
-
-    public function injectStatic(string $class): void
-    {
-        $chain = class_parents($subclass);
-        $chain[] = $subclass;
-
-        $base_class = reset($chain);
-
-        $resolved_by_class = [];
-        foreach ($chain as $_class) {
-            if (isset($base_class::$_static_dependencies[$_class])) {
-                continue;
-            }
-            if (!defined("$_class::STATIC_DEPENDENCIES")) {
-                continue;
-            }
-            $resolved = [];
-            foreach ($_class::STATIC_DEPENDENCIES as $key => $id) {
-                $resolved[$key] = $this->get($id);
-            }
-            $base_class::$_static_dependencies[$_class] = $resolved;
-        }
+        return call_user_func($callable, ...$dependencies, ...$args);
     }
 
     /**

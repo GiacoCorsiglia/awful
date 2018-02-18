@@ -2,7 +2,6 @@
 namespace Awful\Models;
 
 use Awful\Models\Fields\FieldsResolver;
-use Awful\Models\Traits\ModelWithMetaTable;
 
 /**
  * @todo
@@ -30,5 +29,15 @@ class Network extends Model
         $this->id = $id;
 
         $this->initializeFieldsResolver($resolver);
+    }
+
+    final protected function fetchData()
+    {
+        // TODO
+    }
+
+    final public function exists(): bool
+    {
+        return true; // TODO
     }
 }

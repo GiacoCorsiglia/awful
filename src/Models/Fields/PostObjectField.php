@@ -1,9 +1,9 @@
 <?php
 namespace Awful\Models\Fields;
 
+use Awful\Models\GenericPost;
 use Awful\Models\HasFields;
-use Awful\Models\Model;
-use Awful\Models\Posts\GenericPost;
+use Awful\Models\SubModel;
 
 /**
  * Allows saving a reference to another post.
@@ -17,7 +17,7 @@ class PostObjectField extends Field
         if ($owner instanceof SubModel) {
             $owner = $owner->getDataSource();
         }
-        $site_id = $owner instanceof Model ? $owner->getSiteId() : 0;
+        $site_id = $owner && method_exists($owner, 'getSiteId') ? $owner->getSiteId() : 0;
 
         if (empty($this->args['multiple'])) {
             return $this->toPost($value);

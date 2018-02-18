@@ -10,7 +10,7 @@ trait ModelOwnedBySite
     protected function __construct(
         int $id = 0,
         int $site_id = 0,
-        FieldsResolver $resolver
+        FieldsResolver $resolver = null
     ) {
         $this->id = $id;
         $this->site_id = is_multisite() ? $site_id : 0;

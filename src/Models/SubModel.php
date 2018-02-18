@@ -101,7 +101,7 @@ abstract class SubModel extends HasFields
         return $this->data_prefix . $key;
     }
 
-    final protected function getRawFieldValue(string $key)
+    final public function getRawFieldValue(string $key)
     {
         if (isset($this->data[$key])) {
             // Any data that was explicity added via `$this->set()`
@@ -113,15 +113,5 @@ abstract class SubModel extends HasFields
         }
 
         return null;
-    }
-
-    public function update(array $data): HasFields
-    {
-        // TODO
-    }
-
-    public function delete(string ...$keys): HasFields
-    {
-        // TODO
     }
 }

@@ -18,27 +18,17 @@ abstract class Model extends HasFields
 
     /**
      * Cache of instances per object type per id.
-     * @var (self[])[]
+     * @var self[][]
      */
     private static $instances = [];
-
-    /**
-     * Contains per-request initialization code to set up this content type,
-     * such as registration of a custom post type with WordPress.
-     *
-     * Return a callable if it needs to be invoked with dependency injection.
-     *
-     * @return callable|null
-     */
-    public static function bootstrap(): ?callable
-    {
-        // Implemented here so it's safe to call no matter what.
-    }
 
     /**
      * Factory function to get an instance of this model with the given ID.
      *
      * Will return always the same instance for the same id.
+     *
+     * @psalm-suppress MoreSpecificReturnType
+     * @psalm-suppress LessSpecificReturnStatement
      *
      * @param int            $id
      * @param int            $site_id
@@ -65,6 +55,11 @@ abstract class Model extends HasFields
         return self::$instances[$object_type][$id] = new $class($id, $site_id, $resolver);
     }
 
+    /**
+     * @psalm-suppress TooManyArguments
+     *
+     * @return self
+     */
     final public static function create(): self
     {
         return new static(0);
@@ -88,7 +83,10 @@ abstract class Model extends HasFields
      *
      * @var int
      */
-    protected $id;
+    protected $id = 0;
+
+    /** @var mixed[] */
+    protected $data = [];
 
     /**
      * Gets the primary key of this object in the database.

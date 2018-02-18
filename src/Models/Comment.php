@@ -9,7 +9,7 @@ class Comment extends Model
     use ModelWithMetaTable;
     use ModelOwnedBySite;
 
-    const WORDPRESS_OBJECT_FIELDS = [
+    protected const WORDPRESS_OBJECT_FIELDS = [
         'comment_ID' => 'int',
         'comment_post_ID' => 'int',
         'comment_author' => 'string',
@@ -27,7 +27,7 @@ class Comment extends Model
         'user_id' => 'string',
     ];
 
-    final protected function fetchData()
+    final protected function fetchData(): void
     {
         // TODO
     }

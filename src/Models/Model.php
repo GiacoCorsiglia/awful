@@ -142,5 +142,5 @@ abstract class Model extends HasFields
      *
      * @return void
      */
-    abstract protected function fetchData();
+    abstract protected function fetchData(): void;
 }

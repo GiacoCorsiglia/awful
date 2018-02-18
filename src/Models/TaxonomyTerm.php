@@ -9,7 +9,7 @@ class TaxonomyTerm extends Model
     use ModelOwnedBySite;
     use ModelWithMetaTable;
 
-    const WORDPRESS_OBJECT_FIELDS = [
+    protected const WORDPRESS_OBJECT_FIELDS = [
         'term_id' => 'int',
         'name' => 'string',
         'slug' => 'string',

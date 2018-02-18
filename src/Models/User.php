@@ -8,7 +8,7 @@ class User extends Model
 {
     use ModelWithMetaTable;
 
-    const WORDPRESS_OBJECT_FIELDS = [
+    protected const WORDPRESS_OBJECT_FIELDS = [
         'ID' => 'int',
         'user_login' => 'string',
         'user_pass' => 'string/password',

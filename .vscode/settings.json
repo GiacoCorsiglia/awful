@@ -1,0 +1,18 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4,
+  "editor.trimAutoWhitespace": true,
+  "files.associations": {
+    ".php_cs": "php"
+  },
+  "php-cs-fixer.executablePath": "${workspaceRoot}/vendor/bin/php-cs-fixer",
+  "php-cs-fixer.onsave": true,
+  "php.suggest.basic": false,
+  "php.validate.run": "onType",
+  "cSpell.words": [
+    "unserialization",
+    "unserialized"
+  ],
+  "php.validate.executablePath": "/usr/local/opt/php71/bin/php",
+}

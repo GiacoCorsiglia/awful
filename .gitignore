@@ -6,7 +6,7 @@ composer.phar
 /wordpress/
 
 # VSCode stuff (ignore everything but these config files).
-/.vscode/
+/.vscode/*
 !/.vscode/tasks.json
 !/.vscode/launch.json
 !/.vscode/cSpell.json

@@ -14,7 +14,7 @@ class Network extends Model
      * wp_site
      * wp_sitemeta.
      */
-    const WORDPRESS_OBJECT_FIELDS = [
+    protected const WORDPRESS_OBJECT_FIELDS = [
         'id' => 'int',
         'domain' => 'string',
         'path' => 'string',
@@ -31,7 +31,7 @@ class Network extends Model
         $this->initializeFieldsResolver($resolver);
     }
 
-    final protected function fetchData()
+    final protected function fetchData(): void
     {
         // TODO
     }

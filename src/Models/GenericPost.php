@@ -32,7 +32,7 @@ abstract class GenericPost extends Model
      */
     public const IS_BUILTIN = false;
 
-    private const WORDPRESS_OBJECT_FIELDS = [
+    protected const WORDPRESS_OBJECT_FIELDS = [
         'ID' => 'int',
         'post_author' => User::class,
         'post_date' => 'date',

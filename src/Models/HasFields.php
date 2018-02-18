@@ -73,9 +73,11 @@ abstract class HasFields
      * instance and related objects like `SubModel` instances or parent or child
      * `Model` instances.
      *
+     * @final Want to really make this final, but it makes it untestable.
+     *
      * @return FieldsResolver
      */
-    final public function getFieldsResolver(): FieldsResolver
+    public function getFieldsResolver(): FieldsResolver
     {
         return $this->fields_resolver;
     }

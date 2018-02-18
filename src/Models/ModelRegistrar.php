@@ -28,7 +28,7 @@ class ModelRegistrar
     {
         $this->container = $container;
 
-        add_action('init', function () {
+        add_action('init', function (): void {
             $this->has_init = true;
             foreach ($this->deferred as $post_subclass) {
                 $this->registerPostType($post_subclass);
@@ -57,6 +57,6 @@ class ModelRegistrar
         }
         assert(is_array($settings), 'Expected array of post type settings.');
 
-        register_post_type($post_subclass::TYPE, $settings);
+        \register_post_type($post_subclass::TYPE, $settings);
     }
 }

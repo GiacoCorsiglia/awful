@@ -18,7 +18,7 @@ class TwigTemplateEngine extends TemplateEngine
     /** @var Theme */
     protected $theme;
 
-    /** @var Twig_Environment */
+    /** @var Twig_Environment|null */
     private $twig;
 
     /**
@@ -39,6 +39,9 @@ class TwigTemplateEngine extends TemplateEngine
     /**
      * Gets an instance of twig to render templates with, based on config in the
      * current Theme.
+     *
+     * @psalm-suppress InvalidNullableReturnType
+     * @psalm-suppress UndefinedConstant
      *
      * @return Twig_Environment
      */

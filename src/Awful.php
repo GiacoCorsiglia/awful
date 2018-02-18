@@ -2,6 +2,7 @@
 namespace Awful;
 
 use Awful\Container\Container;
+use Awful\Models\Fields\FieldsRegistrar;
 use Awful\Models\Fields\FieldsResolver;
 use Awful\Models\HasFields;
 use Awful\Models\Model;
@@ -18,7 +19,7 @@ final class Awful
         return $GLOBALS['_awful_instance'] = new self($providers);
     }
 
-    /** @var Router */
+    /** @var Router|null */
     private $router;
 
     /** @var string[] */
@@ -27,21 +28,21 @@ final class Awful
     /** @var string[] */
     private $hooks = [];
 
-    /** @var string */
+    /** @var string|null */
     private $template_engine_class;
 
-    /** @var string */
+    /** @var string|null */
     private $site_class;
 
-    /** @var string */
+    /** @var string|null */
     private $network_class;
 
-    /** @var string */
+    /** @var string|null */
     private $user_class;
 
     private function __construct(array $provider_classes)
     {
-        assert($provider_classes, 'Expected at least one provider class');
+        assert((bool) $provider_classes, 'Expected at least one provider class');
         assert(every($provider_classes, 'is_subclass_of', [Provider::class]), 'Expected array of `Provider` subclasses');
 
         $container = new Container();
@@ -123,7 +124,7 @@ final class Awful
 
     public function registerModels(array $models): self
     {
-        assert(every($models, 'is_subclass', [Model::class]), 'Expected a list of `Model` subclasses');
+        assert(every($models, 'is_subclass_of', [Model::class]), 'Expected a list of `Model` subclasses');
 
         $this->models = array_unique(array_merge($this->models, $models));
 
@@ -150,6 +151,7 @@ final class Awful
 
     public function render(): string
     {
-        return $this->router->getController()->render();
+        // TODO: return $this->router->getController()->render();
+        return '';
     }
 }

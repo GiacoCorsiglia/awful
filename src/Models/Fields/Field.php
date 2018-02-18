@@ -85,10 +85,10 @@ abstract class Field
      * Due to filter registration, this method is not idempotent:  it expects to
      * be called just once, during the ACF registration phase.
      *
-     * @param string        $name     Name of this field as it is saved on its
-     *                                owner.
-     * @param string        $base_key Key of field parent (or post type, etc.).
-     * @param FieldResolver $resolver For resolving sub-fields, if needed.
+     * @param string         $name     Name of this field as it is saved on its
+     *                                 owner.
+     * @param string         $base_key Key of field parent (or post type, etc.).
+     * @param FieldsResolver $resolver For resolving sub-fields, if needed.
      *
      * @return array Field definition for Advanced Custom Fields.
      */

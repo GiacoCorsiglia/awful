@@ -15,7 +15,7 @@ final class FieldsResolver
     /**
      * Cache of resolved fields keyed by class name.
      *
-     * @var (Field[])[]
+     * @var Field[][]
      */
     private $cache = [];
 
@@ -50,7 +50,7 @@ final class FieldsResolver
             $fields = $this->container->call($fields);
         }
 
-        assert(is_array($fields) && !array_filter($fields, function ($field, $name) {
+        assert(is_array($fields) && !array_filter($fields, function ($field, $name): bool {
             return !is_string($name) || !($field instanceof Field);
         }, ARRAY_FILTER_USE_BOTH), "Expected $has_fields_subclass::getFields() to resolve to an associative array of Field instances.");
 

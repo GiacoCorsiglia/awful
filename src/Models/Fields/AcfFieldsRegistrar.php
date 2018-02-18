@@ -32,7 +32,7 @@ class AcfFieldsRegistrar implements FieldsRegistrar
         $this->resolver = $resolver;
 
         // NOTE: This assumes the object will be constructed before 'acf/init'.
-        add_action('acf/init', function () {
+        add_action('acf/init', function (): void {
             $this->has_acf_init = true;
             foreach ($this->deferred as $deferred_args) {
                 $this->register(...$deferred_args);
@@ -73,6 +73,7 @@ class AcfFieldsRegistrar implements FieldsRegistrar
 
         $key = strtr($field_set_class, '\\', '_');
 
+        /** @psalm-suppress UndefinedFunction */
         acf_add_local_field_group([
             'key' => "group_$key",
             'title' => static::FIELD_GROUP_TITLE,

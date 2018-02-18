@@ -12,13 +12,16 @@ trait ModelWithMetaTable
             return;
         }
 
+        /** @var callable */
         $get_meta = 'get_' . $this->getMetaType() . '_meta';
 
-        if (isset($this->site_id)) {
+        if (method_exists($this, 'callInSiteContext')) {
             // For posts and taxonomy terms which use `ModelWithSiteContext`.
+            /** @var array */
             $metadata = $this->callInSiteContext($get_meta, $this->id);
         } else {
             // For users.
+            /** @var array */
             $metadata = $get_meta($this->id);
         }
 

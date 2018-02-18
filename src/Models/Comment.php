@@ -1,9 +1,12 @@
 <?php
 namespace Awful\Models;
 
+use Awful\Models\Traits\ModelOwnedBySite;
+use Awful\Models\Traits\ModelWithMetaTable;
+
 class Comment extends Model
 {
-    use ModelWithMetadata;
+    use ModelWithMetaTable;
     use ModelOwnedBySite;
 
     const WORDPRESS_OBJECT_FIELDS = [
@@ -23,4 +26,19 @@ class Comment extends Model
         'comment_parent' => self::class,
         'user_id' => 'string',
     ];
+
+    final protected function fetchData()
+    {
+        // TODO
+    }
+
+    final protected function getMetaType(): string
+    {
+        return 'comment';
+    }
+
+    final public function exists(): bool
+    {
+        return (bool) get_comment($this->id);
+    }
 }

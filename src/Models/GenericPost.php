@@ -1,8 +1,10 @@
 <?php
 namespace Awful\Models;
 
-use WP_Post;
 use Awful\Exceptions\UnimplementedException;
+use Awful\Models\Traits\ModelOwnedBySite;
+use Awful\Models\Traits\ModelWithMetaTable;
+use WP_Post;
 
 /**
  * Base class for all post types: models that live in the wp_posts table.
@@ -13,7 +15,7 @@ use Awful\Exceptions\UnimplementedException;
 abstract class GenericPost extends Model
 {
     use ModelOwnedBySite;
-    use ModelWithMetadata;
+    use ModelWithMetaTable;
 
     /**
      * Slug of the post type represented by this class.
@@ -76,7 +78,7 @@ abstract class GenericPost extends Model
     /**
      * Cache of the WordPress post object representing this post.
      *
-     * @var \WP_Post
+     * @var \WP_Post|null
      */
     private $wp_post;
 
@@ -85,14 +87,14 @@ abstract class GenericPost extends Model
      *
      * @var string
      */
-    private $status;
+    private $status = '';
 
     /**
      * Cache of the post title.
      *
      * @var string
      */
-    private $title;
+    private $title = '';
 
     /**
      * Cache of the post author user object.
@@ -127,11 +129,11 @@ abstract class GenericPost extends Model
      */
     public function getType(): string
     {
-        return $this->getWpPost()->post_type ?? '';
+        return ($wp_post = $this->getWpPost()) ? $wp_post->post_type : '';
     }
 
     /**
-     * Retrieves the status of the post using `get_post_status()`
+     * Retrieves the status of the post using `get_post_status()`.
      *
      * @return string The status of the post, or an empty string if the post
      *                does not exist.
@@ -196,9 +198,9 @@ abstract class GenericPost extends Model
      */
     final public function getAuthor(): ?User
     {
-        if (!$this->author && $this->exists()) {
-            $author_id = $this->getWpPost()->post_author;
-            $this->author = $author_id ? new User($author_id) : null;
+        if (!$this->author && ($wp_post = $this->getWpPost())) {
+            $author_id = $wp_post->post_author;
+            $this->author = $author_id ? User::id($author_id) : null;
         }
         return $this->author;
     }

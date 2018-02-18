@@ -1,6 +1,9 @@
 <?php
 namespace Awful\Models;
 
+use Awful\Models\Traits\ModelOwnedBySite;
+use Awful\Models\Traits\ModelWithMetaTable;
+
 class TaxonomyTerm extends Model
 {
     use ModelOwnedBySite;
@@ -16,5 +19,11 @@ class TaxonomyTerm extends Model
     final protected function getMetaType(): string
     {
         return 'term';
+    }
+
+    final public function exists(): bool
+    {
+        // Todo
+        return true;
     }
 }

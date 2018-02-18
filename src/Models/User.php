@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Models;
 
+use Awful\Models\Fields\FieldsResolver;
 use Awful\Models\Traits\ModelWithMetaTable;
 
 class User extends Model
@@ -23,8 +24,23 @@ class User extends Model
         'deleted' => 'bool',
     ];
 
+    final protected function __construct(
+        int $id = 0,
+        FieldsResolver $resolver = null
+    ) {
+        $this->id = 0;
+
+        $this->initializeFieldsResolver($resolver);
+    }
+
     final protected function getMetaType(): string
     {
         return 'user';
+    }
+
+    final public function exists(): bool
+    {
+        // TODO
+        return true;
     }
 }

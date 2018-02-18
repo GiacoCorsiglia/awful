@@ -41,7 +41,7 @@ class Site extends Model
 
     final public static function getFields()
     {
-        return function (FieldsResolver $resolver) {
+        return function (FieldsResolver $resolver): array {
             $fields = [];
             foreach (static::getOptionsPages() as $options_page) {
                 $fields += $resolver->resolve($options_page);

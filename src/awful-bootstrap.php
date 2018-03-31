@@ -1,0 +1,5 @@
+<?php
+
+Awful::bootstrap([
+
+]);

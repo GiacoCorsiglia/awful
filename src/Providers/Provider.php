@@ -7,7 +7,7 @@ use Awful\Container\Container;
  * Providers register custom post types, taxonomies, etc. with Awful, and can
  * provide custom dependency injection bindings.
  */
-abstract class Provider implements ProviderInterface
+abstract class Provider
 {
     public function register(Container $container): void
     {
@@ -18,7 +18,7 @@ abstract class Provider implements ProviderInterface
         return [];
     }
 
-    public function command(): array
+    public function commands(): array
     {
         return [];
     }

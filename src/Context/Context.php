@@ -1,18 +1,20 @@
 <?php
-namespace Awful;
+namespace Awful\Context;
 
+use Awful\Awful;
 use Awful\Models\Network;
 use Awful\Models\Site;
+use Awful\Models\User;
 
 class Context
 {
-    /** @var Network */
+    /** @var Network|null */
     private $network;
 
-    /** @var Site */
+    /** @var Site|null */
     private $site;
 
-    /** @var User */
+    /** @var User|null */
     private $user;
 
     public function __construct(
@@ -32,10 +34,10 @@ class Context
 
         // If Awful is injected, assume it's a real request.
         $awful->registerContextCallbacks(
-            function (Site $site) {
+            function (Site $site): void {
                 $this->site = $site;
             },
-            function (User $site) {
+            function (User $user): void {
                 $this->user = $user;
             }
         );

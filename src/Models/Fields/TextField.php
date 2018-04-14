@@ -8,8 +8,6 @@ use Awful\Models\HasFields;
  */
 class TextField extends Field
 {
-    const ACF_TYPE = 'text';
-
     public function forPhp($value, HasFields $owner, string $field_name): string
     {
         if (is_array($value)) {

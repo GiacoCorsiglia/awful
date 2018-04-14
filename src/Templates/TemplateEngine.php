@@ -4,7 +4,7 @@ namespace Awful\Templates;
 /**
  * Wrapper for any template engine.
  */
-abstract class TemplateEngine
+interface TemplateEngine
 {
     /**
      * Renders a template against the given context.
@@ -15,5 +15,5 @@ abstract class TemplateEngine
      *
      * @return string Rendered output.
      */
-    abstract public function render(string $template, array $context): string;
+    public function render(string $template, array $context): string;
 }

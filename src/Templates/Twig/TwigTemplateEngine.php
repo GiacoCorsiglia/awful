@@ -10,7 +10,7 @@ use Twig_Loader_Filesystem;
 /**
  * Simple helper for rendering templates using Twig.
  */
-class TwigTemplateEngine extends TemplateEngine
+class TwigTemplateEngine implements TemplateEngine
 {
     /** @var Container */
     protected $container;

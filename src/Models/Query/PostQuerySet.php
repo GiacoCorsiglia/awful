@@ -22,7 +22,7 @@ class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
     public function __construct(array $args = [])
     {
-        $this->args = $args + $this->getDefaults();
+        $this->args = $args + $this->defaults();
     }
 
     public function getIterator(): ArrayIterator
@@ -181,7 +181,7 @@ class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         }
     }
 
-    protected function getDefaults(): array
+    protected function defaults(): array
     {
         return [
             'post_type' => 'any',

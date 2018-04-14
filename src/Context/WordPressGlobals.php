@@ -12,28 +12,51 @@ use WP_Widget_Factory;
 
 class WordPressGlobals
 {
-    /** @var WP_Embed */
+    /**
+     * @var WP_Embed
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $embed;
 
-    /** @var WP_Query */
+    /**
+     * @var WP_Query
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $query;
 
-    /** @var WP_Query */
+    /** @var WP_Rewrite
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $rewrite;
 
-    /** @var WP */
+    /**
+     * @var WP
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $wp;
 
-    /** @var WP_Widget_Factory */
+    /**
+     * @var WP_Widget_Factory
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $widget_factory;
 
-    /** @var WP_Roles */
+    /**
+     * @var WP_Roles
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $roles;
 
-    /** @var WP_Locale */
+    /**
+     * @var WP_Locale
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $locale;
 
-    /** @var WP_Locale_Switcher */
+    /**
+     * @var WP_Locale_Switcher
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $locale_switcher;
 
     public function __construct(array $globals = null)
@@ -119,13 +142,13 @@ class WordPressGlobals
      */
     private function listen(): void
     {
-        add_action('mu_plugins_loaded', function () {
+        add_action('mu_plugins_loaded', function (): void {
             global $wp_embed;
 
             $this->embed = $wp_embed;
         }, 1);
 
-        add_action('setup_theme', function () {
+        add_action('setup_theme', function (): void {
             global $wp_query;
             global $wp_rewrite;
             global $wp;
@@ -140,7 +163,7 @@ class WordPressGlobals
         }, 1);
 
         // This should run _before_ the listener in Awful.
-        add_action('after_setup_theme', function () {
+        add_action('after_setup_theme', function (): void {
             global $wp_locale;
             global $wp_locale_switcher;
 

@@ -12,7 +12,6 @@ use ReflectionException;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
-use TypeError;
 
 /**
  * Dependency injection container which manages singletons.
@@ -79,12 +78,8 @@ final class Container implements ContainerInterface
      *
      * @return self $this
      */
-    public function register($instance, string ...$aliases): self
+    public function register(object $instance, string ...$aliases): self
     {
-        if (!is_object($instance)) {
-            throw new TypeError('$instance must be an object');
-        }
-
         $class = get_class($instance);
 
         if (isset($this->instances[$class])) {

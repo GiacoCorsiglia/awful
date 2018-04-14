@@ -73,7 +73,6 @@ return PhpCsFixer\Config::create()
         'phpdoc_types' => true,
         'phpdoc_var_without_name' => true,
         'return_type_declaration' => true,
-        'self_accessor' => true,
         'semicolon_after_instruction' => true,
         'short_scalar_cast' => true,
         'single_line_comment_style' => true,

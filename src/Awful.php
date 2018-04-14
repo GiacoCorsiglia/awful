@@ -7,20 +7,19 @@ use Awful\Context\WordPressGlobals;
 use Awful\Models\Network;
 use Awful\Models\Site;
 use Awful\Models\User;
-use Awful\Providers\ProviderInterface;
+use Awful\Providers\Provider;
+use Awful\Theme\Theme;
+use WP_CLI;
 
 final class Awful
 {
-    public static function bootstrap(array $providers)
+    public static function bootstrap(array $providers): void
     {
         $GLOBALS['_awful_instance'] = new self($providers);
     }
 
-    /** @var \Container\Container */
+    /** @var Container */
     private $container;
-
-    /** @var Context */
-    private $context;
 
     /** @var string[] */
     private $themes = [];
@@ -31,13 +30,22 @@ final class Awful
     /** @var string[] */
     private $commands = [];
 
-    /** @var string */
+    /**
+     * @var string
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $userClass;
 
-    /** @var callable */
+    /**
+     * @var callable
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $setSiteCallback;
 
-    /** @var callable */
+    /**
+     * @var callable
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private $setUserCallback;
 
     /**
@@ -48,7 +56,7 @@ final class Awful
     private function __construct(array $providers)
     {
         assert((bool) $providers, 'Expected at least one provider');
-        assert(every($providers, 'is_implementation', [ProviderInterface::class]), 'Expected array of `ProviderInterface` instances');
+        assert(every($providers, 'is_instanceof', [Provider::class]), 'Expected array of `ProviderInterface` instances');
 
         //
         // Initialize container.
@@ -62,8 +70,8 @@ final class Awful
 
         foreach ($providers as $provider) {
             $provider->register($this->container);
-            array_push($this->plugins, ...$provider->plugins());
-            array_push($this->commands, ...$provider->commands());
+            $this->plugins = array_merge($this->plugins, $provider->plugins());
+            $this->commands = array_merge($this->commands, $provider->commands());
             $this->themes += $provider->themes();
         }
 
@@ -71,10 +79,16 @@ final class Awful
         // Initialize global context.
         //
 
-        $network = is_multisite() ? new Network(get_network()) : null;
+        $this->container->register($GLOBALS['wpdb']);
 
-        $this->context = new Context($this, $network);
-        $this->container->register($this->context);
+        /**
+         * `get_network()` will always return an object when `is_multisite()`.
+         * @psalm-suppress PossiblyNullPropertyFetch
+         */
+        $network = is_multisite() ? new Network(get_network()->id) : null;
+
+        $context = new Context($this, $network);
+        $this->container->register($context);
 
         $this->container->register(new WordPressGlobals());
 
@@ -84,8 +98,8 @@ final class Awful
 
         // Awful is run as a mu-plugin, so it's appropriate to run these here.
         $this->runPlugins();
-        add_action('after_setup_theme', [$this, 'setupTheme'], 2);
-        add_action('set_current_user', [$this, 'setUser'], 1);
+        // add_action('after_setup_theme', [$this, 'setupTheme'], 2);
+        // add_action('set_current_user', [$this, 'setUser'], 1);
     }
 
     /**
@@ -99,7 +113,7 @@ final class Awful
 
         if (defined('WP_CLI') && WP_CLI) {
             foreach ($this->commands as $command) {
-                $command::register($this->container->get($command));
+                WP_CLI::add_command($command::commandName(), $this->container->get($command), $command::registrationArguments());
             }
         }
     }
@@ -123,6 +137,9 @@ final class Awful
         ($this->setSiteCallback)(new $siteClass(get_current_blog_id() ?: 0));
 
         $this->userClass = $theme->userClass() ?: User::class;
+        if (did_action('set_current_user')) {
+            $this->setUser();
+        }
 
         foreach ($theme->hooks() as $hook) {
             $this->container->get($hook);
@@ -138,7 +155,12 @@ final class Awful
      */
     public function setUser(): void
     {
+        $userClass = $this->userClass;
+        if (!$userClass) {
+            return;
+        }
         ($this->setUserCallback)(new $userClass(get_current_user_id()));
+        remove_action('set_current_user', [$this, 'setUser'], 1);
     }
 
     /**

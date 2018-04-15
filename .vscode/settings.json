@@ -14,5 +14,5 @@
     "unserialization",
     "unserialized"
   ],
-  "php.validate.executablePath": "/usr/local/opt/php71/bin/php",
+  "php.validate.executablePath": "/usr/local/opt/php@7.2/bin/php",
 }

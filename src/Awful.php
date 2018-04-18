@@ -19,21 +19,19 @@ final class Awful
      * @var string[]
      * @psalm-var array<string, class-string>
      */
-    private static $blockClassMap = [];
+    private static $blockClassMap;
 
-    public static function bootstrap(array $providers): void
+    public static function bootstrap(array $providers, array $blockClassMap): void
     {
         $GLOBALS['_awful_instance'] = new self($providers);
+        self::$blockClassMap = $blockClassMap;
     }
 
-    public static function registerBlockTypes(array $blockClassMap): void
-    {
-        assert(!array_intersect_key(self::$blockClassMap, $blockClassMap));
-        assert(every($blockClassMap, 'class_exists'));
-
-        self::$blockClassMap += $blockClassMap;
-    }
-
+    /**
+     * @param  string $type
+     * @return string
+     * @psalm-return class-string
+     */
     public static function blockClassForType(string $type): string
     {
         if (!isset(self::$blockClassMap[$type])) {
@@ -43,6 +41,12 @@ final class Awful
         return self::$blockClassMap[$type];
     }
 
+    /**
+     * @param string $type
+     * @param string $class
+     * @psalm-param class-string $class
+     * @return string
+     */
     public static function blockTypeForClass(string $class): string
     {
         foreach (self::$blockClassMap as $type => $class) {

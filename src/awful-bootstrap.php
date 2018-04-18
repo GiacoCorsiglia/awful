@@ -7,5 +7,8 @@ use Awful\Awful;
 use Awful\Providers\CoreProvider;
 
 Awful::bootstrap([
+    // Providers.
     new CoreProvider(),
+], [
+    // Block types.
 ]);

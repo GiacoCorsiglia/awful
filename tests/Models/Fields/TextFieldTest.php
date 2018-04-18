@@ -2,7 +2,7 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\HasFields;
+use Awful\Models\BlockOwnerModel;
 
 class TextFieldTest extends AwfulTestCase
 {
@@ -22,7 +22,7 @@ class TextFieldTest extends AwfulTestCase
     {
         $field = new TextField();
 
-        $owner = $this->getMockForAbstractClass(HasFields::class);
+        $owner = $this->getMockForAbstractClass(BlockOwnerModel::class);
 
         $this->assertSame('', $field->forPhp('', $owner, ''));
         $this->assertSame('foo', $field->forPhp('foo', $owner, ''));

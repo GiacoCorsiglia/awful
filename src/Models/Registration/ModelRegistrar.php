@@ -1,7 +1,8 @@
 <?php
-namespace Awful\Models;
+namespace Awful\Models\Registration;
 
 use Awful\Container\Container;
+use Awful\Models\GenericPost;
 
 /**
  * Utility class.

@@ -1,20 +1,21 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Models\Fields\FieldsResolver;
+use Awful\Models\Query\PostQuerySet;
+use Awful\Models\Traits\BlockOwnerTrait;
 use Awful\Models\Traits\ModelWithSiteContext;
+use WP_Site;
 
-class Site extends Model
+class Site extends Model implements BlockOwnerModel, WordPressModel
 {
     use ModelWithSiteContext;
-
-    protected const FIELD_NAME_PREFIX = 'options_';
+    use BlockOwnerTrait;
 
     /**
      * Only apply when is_multisite().
      * From the wp_blogs table.
      */
-    protected const WORDPRESS_OBJECT_FIELDS = [
+    protected const WP_OBJECT_FIELDS = [
         'blog_id' => 'int',
         'site_id' => 'int',
         'domain' => 'string',
@@ -34,62 +35,106 @@ class Site extends Model
      *
      * @return string[]
      */
-    public static function getOptionsPages(): array
+    public static function optionsPages(): array
     {
         return [];
     }
 
-    final public static function getFields()
-    {
-        return function (FieldsResolver $resolver): array {
-            $fields = [];
-            foreach (static::getOptionsPages() as $options_page) {
-                $fields += $resolver->resolve($options_page);
-            }
-            return $fields;
-        };
-    }
+    /** @var int */
+    private $id;
+
+    /** @var WP_Site|null */
+    private $wpSite;
 
     protected function __construct(
         int $id = 0,
-        FieldsResolver $resolver = null
+        BlockSet $blockSet = null
     ) {
         assert(is_multisite() || $id === 0, 'Expected `$id` of 0 when non-multisite');
 
-        $this->id = $this->site_id = $id;
+        $this->id = $this->siteId = $id;
+        $this->initializeBlockSet($blockSet ?: new BlockSet([]));
+    }
 
-        $this->initializeFieldsResolver($resolver);
+    final public function id(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * Fetches the WordPress object representing this site, if one exists.
+     *
+     * Will always return `null` if this isn't a multisite install.
+     *
+     * @return WP_Site|null The `WP_Term` object corresponding with $this->id,
+     *                      or `null` if none exists.
+     */
+    final public function wpSite(): ?WP_Site
+    {
+        if ($this->id && !$this->wpSite) {
+            // `$this->id === 0` always when `!is_multisite()`.
+            $this->wpSite = get_site($this->id);
+        }
+        return $this->wpSite;
+    }
+
+    final public function wpObject(): ?object
+    {
+        return $this->wpSite();
     }
 
     final public function exists(): bool
     {
         // If not multisite, this always represents the one-and-only global
         // site, which is always "saved".
-        return !is_multisite() || ($this->id && (bool) get_site($this->id));
+        return !is_multisite() || ($this->id && $this->wpSite() !== null);
     }
 
-    final protected function fetchData(): void
+    /**
+     * Runs `get_option()` for `$this` site.
+     *
+     * This is also equivalent to `get_blog_option()`.
+     *
+     * @param  string $option
+     * @param  mixed  $default
+     * @return mixed
+     */
+    final public function getOption(string $option, $default = false)
     {
-        global $wpdb;
+        assert((bool) $option, 'Expected non-empty option');
 
-        // if ($cached = wp_cache_get(self::cacheKey($this->id))) {
-        //     $this->data = $cached;
-        // }
+        return $this->callInSiteContext('get_option', $option, $default);
+    }
 
-        $result = $wpdb->get_results(
-            "SELECT option_name, option_value FROM $wpdb->options WHERE option_name LIKE '"
-            . static::FIELD_NAME_PREFIX
-            . "%'"
-        );
+    /**
+     * Runs `update_option()` (or `delete_option()` if `$value` is `null`) for
+     * `$this` site.
+     *
+     * This is also equivalent to `update_blog_option()`.
+     *
+     * @param  string $option
+     * @param  mixed  $value
+     * @param  bool   $autoload
+     * @return void
+     */
+    final public function updateOption(string $option, $value, bool $autoload = true): void
+    {
+        assert((bool) $option, 'Expected non-empty option');
 
-        $l = strlen(self::FIELD_NAME_PREFIX);
-        $this->data = [];
-        foreach ($result as $row) {
-            // Remove the 'options_' prefix.  Ideally would do this with SUBSTR() in SQL
-            // but the object WordPress returns is kinda funny and it probably doesn't matter.
-            $this->data[substr($row->option_name, $l)] = $row->option_value;
+        if ($value === null) {
+            $this->callInSiteContext('delete_option', $option);
+        } else {
+            $this->callInSiteContext('update_option', $option, $value, $autoload);
         }
+    }
 
-        // wp_cache_set(self::cacheKey($this->id), $this->data);
+    public function posts(): PostQuerySet
+    {
+        return new PostQuerySet($this);
+    }
+
+    protected function rootBlockType(): string
+    {
+        return 'Awful.SiteBlockType';
     }
 }

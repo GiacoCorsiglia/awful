@@ -2,8 +2,7 @@
 namespace Awful\Models\Fields;
 
 use Awful\Models\GenericPost;
-use Awful\Models\HasFields;
-use Awful\Models\SubModel;
+use Awful\Models\Model;
 
 /**
  * Allows saving a reference to another post.
@@ -12,11 +11,8 @@ class PostObjectField extends Field
 {
     const ACF_TYPE = 'post_object';
 
-    public function forPhp($value, HasFields $owner, string $field_name)
+    public function forPhp($value, Model $owner, string $field_name)
     {
-        if ($owner instanceof SubModel) {
-            $owner = $owner->getDataSource();
-        }
         $site_id = $owner && method_exists($owner, 'getSiteId') ? $owner->getSiteId() : 0;
 
         if (empty($this->args['multiple'])) {

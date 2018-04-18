@@ -1,15 +1,18 @@
 <?php
 namespace Awful\Models;
 
+use Awful\Models\Traits\BlockOwnerTrait;
 use Awful\Models\Traits\ModelOwnedBySite;
 use Awful\Models\Traits\ModelWithMetaTable;
+use WP_Comment;
 
-class Comment extends Model
+class Comment extends Model implements WordPressModel, BlockOwnerModel
 {
     use ModelWithMetaTable;
     use ModelOwnedBySite;
+    use BlockOwnerTrait;
 
-    protected const WORDPRESS_OBJECT_FIELDS = [
+    protected const WP_OBJECT_FIELDS = [
         'comment_ID' => 'int',
         'comment_post_ID' => 'int',
         'comment_author' => 'string',
@@ -27,18 +30,41 @@ class Comment extends Model
         'user_id' => 'string',
     ];
 
-    final protected function fetchData(): void
+    /** @var WP_Comment|null */
+    private $wpComment;
+
+    /**
+     * Fetches the WordPress object representing this comment, if one exists.
+     *
+     * @return WP_Comment|null The `WP_Comment` object corresponding with $this->id,
+     *                         or `null` if none exists.
+     */
+    final public function wpComment(): ?WP_Comment
     {
-        // TODO
+        if ($this->id && !$this->wpComment) {
+            $this->wpComment = $this->callInSiteContext('get_comment', $this->id);
+        }
+        return $this->wpComment;
     }
 
-    final protected function getMetaType(): string
+    final public function wpObject(): ?object
     {
-        return 'comment';
+        return $this->wpComment();
     }
 
     final public function exists(): bool
     {
-        return (bool) get_comment($this->id);
+        return $this->id && $this->wpComment() !== null;
+    }
+
+    final protected function metaType(): string
+    {
+        return 'comment';
+    }
+
+    final protected function rootBlockType(): string
+    {
+        // TODO
+        return '';
     }
 }

@@ -1,9 +1,10 @@
 <?php
-namespace Awful\Query;
+namespace Awful\Models\Query;
 
 use ArrayAccess;
 use ArrayIterator;
 use Awful\Exceptions\ImmutabilityException;
+use Awful\Models\Site;
 use Countable;
 use IteratorAggregate;
 use WP_Post;
@@ -11,17 +12,31 @@ use WP_Query;
 
 class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 {
+    /** @var Site */
+    protected $site;
+
     /** @var array */
     protected $args;
 
-    /** @var \WP_Query */
+    /**
+     * @var \WP_Query
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     protected $wp_query;
+
+    /**
+     * @var array
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    protected $posts;
 
     /** @var bool */
     protected $has_fetched = false;
 
-    public function __construct(array $args = [])
+    public function __construct(Site $site, array $args = [])
     {
+        $this->site = $site;
+
         $this->args = $args + $this->defaults();
     }
 
@@ -67,7 +82,7 @@ class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         throw new ImmutabilityException();
     }
 
-    public function exists(): bool
+    public function any(): bool
     {
         return (bool) $this->count();
     }
@@ -144,12 +159,12 @@ class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         ]);
     }
 
-    public function metaQuery(Query $meta_query): self
+    public function metaQuery(MetaQuery $meta_query): self
     {
         return $this->extend(['meta_query' => $meta_query->toArray()]);
     }
 
-    public function taxonomyQuery(Query $tax_query): self
+    public function taxonomyQuery(TaxonomyQuery $tax_query): self
     {
         return $this->extend(['tax_query' => $tax_query->toArray()]);
     }
@@ -179,11 +194,13 @@ class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         foreach ($this->wp_query->posts as $wp_post) {
             $this->posts[$wp_post->ID] = $wp_post;
         }
+        return $this->wp_query;
     }
 
     protected function defaults(): array
     {
         return [
+            // SEE: https://codex.wordpress.org/Class_Reference/WP_Query#Type_Parameters
             'post_type' => 'any',
         ];
     }
@@ -193,6 +210,6 @@ class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         if ($this->has_fetched) {
             throw new \BadMethodCallException('Cannot mutate PostQuerySet after fetch.');
         }
-        return new static($args + $this->args);
+        return new static($this->site, $args + $this->args);
     }
 }

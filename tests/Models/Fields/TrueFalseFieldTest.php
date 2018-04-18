@@ -2,7 +2,7 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\HasFields;
+use Awful\Models\BlockOwnerModel;
 
 class TrueFalseFieldTest extends AwfulTestCase
 {
@@ -21,7 +21,7 @@ class TrueFalseFieldTest extends AwfulTestCase
     public function testForPhp()
     {
         $field = new TrueFalseField();
-        $owner = $this->getMockForAbstractClass(HasFields::class);
+        $owner = $this->getMockForAbstractClass(BlockOwnerModel::class);
 
         $this->assertSame(false, $field->forPhp(false, $owner, ''));
         $this->assertSame(false, $field->forPhp(null, $owner, ''));

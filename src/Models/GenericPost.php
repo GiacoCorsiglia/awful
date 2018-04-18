@@ -2,6 +2,7 @@
 namespace Awful\Models;
 
 use Awful\Exceptions\UnimplementedException;
+use Awful\Models\Traits\BlockOwnerTrait;
 use Awful\Models\Traits\ModelOwnedBySite;
 use Awful\Models\Traits\ModelWithMetaTable;
 use WP_Post;
@@ -12,10 +13,11 @@ use WP_Post;
  * Implements getters for the default post fields along with the base
  * functionality for loading postmeta.
  */
-abstract class GenericPost extends Model
+class GenericPost extends Model implements BlockOwnerModel, WordPressModel
 {
     use ModelOwnedBySite;
     use ModelWithMetaTable;
+    use BlockOwnerTrait;
 
     /**
      * Slug of the post type represented by this class.
@@ -32,7 +34,7 @@ abstract class GenericPost extends Model
      */
     public const IS_BUILTIN = false;
 
-    protected const WORDPRESS_OBJECT_FIELDS = [
+    protected const WP_OBJECT_FIELDS = [
         'ID' => 'int',
         'post_author' => User::class,
         'post_date' => 'date',
@@ -78,9 +80,9 @@ abstract class GenericPost extends Model
     /**
      * Cache of the WordPress post object representing this post.
      *
-     * @var \WP_Post|null
+     * @var WP_Post|null
      */
-    private $wp_post;
+    private $wpPost;
 
     /**
      * Cache of the post status.
@@ -103,23 +105,28 @@ abstract class GenericPost extends Model
      */
     private $author;
 
-    final public function exists(): bool
-    {
-        return (bool) $this->getWpPost();
-    }
-
     /**
      * Fetches the WordPress object representing this post, if one exists.
      *
      * @return WP_Post|null The `WP_Post` object corresponding with $this->id,
      *                      or `null` if none exists.
      */
-    final public function getWpPost(): ?WP_Post
+    final public function wpPost(): ?WP_Post
     {
-        if (!$this->wp_post && $this->id) {
-            $this->wp_post = $this->callInSiteContext('get_post', $this->id) ?: null;
+        if ($this->id && !$this->wpPost) {
+            $this->wpPost = $this->callInSiteContext('get_post', $this->id) ?: null;
         }
-        return $this->wp_post;
+        return $this->wpPost;
+    }
+
+    final public function wpObject(): ?object
+    {
+        return $this->wpPost();
+    }
+
+    final public function exists(): bool
+    {
+        return $this->id && $this->wpPost() !== null;
     }
 
     /**
@@ -127,9 +134,9 @@ abstract class GenericPost extends Model
      *
      * @return string The post type, or an empty string if no post exists.
      */
-    public function getType(): string
+    public function type(): string
     {
-        return ($wp_post = $this->getWpPost()) ? $wp_post->post_type : '';
+        return ($wpPost = $this->wpPost()) ? $wpPost->post_type : '';
     }
 
     /**
@@ -138,7 +145,7 @@ abstract class GenericPost extends Model
      * @return string The status of the post, or an empty string if the post
      *                does not exist.
      */
-    final public function getStatus(): string
+    final public function status(): string
     {
         if ($this->status === null) {
             $this->status = $this->id !== 0
@@ -153,7 +160,7 @@ abstract class GenericPost extends Model
      *
      * @return string The title of this post.
      */
-    final public function getTitle(): string
+    final public function title(): string
     {
         if ($this->title === null) {
             $this->title = $this->id ? ($this->callInSiteContext('get_the_title', $this->id) ?: '') : '';
@@ -171,7 +178,7 @@ abstract class GenericPost extends Model
      *
      * @return string Formatted date string
      */
-    final public function getDate(string $format = ''): string
+    final public function date(string $format = ''): string
     {
         return $this->id ? ($this->callInSiteContext('get_the_date', $format, $this->id) ?: '') : '';
     }
@@ -185,7 +192,7 @@ abstract class GenericPost extends Model
      *
      * @return string Formatted date string
      */
-    final public function getModifiedDate(string $format = ''): string
+    final public function modifiedDate(string $format = ''): string
     {
         return $this->id ? ($this->callInSiteContext('get_the_modified_date', $format, $this->id) ?: '') : '';
     }
@@ -196,11 +203,11 @@ abstract class GenericPost extends Model
      * @return User|null The post's author, or null if the post doesn't exist or
      *                   does not have an author.
      */
-    final public function getAuthor(): ?User
+    final public function author(): ?User
     {
-        if (!$this->author && ($wp_post = $this->getWpPost())) {
-            $author_id = $wp_post->post_author;
-            $this->author = $author_id ? User::id($author_id) : null;
+        if (!$this->author && ($wpPost = $this->wpPost())) {
+            $authorId = $wpPost->post_author;
+            $this->author = $authorId ? new User($authorId) : null;
         }
         return $this->author;
     }
@@ -210,13 +217,18 @@ abstract class GenericPost extends Model
      *
      * @return string The post excerpt saved on the post, if any.
      */
-    final public function getExcerpt(): string
+    final public function excerpt(): string
     {
         return $this->id ? ($this->callInSiteContext('get_the_excerpt', $this->id) ?: '') : '';
     }
 
-    final protected function getMetaType(): string
+    final protected function metaType(): string
     {
         return 'post';
+    }
+
+    protected function rootBlockType(): string
+    {
+        return 'Awful.PostTypes.' . static::TYPE;
     }
 }

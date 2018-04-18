@@ -1,134 +1,126 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Models\Fields\FieldsResolver;
+use Awful\Context\Context;
+use Awful\Models\Fields\Field;
 
-/**
- * Base class for a objects which represent actual database rows.
- */
-abstract class Model extends HasFields
+abstract class Model
 {
+    /** @var Context */
+    private static $context;
+
+    /** @var Field[][] */
+    private static $allFields = [];
+
+    final public static function initializeContext(Context $context): void
+    {
+        self::$context = $context;
+        // Reset the set of all fields if context changes (for testing).
+        self::$allFields = [];
+    }
+
     /**
-     * One of 'post', 'user', 'comment, 'term', 'site', or 'network'.
-     * @var string
+     * Undocumented function.
+     *
+     * @param  Context $context
+     * @return Field[]
+     * @psalm-return array<string, Field>
      */
-    protected const OBJECT_TYPE = '';
+    public static function fields(Context $context): array
+    {
+        return [];
+    }
 
-    protected const WORDPRESS_OBJECT_FIELDS = [];
+    private static function field(string $key): Field
+    {
+        if (!isset(self::$allFields[static::class])) {
+            self::$allFields[static::class] = static::fields(self::$context);
+        }
+        return self::$allFields[static::class][$key];
+    }
+
+    /** @var array */
+    private $data;
+
+    /** @var array */
+    private $modifiedData = [];
+
+    /** @var array */
+    private $formattedDataCache = [];
 
     /**
-     * Cache of instances per object type per id.
-     * @var self[][]
+     * Gets a field value.
+     *
+     * @param  string $key
+     * @return mixed
      */
-    private static $instances = [];
-
-    /**
-     * Factory function to get an instance of this model with the given ID.
-     *
-     * Will return always the same instance for the same id.
-     *
-     * @psalm-suppress MoreSpecificReturnType
-     * @psalm-suppress LessSpecificReturnStatement
-     *
-     * @param int            $id
-     * @param int            $site_id
-     * @param FieldsResolver $resolver
-     *
-     * @return static
-     */
-    final public static function id(
-        int $id,
-        int $site_id = 0,
-        FieldsResolver $resolver = null
-    ): self {
-        $object_type = static::OBJECT_TYPE;
-
-        if (isset(self::$instances[$object_type][$id])) {
-            return self::$instances[$object_type][$id];
+    final public function get(string $key)
+    {
+        if (isset($this->formattedDataCache[$key])) {
+            return $this->formattedDataCache[$key];
         }
 
-        if (!isset(self::$instances[$object_type])) {
-            self::$instances[$object_type] = [];
+        $value = $this->getRaw($key);
+        $field = static::field($key);
+        return $this->formattedDataCache[$key] = $field->forPhp($value, $this, $key);
+    }
+
+    /**
+     * Gets a raw field value.
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    final public function getRaw(string $key)
+    {
+        if ($this->modifiedData && array_key_exists($key, $this->modifiedData)) {
+            // Have to use `array_key_exists()` to catch values that were set
+            // to `null`.
+            return $this->modifiedData[$key];
         }
-
-        $class = static::getClassForId($id);
-        return self::$instances[$object_type][$id] = new $class($id, $site_id, $resolver);
+        return $this->data[$key] ?? null;
     }
 
     /**
-     * @psalm-suppress TooManyArguments
+     * Sets raw field values.
      *
-     * @return self
+     * @param array $data
+     * @psalm-param array<string, mixed> $data
+     * @return $this
      */
-    final public static function create(): self
+    final public function set(array $data): self
     {
-        return new static(0);
-    }
-
-    /**
-     * Allows subclasses to return the correct class to be instantiated for an
-     * object with the given ID.
-     *
-     * @param int $id
-     *
-     * @return string
-     */
-    protected static function getClassForId(int $id): string
-    {
-        return static::class;
-    }
-
-    /**
-     * The primary key of this object in the database.
-     *
-     * @var int
-     */
-    protected $id = 0;
-
-    /** @var mixed[] */
-    protected $data = [];
-
-    /** @var bool */
-    private $has_fetched_data = false;
-
-    /**
-     * Gets the primary key of this object in the database.
-     *
-     * An unsaved object may have an ID of 0, but may also have a positive ID
-     *
-     * @return int The primary key.
-     */
-    final public function getId(): int
-    {
-        return $this->id;
-    }
-
-    final public function getDataSource(): HasFields
-    {
+        // TODO: Consider validation at this point.
+        $this->modifiedData = $data + $this->modifiedData;
+        if (!$this->formattedDataCache) {
+            // Don't bother clearing the cache if it's totally empty.
+            return $this;
+        }
+        // Clear the formatted data cache.
+        foreach ($data as $key => $_) {
+            if (isset($this->formattedDataCache[$key])) {
+                unset($this->formattedDataCache[$key]);
+            }
+        }
         return $this;
     }
 
-    final public function getDataPrefix(): string
+    final public function isModified(): bool
     {
-        return '';
+        return (bool) $this->modifiedData;
     }
 
-    public function getRawFieldValue(string $key)
+    public function clean(): array
     {
-        if (!$this->has_fetched_data) {
-            $this->fetchData();
-            $this->has_fetched_data = true;
+        $fields = static::fields(self::$context);
+        $data = $this->modifiedData + $this->data;
+
+        $cleanedData = [];
+        foreach ($fields as $key => $field) {
+            $cleanedData[$key] = $field->clean($data[$key] ?? null);
         }
 
-        $value = $this->data[$key] ?? null;
-
-        if ($value) {
-            // TODO: Consider caching this.  On the other hand, the filtered
-            // value will already be cached.
-            $value = maybe_unserialize($value);
-        }
-
-        return $value;
+        return $cleanedData;
     }
 
     /**
@@ -139,12 +131,9 @@ abstract class Model extends HasFields
      */
     abstract public function exists(): bool;
 
-    /**
-     * Initializes `$this->data` from the database.
-     *
-     * Only to be called once in the life-cycle of an instance.
-     *
-     * @return void
-     */
-    abstract protected function fetchData(): void;
+    protected function initializeData(array $data): void
+    {
+        assert($this->data === null, 'Cannot initialize data more than once');
+        $this->data = $data;
+    }
 }

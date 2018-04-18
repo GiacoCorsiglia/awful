@@ -1,20 +1,38 @@
 <?php
 namespace Awful\Models\Traits;
 
-use Awful\Models\Fields\FieldsResolver;
+use Awful\Models\BlockSet;
+use Awful\Models\Site;
 
 trait ModelOwnedBySite
 {
     use ModelWithSiteContext;
+    use BlockOwner;
 
-    protected function __construct(
+    /** @var int */
+    private $id;
+
+    /** @var Site */
+    private $site;
+
+    public function __construct(
+        Site $site,
         int $id = 0,
-        int $site_id = 0,
-        FieldsResolver $resolver = null
+        BlockSet $blockSet = null
     ) {
+        $this->site = $site;
+        $this->siteId = $site->id();
         $this->id = $id;
-        $this->site_id = is_multisite() ? $site_id : 0;
+        $this->initializeBlockSet($blockSet ?: new BlockSet([]));
+    }
 
-        $this->initializeFieldsResolver($resolver);
+    final public function id(): int
+    {
+        return $this->id;
+    }
+
+    final public function site(): Site
+    {
+        return $this->site;
     }
 }

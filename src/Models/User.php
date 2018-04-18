@@ -1,14 +1,16 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Models\Fields\FieldsResolver;
+use Awful\Models\Traits\BlockOwnerTrait;
 use Awful\Models\Traits\ModelWithMetaTable;
+use WP_User;
 
-class User extends Model
+class User extends Model implements BlockOwnerModel, WordPressModel
 {
     use ModelWithMetaTable;
+    use BlockOwnerTrait;
 
-    protected const WORDPRESS_OBJECT_FIELDS = [
+    protected const WP_OBJECT_FIELDS = [
         'ID' => 'int',
         'user_login' => 'string',
         'user_pass' => 'string/password',
@@ -24,23 +26,54 @@ class User extends Model
         'deleted' => 'bool',
     ];
 
-    final protected function __construct(
-        int $id = 0,
-        FieldsResolver $resolver = null
-    ) {
-        $this->id = 0;
+    /** @var int */
+    private $id;
 
-        $this->initializeFieldsResolver($resolver);
+    /** @var WP_User|null */
+    private $wpUser;
+
+    final public function __construct(
+        int $id = 0
+    ) {
+        $this->id = $id;
     }
 
-    final protected function getMetaType(): string
+    /**
+     * Fetches the WordPress object representing this user, if one exists.
+     *
+     * @return WP_User|null The `WP_User` object corresponding with $this->id,
+     *                      or `null` if none exists.
+     */
+    final public function wpUser(): ?WP_User
     {
-        return 'user';
+        if ($this->id && !$this->wpUser) {
+            $this->wpUser = get_user_by('id', $this->id) ?: null;
+        }
+        return $this->wpUser;
+    }
+
+    final public function wpObject(): ?object
+    {
+        return $this->wpUser();
     }
 
     final public function exists(): bool
     {
-        // TODO
-        return true;
+        return $this->id && $this->wpUser() !== null;
+    }
+
+    final public function id(): int
+    {
+        return $this->id;
+    }
+
+    final protected function metaType(): string
+    {
+        return 'user';
+    }
+
+    final protected function rootBlockType(): string
+    {
+        return 'Awful.Blocks.Root.User';
     }
 }

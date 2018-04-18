@@ -4,6 +4,8 @@ namespace Awful;
 use Awful\Container\Container;
 use Awful\Context\Context;
 use Awful\Context\WordPressGlobals;
+use Awful\Exceptions\UnknownBlockTypeException;
+use Awful\Exceptions\UnregisteredBlockClassException;
 use Awful\Models\Network;
 use Awful\Models\Site;
 use Awful\Models\User;
@@ -13,9 +15,43 @@ use WP_CLI;
 
 final class Awful
 {
+    /**
+     * @var string[]
+     * @psalm-var array<string, class-string>
+     */
+    private static $blockClassMap = [];
+
     public static function bootstrap(array $providers): void
     {
         $GLOBALS['_awful_instance'] = new self($providers);
+    }
+
+    public static function registerBlockTypes(array $blockClassMap): void
+    {
+        assert(!array_intersect_key(self::$blockClassMap, $blockClassMap));
+        assert(every($blockClassMap, 'class_exists'));
+
+        self::$blockClassMap += $blockClassMap;
+    }
+
+    public static function blockClassForType(string $type): string
+    {
+        if (!isset(self::$blockClassMap[$type])) {
+            throw new UnknownBlockTypeException($type);
+        }
+
+        return self::$blockClassMap[$type];
+    }
+
+    public static function blockTypeForClass(string $class): string
+    {
+        foreach (self::$blockClassMap as $type => $class) {
+            if ($class === $type) {
+                return $type;
+            }
+        }
+
+        throw new UnregisteredBlockClassException($class);
     }
 
     /** @var Container */
@@ -56,7 +92,7 @@ final class Awful
     private function __construct(array $providers)
     {
         assert((bool) $providers, 'Expected at least one provider');
-        assert(every($providers, 'is_instanceof', [Provider::class]), 'Expected array of `ProviderInterface` instances');
+        assert(every($providers, 'Awful\is_instanceof', [Provider::class]), 'Expected array of `ProviderInterface` instances');
 
         //
         // Initialize container.
@@ -85,7 +121,9 @@ final class Awful
          * `get_network()` will always return an object when `is_multisite()`.
          * @psalm-suppress PossiblyNullPropertyFetch
          */
-        $network = is_multisite() ? new Network(get_network()->id) : null;
+        $network = null;
+        // $network = is_multisite() ? new Network(get_network()->id) : null;
+
 
         $context = new Context($this, $network);
         $this->container->register($context);
@@ -113,6 +151,7 @@ final class Awful
 
         if (defined('WP_CLI') && WP_CLI) {
             foreach ($this->commands as $command) {
+                /** @psalm-suppress UndefinedClass */
                 WP_CLI::add_command($command::commandName(), $this->container->get($command), $command::registrationArguments());
             }
         }

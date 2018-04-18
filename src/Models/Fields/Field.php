@@ -1,12 +1,13 @@
 <?php
 namespace Awful\Models\Fields;
 
+use Awful\Models\BlockOwnerModel;
 use Awful\Models\Exceptions\ValidationException;
-use Awful\Models\HasFields;
+use Awful\Models\Model;
 use JsonSerializable;
 
 /**
- * Base class for any field that can be saved on a HasFields object.
+ * Base class for any field that can be saved on a Model object.
  */
 abstract class Field implements JsonSerializable
 {
@@ -15,7 +16,9 @@ abstract class Field implements JsonSerializable
      *
      * @var mixed[]
      */
-    protected const DEFAULTS = [];
+    protected const DEFAULTS = [
+        'required' => false,
+    ];
 
     /**
      * Associative array of field configuration.
@@ -33,17 +36,22 @@ abstract class Field implements JsonSerializable
         // TODO: Potentially add lots of assertions to validate config.
     }
 
+    public function isRequired(): bool
+    {
+        return $this->args['required'];
+    }
+
     /**
      * Filters the value of the field when it is loaded from the database by a
-     * HasFields object.
+     * BlockOwnerModel object.
      *
-     * @param mixed     $value      The raw value as saved in the database.
-     * @param HasFields $owner
-     * @param string    $field_name
+     * @param mixed  $value      The raw value as saved in the database.
+     * @param Model  $owner
+     * @param string $field_name
      *
      * @return mixed The filtered value.
      */
-    abstract public function forPhp($value, HasFields $owner, string $field_name);
+    abstract public function forPhp($value, Model $owner, string $field_name);
 
     /**
      * Filters the value of the field when it is loaded from the database for

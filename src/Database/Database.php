@@ -58,6 +58,43 @@ class Database
         return "{$this->wpdb->prefix}awful_blocks";
     }
 
+    public function blocksForSite(): array
+    {
+        return $this->fetchBlocks('for_site', [1]);
+    }
+
+    public function blocksForPosts(int ...$postIds): array
+    {
+        return $this->fetchBlocks('post_id', $postIds);
+    }
+
+    public function blocksForTerms(int ...$termIds): array
+    {
+        return $this->fetchBlocks('term_id', $termIds);
+    }
+
+    public function blocksForUsers(int ...$userIds): array
+    {
+        return $this->fetchBlocks('user_id', $userIds);
+    }
+
+    public function blocksForComments(int ...$commentIds): array
+    {
+        return $this->fetchBlocks('comment_id', $commentIds);
+    }
+
+    private function fetchBlocks(string $column, array $values): array
+    {
+        $vals = implode(',', $values);
+        $results = $this->wpdb->get_results("SELECT *
+            FROM {$this->table()}
+            WHERE `$column` IN ({$vals})
+        ;");
+        $this->errorToException($this->wpdb->last_error);
+        /** @var array */
+        return $results;
+    }
+
     private function createTable(bool $includeUsers): void
     {
         // TODO: block_created/block_modified timestamps?
@@ -76,6 +113,7 @@ class Database
         $sql = "CREATE TABLE `$table` (
             `block_uuid` CHAR(36) NOT NULL,
             `block_parent_uuid` CHAR(36) DEFAULT NULL,
+            `for_site` BOOLEAN,
             `post_id` BIGINT(20) UNSIGNED,
             `term_id` BIGINT(20) UNSIGNED,
             $userId

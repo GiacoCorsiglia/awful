@@ -2,8 +2,8 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
+use Awful\Models\BlockOwnerModel;
 use Awful\Models\Exceptions\ValidationException;
-use Awful\Models\HasFields;
 
 class FieldTest extends AwfulTestCase
 {
@@ -15,7 +15,7 @@ class FieldTest extends AwfulTestCase
             ->method('forPhp')
             ->willReturnArgument(0);
 
-        $owner = $this->getMockForAbstractClass(HasFields::class);
+        $owner = $this->getMockForAbstractClass(BlockOwnerModel::class);
 
         $this->assertSame('foo', $field->forPhp('foo', $owner, 'field_name'));
     }
@@ -77,7 +77,7 @@ class FieldTest extends AwfulTestCase
         $this->assertSame('invalid', $field->acfValidateValueFilter('invalid', '', [], ''), 'Preserves invalidity when invalid with reason');
 
         $field_with_clean = new class() extends Field {
-            public function forPhp($value, HasFields $owner, string $field_name)
+            public function forPhp($value, BlockOwnerModel $owner, string $field_name)
             {
                 // Required abstract method
             }

@@ -44,6 +44,10 @@ final class Container implements ContainerInterface
         $this->aliases[ContainerInterface::class] = self::class;
     }
 
+    /**
+     * @param  string $id
+     * @return object Entry.
+     */
     public function get($id)
     {
         $class = $this->aliases[$id] ?? $id;

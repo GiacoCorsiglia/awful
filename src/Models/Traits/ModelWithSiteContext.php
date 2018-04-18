@@ -4,11 +4,11 @@ namespace Awful\Models\Traits;
 trait ModelWithSiteContext
 {
     /**
-     * The ID of the Site which owns.
+     * The ID of the Site which owns $this object.
      *
      * @var int
      */
-    protected $site_id;
+    private $siteId;
 
     /**
      * Calls the given function in the context of the owner site ID set for this
@@ -23,15 +23,16 @@ trait ModelWithSiteContext
      */
     final protected function callInSiteContext(callable $callable, ...$args)
     {
-        assert(!is_null($this->site_id), 'Expected `$this->site_id` to be set');
+        assert(!is_null($this->siteId), 'Expected `$this->siteId` to be set');
 
-        if ($this->site_id) {
-            switch_to_blog($this->site_id);
+        $switched = $this->siteId && get_current_blog_id() !== $this->siteId;
+        if ($switched) {
+            switch_to_blog($this->siteId);
         }
 
         $ret = $callable(...$args);
 
-        if ($this->site_id) {
+        if ($switched) {
             restore_current_blog();
         }
 

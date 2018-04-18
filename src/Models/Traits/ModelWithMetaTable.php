@@ -2,37 +2,42 @@
 namespace Awful\Models\Traits;
 
 /**
- * Undocumented trait.
+ * For WordPress objects that use `get_metadata()`.
  */
 trait ModelWithMetaTable
 {
-    protected function fetchData(): void
+    /**
+     * @param  string $key
+     * @return mixed
+     */
+    public function getMeta(string $key)
     {
-        if (!$this->exists()) {
-            return;
+        assert((bool) $key, 'Expected non-empty meta key');
+
+        $value = $this->callMetaFunction('get', $key);
+        if (isset($value[0])) {
+            // WordPress supports multiple meta values per key.  If
+            // multiple exist, we'll let this be an array of each of the
+            // values.  But if only one exists, we'll collapse it down
+            // so the $key points directly to the single value.
+            return isset($value[1]) ? $value : $value[0];
         }
+        return $value;
+    }
 
-        /** @var callable */
-        $get_meta = 'get_' . $this->getMetaType() . '_meta';
+    /**
+     * @param  string $key
+     * @param  mixed  $value
+     * @return void
+     */
+    public function updateMeta(string $key, $value): void
+    {
+        assert((bool) $key, 'Expected non-empty meta key');
 
-        if (method_exists($this, 'callInSiteContext')) {
-            // For posts and taxonomy terms which use `ModelWithSiteContext`.
-            /** @var array */
-            $metadata = $this->callInSiteContext($get_meta, $this->id);
+        if ($value === null) {
+            $this->callMetaFunction('delete', $key);
         } else {
-            // For users.
-            /** @var array */
-            $metadata = $get_meta($this->id);
-        }
-
-        foreach ($metadata as $key => $value) {
-            if (isset($value[0])) {
-                // WordPress supports multiple meta values per key.  If
-                // multiple exist, we'll let this be an array of each of the
-                // values.  But if only one exists, we'll collapse it down
-                // so the $key points directly to the single value.
-                $this->data[$key] = isset($value[1]) ? $value : $value[0];
-            }
+            $this->callMetaFunction('update', $key, $value);
         }
     }
 
@@ -41,9 +46,25 @@ trait ModelWithMetaTable
      * called on this object, as would be passed to `get_metadata()` or is found
      * in the middle of `get_post_meta()`.
      *
-     * One of 'user', 'post', or 'term'.
+     * One of 'user', 'post', 'term', or 'comment'.
      *
      * @return string
      */
-    abstract protected function getMetaType(): string;
+    abstract protected function metaType(): string;
+
+    /**
+     * @param  string $name
+     * @param  mixed  ...$args
+     * @return mixed
+     */
+    private function callMetaFunction(string $name, ...$args)
+    {
+        $func = "$name\_{$this->metaType()}_meta";
+        if (method_exists($this, 'callInSiteContext')) {
+            // For objects which use `ModelWithSiteContext`.
+            return $this->callInSiteContext($func, $this->id, ...$args);
+        }
+        // For users.
+        return $func($this->id, ...$args);
+    }
 }

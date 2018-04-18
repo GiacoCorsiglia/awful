@@ -143,16 +143,22 @@ class WordPressGlobals
     private function listen(): void
     {
         add_action('mu_plugins_loaded', function (): void {
+            /** @psalm-suppress UndefinedVariable */
             global $wp_embed;
 
             $this->embed = $wp_embed;
         }, 1);
 
         add_action('setup_theme', function (): void {
+            /** @psalm-suppress UndefinedVariable */
             global $wp_query;
+            /** @psalm-suppress UndefinedVariable */
             global $wp_rewrite;
+            /** @psalm-suppress UndefinedVariable */
             global $wp;
+            /** @psalm-suppress UndefinedVariable */
             global $wp_widget_factory;
+            /** @psalm-suppress UndefinedVariable */
             global $wp_roles;
 
             $this->query = $wp_query;
@@ -164,7 +170,9 @@ class WordPressGlobals
 
         // This should run _before_ the listener in Awful.
         add_action('after_setup_theme', function (): void {
+            /** @psalm-suppress UndefinedVariable */
             global $wp_locale;
+            /** @psalm-suppress UndefinedVariable */
             global $wp_locale_switcher;
 
             $this->locale = $wp_locale;

@@ -1,9 +1,9 @@
 <?php
-namespace Awful\Query;
+namespace Awful\Models\Query;
 
 use Awful\Models\TaxonomyTerm;
 
-class TaxonomyQuery extends Query
+class TaxonomyQuery
 {
     /** @var array */
     protected $defaults = [
@@ -15,11 +15,39 @@ class TaxonomyQuery extends Query
     /** @var array */
     protected $args;
 
+    /**
+     * @var string
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $relation;
+
+    /**
+     * @var TaxonomyQuery[]
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $queries;
+
+    public static function and(self ...$queries): self
+    {
+        $new = new self('', []);
+        $new->relation = 'AND';
+        $new->queries = $queries;
+        return $new;
+    }
+
+    public static function or(self ...$queries): self
+    {
+        $new = new self('', []);
+        $new->relation = 'OR';
+        $new->queries = $queries;
+        return $new;
+    }
+
     public function __construct(string $taxonomy, array $terms, array $options = [])
     {
         $_terms = [];
         foreach ($terms as $term) {
-            $_terms[] = $term instanceof TaxonomyTerm ? $term->getId() : $term;
+            $_terms[] = $term instanceof TaxonomyTerm ? $term->id() : $term;
         }
 
         $this->args = [
@@ -30,6 +58,14 @@ class TaxonomyQuery extends Query
 
     public function toArray(): array
     {
-        return $this->args;
+        if (!$this->relation) {
+            return $this->args;
+        }
+
+        $array = ['relation' => $this->relation];
+        foreach ($this->queries as $query) {
+            $array[] = $query->toArray();
+        }
+        return $array;
     }
 }

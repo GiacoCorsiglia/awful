@@ -20,9 +20,10 @@ class Database
 
     public function install(int $siteId = 0): void
     {
-        assert(!$siteId || (is_multisite() && $siteId), 'Expected $siteId only on multisite install');
+        assert(!$siteId || (is_multisite() && $siteId), 'Expected $siteId only when multisite');
 
-        if ($siteId) {
+        $switched = $siteId && get_current_blog_id() !== $siteId;
+        if ($switched) {
             switch_to_blog($siteId);
         }
 
@@ -31,16 +32,17 @@ class Database
             $this->createTable(!$siteId || is_main_site());
         }
 
-        if ($siteId) {
+        if ($switched) {
             restore_current_blog();
         }
     }
 
     public function uninstall(int $siteId = 0): void
     {
-        assert(!$siteId || (is_multisite() && $siteId), 'Expected $siteId only on multisite install');
+        assert(!$siteId || (is_multisite() && $siteId), 'Expected $siteId only when multisite');
 
-        if ($siteId) {
+        $switched = $siteId && get_current_blog_id() !== $siteId;
+        if ($switched) {
             switch_to_blog($siteId);
         }
 
@@ -48,7 +50,7 @@ class Database
         $this->wpdb->query("DROP TABLE IF EXISTS {$this->table()};");
         $this->errorToException($this->wpdb->last_error);
 
-        if ($siteId) {
+        if ($switched) {
             restore_current_blog();
         }
     }
@@ -58,39 +60,51 @@ class Database
         return "{$this->wpdb->prefix}awful_blocks";
     }
 
-    public function blocksForSite(): array
+    public function blocksForSite(int $siteId): array
     {
-        return $this->fetchBlocks('for_site', [1]);
+        return $this->fetchBlocks($siteId, 'for_site', [1]);
     }
 
-    public function blocksForPosts(int ...$postIds): array
+    public function blocksForPosts(int $siteId, int ...$postIds): array
     {
-        return $this->fetchBlocks('post_id', $postIds);
+        return $this->fetchBlocks($siteId, 'post_id', $postIds);
     }
 
-    public function blocksForTerms(int ...$termIds): array
+    public function blocksForTerms(int $siteId, int ...$termIds): array
     {
-        return $this->fetchBlocks('term_id', $termIds);
+        return $this->fetchBlocks($siteId, 'term_id', $termIds);
     }
 
-    public function blocksForUsers(int ...$userIds): array
+    public function blocksForUsers(int $siteId, int ...$userIds): array
     {
-        return $this->fetchBlocks('user_id', $userIds);
+        return $this->fetchBlocks($siteId, 'user_id', $userIds);
     }
 
-    public function blocksForComments(int ...$commentIds): array
+    public function blocksForComments(int $siteId, int ...$commentIds): array
     {
-        return $this->fetchBlocks('comment_id', $commentIds);
+        return $this->fetchBlocks($siteId, 'comment_id', $commentIds);
     }
 
-    private function fetchBlocks(string $column, array $values): array
+    private function fetchBlocks(int $siteId, string $column, array $values): array
     {
+        assert(!$siteId || (is_multisite() && $siteId), 'Expected $siteId only when multisite');
+
+        $switched = $siteId && get_current_blog_id() !== $siteId;
+        if ($switched) {
+            switch_to_blog($siteId);
+        }
+
         $vals = implode(',', $values);
         $results = $this->wpdb->get_results("SELECT *
             FROM {$this->table()}
             WHERE `$column` IN ({$vals})
         ;");
         $this->errorToException($this->wpdb->last_error);
+
+        if ($switched) {
+            restore_current_blog();
+        }
+
         /** @var array */
         return $results;
     }

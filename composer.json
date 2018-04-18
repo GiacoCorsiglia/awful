@@ -41,7 +41,7 @@
         "johnpbloch/wordpress": "^4.9",
         "phpunit/phpunit": "5.*",
         "psy/psysh": "^0.8.17",
-        "vimeo/psalm": "^0.3.92",
+        "vimeo/psalm": "^1.0",
         "wp-phpunit/wp-phpunit": "^4.9"
     },
     "config": {

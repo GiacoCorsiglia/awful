@@ -2,36 +2,24 @@
 namespace Awful\Models\Query;
 
 use ArrayAccess;
-use ArrayIterator;
-use Awful\Exceptions\ImmutabilityException;
+use Awful\Models\GenericPost;
 use Awful\Models\Site;
 use Countable;
 use IteratorAggregate;
-use WP_Post;
 use WP_Query;
 
-class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
+class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 {
+    use QuerySetTrait;
+
     /** @var Site */
     protected $site;
 
     /** @var array */
     protected $args;
 
-    /**
-     * @var \WP_Query
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    protected $wp_query;
-
-    /**
-     * @var array
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    protected $posts;
-
-    /** @var bool */
-    protected $has_fetched = false;
+    /** @var WP_Query|null */
+    protected $wpQuery;
 
     public function __construct(Site $site, array $args = [])
     {
@@ -40,68 +28,39 @@ class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         $this->args = $args + $this->defaults();
     }
 
-    public function getIterator(): ArrayIterator
+    //
+    // Fetch methods.
+    //
+
+    public function fetch(): array
     {
-        if (!$this->has_fetched) {
+        if ($this->objects !== null) {
+            return $this->objects;
+        }
+
+        $this->objects = [];
+        $this->wpQuery = new WP_Query($this->args);
+        foreach ($this->wpQuery->posts as $wpPost) {
+            $this->posts[$wp_post->ID] = new GenericPost(
+                $this->site,
+                $wpPost->ID
+            );
+        }
+
+        return $this->objects;
+    }
+
+    public function wpQuery(): WP_Query
+    {
+        if ($this->objects === null) {
             $this->fetch();
         }
-        return new ArrayIterator($this->posts);
+        return $this->wpQuery;
     }
 
-    public function count(): int
-    {
-        if (!$this->has_fetched) {
-            $this->fetch();
-        }
-        return count($this->posts);
-    }
-
-    public function offsetExists(int $post_id): bool
-    {
-        if (!$this->has_fetched) {
-            $this->fetch();
-        }
-        return isset($this->posts[$post_id]);
-    }
-
-    public function offsetGet(int $post_id): ?WP_Post
-    {
-        if (!$this->has_fetched) {
-            $this->fetch();
-        }
-        return $this->posts[$post_id] ?? null;
-    }
-
-    public function offsetSet(int $offset, WP_Post $value): void
-    {
-        throw new ImmutabilityException();
-    }
-
-    public function offsetUnset(int $offset): void
-    {
-        throw new ImmutabilityException();
-    }
-
-    public function any(): bool
-    {
-        return (bool) $this->count();
-    }
-
-    public function toArray(bool $associative = true): array
-    {
-        if (!$this->has_fetched) {
-            $this->fetch();
-        }
-        return $associative ? $this->posts : array_values($this->posts);
-    }
-
-    public function toWpQuery(): WP_Query
-    {
-        if (!$this->has_fetched) {
-            $this->fetch();
-        }
-        return $this->wp_query;
-    }
+    //
+    // Filter methods.
+    //
 
     public function type(string ...$types): self
     {
@@ -186,16 +145,9 @@ class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         return $this->extend(['post_mime_type' => $mime_types]);
     }
 
-    protected function fetch(): WP_Query
-    {
-        $this->has_fetched = true;
-        $this->wp_query = new WP_Query($this->args);
-        $this->posts = [];
-        foreach ($this->wp_query->posts as $wp_post) {
-            $this->posts[$wp_post->ID] = $wp_post;
-        }
-        return $this->wp_query;
-    }
+    //
+    // Internal methods.
+    //
 
     protected function defaults(): array
     {
@@ -207,7 +159,7 @@ class PostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
     protected function extend(array $args): self
     {
-        if ($this->has_fetched) {
+        if ($this->objects !== null) {
             throw new \BadMethodCallException('Cannot mutate PostQuerySet after fetch.');
         }
         return new static($this->site, $args + $this->args);

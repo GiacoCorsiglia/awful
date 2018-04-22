@@ -3,7 +3,11 @@ namespace Awful\Models;
 
 use WP_Network;
 
-class Network extends Model implements WordPressModel
+//
+// TODO: This whole situation.
+//
+
+class Network
 {
     protected const OBJECT_TYPE = 'site';
 
@@ -25,8 +29,6 @@ class Network extends Model implements WordPressModel
 
     public function __construct(int $id = 0)
     {
-        assert(is_multisite(), 'Instantiating a Network only makes sense for multisite installs');
-
         $this->id = $id;
     }
 

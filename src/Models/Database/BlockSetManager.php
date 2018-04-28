@@ -74,9 +74,12 @@ class BlockSetManager
             }
 
             foreach ($uncachedBlockQuery->values() as $id) {
-                if (isset($result[$id])) {
-                    wp_cache_set((string) $id, $result[$id], $cacheGroup);
+                if (!isset($result[$id])) {
+                    // We will create empty BlockSets for any ids that don't
+                    // have any blocks saved.
+                    $result[$id] = [];
                 }
+                wp_cache_set((string) $id, $result[$id], $cacheGroup);
             }
         }
 

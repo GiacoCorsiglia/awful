@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Models\Database;
 
+use Awful\Models\Database\Exceptions\DuplicateBlockTypeException;
 use Awful\Models\Database\Exceptions\UnknownBlockTypeException;
 use Awful\Models\Database\Exceptions\UnregisteredBlockClassException;
 
@@ -10,13 +11,13 @@ class BlockTypeMap
      * @var array
      * @psalm-var array<class-string, string>
      */
-    private $classToTypeMap = [];
+    public $classToTypeMap = [];
 
     /**
      * @var array
      * @psalm-var array<string, class-string>
      */
-    private $typeToClassMap = [];
+    public $typeToClassMap = [];
 
     /**
      * @param array $classToTypesMap
@@ -30,6 +31,9 @@ class BlockTypeMap
             $this->classToTypeMap[$class] = $types[0];
 
             foreach ($types as $type) {
+                if (isset($this->typeToClassMap[$type])) {
+                    throw new DuplicateBlockTypeException($type);
+                }
                 $this->typeToClassMap[$type] = $class;
             }
         }

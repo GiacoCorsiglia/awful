@@ -157,7 +157,7 @@ final class Awful
             };
 
         $siteClass = $theme->siteClass() ?: Site::class;
-        $siteId = get_current_blog_id() ?: 0;
+        $siteId = is_multisite() ? get_current_blog_id() : 0;
         $blockSets = $this->blockSetManager->blockSetsForQuery(new BlockQueryForSite($siteId));
         ($this->setSiteCallback)(new $siteClass($blockSets[$siteId], $siteId));
 

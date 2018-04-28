@@ -120,8 +120,8 @@ final class Awful
 
         // Awful is run as a mu-plugin, so it's appropriate to run these here.
         $this->runPlugins();
-        // add_action('after_setup_theme', [$this, 'setupTheme'], 2);
-        // add_action('set_current_user', [$this, 'setUser'], 1);
+        add_action('after_setup_theme', [$this, 'setupTheme'], 2);
+        add_action('set_current_user', [$this, 'setUser'], 1);
     }
 
     /**

@@ -50,7 +50,7 @@ class BlockTypeMap
 
     /**
      * @param string $class
-     * @psalm-param class-string
+     * @psalm-param class-string $class
      * @return string
      */
     public function typeForClass(string $class): string

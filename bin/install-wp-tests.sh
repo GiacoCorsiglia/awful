@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-if [ $# -lt 3 ]; then
-    echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation]"
-    exit 1
-fi
+# if [ $# -lt 3 ]; then
+#     echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation]"
+#     exit 1
+# fi
 
-DB_NAME=$1
-DB_USER=$2
-DB_PASS=$3
+DB_NAME=${1-wp_awful_unit_test}
+DB_USER=${2-root}
+DB_PASS=${3-}
 DB_HOST=${4-localhost}
 WP_VERSION=${5-latest}
 SKIP_DB_CREATE=${6-false}
@@ -144,7 +144,7 @@ install_db() {
     fi
 
     # create database
-    mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
+    mysql -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;" --user="$DB_USER" --password="$DB_PASS"$EXTRA
 }
 
 install_wp

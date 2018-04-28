@@ -2,37 +2,48 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\BlockOwnerModel;
+use Awful\Models\Exceptions\ValidationException;
+use Awful\Models\Model;
 
 class TrueFalseFieldTest extends AwfulTestCase
 {
-    public function testToAcf()
-    {
-        $field = new TrueFalseField(['foo' => 'bar']);
+    /** @var TextField */
+    private $field;
 
-        $this->assertArraySubset([
-            'type' => 'true_false',
-            'key' => 'field_name',
-            'name' => 'name',
-            'foo' => 'bar',
-        ], $field->toAcf('name', '', new FieldsResolver($this->container())));
+    /** @var Model */
+    private $model;
+
+    public function setUp()
+    {
+        $this->field = new TrueFalseField();
+        $this->model = $this->getMockForAbstractClass(Model::class);
     }
 
-    public function testForPhp()
+    public function testToPhp()
     {
-        $field = new TrueFalseField();
-        $owner = $this->getMockForAbstractClass(BlockOwnerModel::class);
+        $this->assertSame(false, $this->field->toPhp(false, $this->model, ''));
+        $this->assertSame(false, $this->field->toPhp(null, $this->model, ''));
+        $this->assertSame(false, $this->field->toPhp(0, $this->model, ''));
+        $this->assertSame(false, $this->field->toPhp('', $this->model, ''));
+        $this->assertSame(false, $this->field->toPhp([], $this->model, ''));
 
-        $this->assertSame(false, $field->forPhp(false, $owner, ''));
-        $this->assertSame(false, $field->forPhp(null, $owner, ''));
-        $this->assertSame(false, $field->forPhp(0, $owner, ''));
-        $this->assertSame(false, $field->forPhp('', $owner, ''));
-        $this->assertSame(false, $field->forPhp([], $owner, ''));
+        $this->assertSame(true, $this->field->toPhp(true, $this->model, ''));
+        $this->assertSame(true, $this->field->toPhp(1, $this->model, ''));
+        $this->assertSame(true, $this->field->toPhp('foo', $this->model, ''));
+        $this->assertSame(true, $this->field->toPhp(['foo'], $this->model, ''));
+        $this->assertSame(true, $this->field->toPhp(new \stdClass(), $this->model, ''));
+    }
 
-        $this->assertSame(true, $field->forPhp(true, $owner, ''));
-        $this->assertSame(true, $field->forPhp(1, $owner, ''));
-        $this->assertSame(true, $field->forPhp('foo', $owner, ''));
-        $this->assertSame(true, $field->forPhp(['foo'], $owner, ''));
-        $this->assertSame(true, $field->forPhp(new \stdClass(), $owner, ''));
+    public function testCleanAcceptsBoolOrNull()
+    {
+        $this->assertSame(null, $this->field->clean(null, $this->model));
+        $this->assertSame(false, $this->field->clean(false, $this->model));
+        $this->assertSame(true, $this->field->clean(true, $this->model));
+    }
+
+    public function testCleanRejectsString()
+    {
+        $this->expectException(ValidationException::class);
+        $this->field->clean('', $this->model);
     }
 }

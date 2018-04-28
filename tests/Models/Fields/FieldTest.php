@@ -2,34 +2,28 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\BlockOwnerModel;
 
 class FieldTest extends AwfulTestCase
 {
-    public function testForPhp()
+    public function testIsRequired()
     {
-        $field = $this->getMockForAbstractClass(Field::class);
-
-        $field->expects($this->any())
-            ->method('forPhp')
-            ->willReturnArgument(0);
-
-        $owner = $this->getMockForAbstractClass(BlockOwnerModel::class);
-
-        $this->assertSame('foo', $field->forPhp('foo', $owner, 'field_name'));
+        $this->assertFalse($this->mockField([])->isRequired());
+        $this->assertFalse($this->mockField(['required' => false])->isRequired());
+        $this->assertTrue($this->mockField(['required' => true])->isRequired());
     }
 
-    public function testForEditor()
+    private function mockField(array $args): Field
     {
-        $field = $this->getMockForAbstractClass(Field::class);
+        return new class($args) extends Field {
+            public function toPhp($value, \Awful\Models\Model $model, string $fieldKey)
+            {
+                return $value;
+            }
 
-        $this->assertSame('foo', $field->forEditor('foo'));
-    }
-
-    public function testClean()
-    {
-        $field = $this->getMockForAbstractClass(Field::class);
-
-        $this->assertSame('foo', $field->clean('foo'));
+            public function clean($value, \Awful\Models\Model $model)
+            {
+                return $value;
+            }
+        };
     }
 }

@@ -6,9 +6,6 @@ use stdClass;
 
 abstract class Block extends Model
 {
-    /** @var int */
-    private $id;
-
     /** @var string */
     private $uuid;
 
@@ -17,11 +14,9 @@ abstract class Block extends Model
 
     public function __construct(
         WordPressModel $owner,
-        int $id,
         string $uuid
     ) {
         $this->owner = $owner;
-        $this->id = $id;
         $this->uuid = $uuid;
         $this->initializeBlockSet($owner->blockSet());
     }
@@ -33,7 +28,7 @@ abstract class Block extends Model
 
     public function id(): int
     {
-        return $this->id;
+        return $this->fetchBlockRecord($this->blockSet())->id ?? 0;
     }
 
     public function uuid(): string
@@ -43,10 +38,10 @@ abstract class Block extends Model
 
     public function exists(): bool
     {
-        return $this->id && $this->owner->exists();
+        return (bool) $this->id();
     }
 
-    final public function fetchBlock(BlockSet $blockSet): stdClass
+    final public function fetchBlockRecord(BlockSet $blockSet): stdClass
     {
         return $blockSet->get($this->uuid) ?: $blockSet->createForClass(static::class, $this->uuid);
     }

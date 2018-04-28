@@ -1,7 +1,6 @@
 <?php
 namespace Awful\Models\Fields;
 
-use Awful\Models\BlockOwnerModel;
 use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 use JsonSerializable;
@@ -43,42 +42,28 @@ abstract class Field implements JsonSerializable
 
     /**
      * Filters the value of the field when it is loaded from the database by a
-     * BlockOwnerModel object.
+     * Model instance.
      *
-     * @param mixed  $value      The raw value as saved in the database.
-     * @param Model  $owner
-     * @param string $field_name
-     *
-     * @return mixed The filtered value.
-     */
-    abstract public function forPhp($value, Model $owner, string $field_name);
-
-    /**
-     * Filters the value of the field when it is loaded from the database for
-     * display in the admin editor interface.
-     *
-     * @param mixed $value The raw value as saved in the database.
+     * @param null|bool|int|float|string|array $value    The raw value as it is
+     *                                                   saved in the database.
+     * @param Model                            $model
+     * @param string                           $fieldKey
      *
      * @return mixed The filtered value.
      */
-    public function forEditor($value)
-    {
-        return $value;
-    }
+    abstract public function toPhp($value, Model $model, string $fieldKey);
 
     /**
      * Validates and optionally mutates the value before it is saved.
      *
      * @param mixed $value
+     * @param Model $model
      *
      * @throws ValidationException
      *
      * @return mixed
      */
-    public function clean($value)
-    {
-        return $value;
-    }
+    abstract public function clean($value, Model $model);
 
     /**
      * Prepares the field for serialization to be sent to the front-end.

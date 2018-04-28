@@ -14,7 +14,7 @@ abstract class WordPressModel extends Model
      */
     abstract public function wpObject(): ?object;
 
-    final protected function fetchBlock(BlockSet $blockSet): stdClass
+    final protected function fetchBlockRecord(BlockSet $blockSet): stdClass
     {
         return $blockSet->root();
     }

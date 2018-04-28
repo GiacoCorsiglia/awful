@@ -5,26 +5,12 @@
         <ignoreFiles>
             <file name="src/Router.php" />
             <file name="src/Models/Network.php" />
-            <file name="src/Models/Fields/BlocksField.php" />
-            <file name="src/Models/Fields/BlocksFieldInstance.php" />
-            <file name="src/Models/Fields/PostObjectField.php" />
             <file name="src/Utilities/FilesystemCache.php" />
             <directory name="src/Templates" />
             <file name="src/render.php" />
         </ignoreFiles>
     </projectFiles>
-    <issueHandlers>
-        <MissingClosureParamType>
-            <errorLevel type="info">
-                <directory name="src" />
-            </errorLevel>
-        </MissingClosureParamType>
-        <MissingClosureReturnType>
-            <errorLevel type="info">
-                <directory name="src" />
-            </errorLevel>
-        </MissingClosureReturnType>
-    </issueHandlers>
+
     <stubs>
         <file name="vendor/giacocorsiglia/wordpress-stubs/wordpress-stubs.php" />
     </stubs>

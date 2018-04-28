@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Models\Fields;
 
+use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 
 /**
@@ -8,7 +9,7 @@ use Awful\Models\Model;
  */
 class TextField extends Field
 {
-    public function forPhp($value, Model $owner, string $field_name): string
+    public function toPhp($value, Model $model, string $fieldKey): string
     {
         if (is_array($value)) {
             // Avoid "Array to string conversion" warning.  Could return
@@ -17,5 +18,18 @@ class TextField extends Field
         }
 
         return (string) $value;
+    }
+
+    public function clean($value, Model $model): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (!is_string($value)) {
+            throw new ValidationException('Expected a string.');
+        }
+
+        return $value;
     }
 }

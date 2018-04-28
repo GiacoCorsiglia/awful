@@ -3,6 +3,7 @@ namespace Awful\Models;
 
 use Awful\Context\Context;
 use Awful\Models\Database\BlockSet;
+use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Fields\Field;
 use stdClass;
 
@@ -64,7 +65,7 @@ abstract class Model
 
         $value = $this->getRaw($key);
         $field = static::field($key);
-        return $this->formattedDataCache[$key] = $field->forPhp($value, $this, $key);
+        return $this->formattedDataCache[$key] = $field->toPhp($value, $this, $key);
     }
 
     /**
@@ -76,7 +77,7 @@ abstract class Model
     final public function getRaw(string $key)
     {
         if ($this->block === null) {
-            $this->block = $this->fetchBlock($this->blockSet);
+            $this->block = $this->fetchBlockRecord($this->blockSet);
         }
         return $this->block->data[$key] ?? null;
     }
@@ -112,7 +113,13 @@ abstract class Model
     {
         $cleanedData = [];
         foreach (static::fields(self::$context) as $key => $field) {
-            $cleanedData[$key] = $field->clean($this->block->data[$key] ?? null);
+            $value = $this->block->data[$key] ?? null;
+
+            if ($value === null && $field->isRequired()) {
+                throw new ValidationException("Field '$key' is required.");
+            }
+
+            $cleanedData[$key] = $field->clean($value, $this);
         }
 
         return $cleanedData;
@@ -139,5 +146,5 @@ abstract class Model
         $this->blockSet = $blockSet;
     }
 
-    abstract protected function fetchBlock(BlockSet $blockSet): stdClass;
+    abstract protected function fetchBlockRecord(BlockSet $blockSet): stdClass;
 }

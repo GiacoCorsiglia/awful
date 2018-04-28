@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Models\Fields;
 
+use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 
 /**
@@ -8,10 +9,21 @@ use Awful\Models\Model;
  */
 class TrueFalseField extends Field
 {
-    const ACF_TYPE = 'true_false';
-
-    public function forPhp($value, Model $owner, string $field_name): bool
+    public function toPhp($value, Model $model, string $fieldKey): bool
     {
         return (bool) $value;
+    }
+
+    public function clean($value, Model $model): ?bool
+    {
+        if ($value === null) {
+            return $value;
+        }
+
+        if (!is_bool($value)) {
+            throw new ValidationException('Expected a boolean.');
+        }
+
+        return $value;
     }
 }

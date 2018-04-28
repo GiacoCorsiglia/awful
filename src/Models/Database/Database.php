@@ -1,7 +1,7 @@
 <?php
 namespace Awful\Models\Database;
 
-use Awful\Models\Database\Exception\DatabaseException;
+use Awful\Models\Database\Exceptions\DatabaseException;
 use Awful\Models\Database\Query\BlockQuery;
 use wpdb;
 

@@ -1,10 +1,16 @@
 <?php
 namespace Awful\Models\Query;
 
+use ArrayIterator;
+use Awful\Exceptions\ImmutabilityException;
+
 trait QuerySetTrait
 {
     /** @var array|null */
     private $objects;
+
+    /** @var \Awful\Models\Database\BlockSetManager */
+    private $blockSetManager;
 
     public function count(): int
     {

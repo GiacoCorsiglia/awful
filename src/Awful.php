@@ -6,6 +6,10 @@ use Awful\Context\Context;
 use Awful\Context\WordPressGlobals;
 use Awful\Exceptions\UnknownBlockTypeException;
 use Awful\Exceptions\UnregisteredBlockClassException;
+use Awful\Models\Database\BlockSetManager;
+use Awful\Models\Database\Database;
+use Awful\Models\Database\Query\BlockQueryForSite;
+use Awful\Models\Database\Query\BlockQueryForUsers;
 use Awful\Models\Network;
 use Awful\Models\Site;
 use Awful\Models\User;
@@ -21,6 +25,13 @@ final class Awful
      */
     private static $blockClassMap;
 
+    /**
+     * @param Provider[] $providers
+     * @psalm-param array<int, Provider> $providers
+     * @param array $blockClassMap
+     * @psalm-param array<string, class-string> $blockClassMap
+     * @return void
+     */
     public static function bootstrap(array $providers, array $blockClassMap): void
     {
         $GLOBALS['_awful_instance'] = new self($providers);
@@ -69,6 +80,9 @@ final class Awful
 
     /** @var string[] */
     private $commands = [];
+
+    /** @var BlockSetManager */
+    private $blockSetManager;
 
     /**
      * @var string
@@ -121,13 +135,17 @@ final class Awful
 
         $this->container->register($GLOBALS['wpdb']);
 
+        $database = new Database($GLOBALS['wpdb']);
+        $this->container->register($database);
+
+        $this->blockSetManager = new BlockSetManager($database);
+        $this->container->register($this->blockSetManager);
+
         /**
          * `get_network()` will always return an object when `is_multisite()`.
          * @psalm-suppress PossiblyNullPropertyFetch
          */
-        $network = null;
-        // $network = is_multisite() ? new Network(get_network()->id) : null;
-
+        $network = new Network(is_multisite() ? get_network()->id : 0);
 
         $context = new Context($this, $network);
         $this->container->register($context);
@@ -177,7 +195,9 @@ final class Awful
             };
 
         $siteClass = $theme->siteClass() ?: Site::class;
-        ($this->setSiteCallback)(new $siteClass(get_current_blog_id() ?: 0));
+        $siteId = get_current_blog_id() ?: 0;
+        $blockSets = $this->blockSetManager->blockSetsForQuery(new BlockQueryForSite($siteId));
+        ($this->setSiteCallback)(new $siteClass($blockSets[$siteId], $siteId));
 
         $this->userClass = $theme->userClass() ?: User::class;
         if (did_action('set_current_user')) {
@@ -202,7 +222,9 @@ final class Awful
         if (!$userClass) {
             return;
         }
-        ($this->setUserCallback)(new $userClass(get_current_user_id()));
+        $userId = get_current_user_id();
+        $blockSets = $this->blockSetManager->blockSetsForQuery(new BlockQueryForUsers($userId));
+        ($this->setUserCallback)(new $userClass($blockSets[$userId], $userId));
         remove_action('set_current_user', [$this, 'setUser'], 1);
     }
 

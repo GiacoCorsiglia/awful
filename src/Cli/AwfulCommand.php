@@ -1,7 +1,7 @@
 <?php
 namespace Awful\Cli;
 
-use Awful\Database\Database;
+use Awful\Models\Database\Database;
 
 class AwfulCommand extends Command
 {

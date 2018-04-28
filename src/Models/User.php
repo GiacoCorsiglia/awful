@@ -1,14 +1,13 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Models\Traits\BlockOwnerTrait;
-use Awful\Models\Traits\ModelWithMetaTable;
+use Awful\Models\Database\BlockSet;
+use Awful\Models\Traits\WordPressModelWithMetaTable;
 use WP_User;
 
-class User extends Model implements BlockOwnerModel, WordPressModel
+class User extends WordPressModel
 {
-    use ModelWithMetaTable;
-    use BlockOwnerTrait;
+    use WordPressModelWithMetaTable;
 
     protected const WP_OBJECT_FIELDS = [
         'ID' => 'int',
@@ -33,9 +32,16 @@ class User extends Model implements BlockOwnerModel, WordPressModel
     private $wpUser;
 
     final public function __construct(
+        BlockSet $blockSet,
         int $id = 0
     ) {
         $this->id = $id;
+        $this->initializeBlockSet($blockSet);
+    }
+
+    final public function id(): int
+    {
+        return $this->id;
     }
 
     /**
@@ -62,18 +68,13 @@ class User extends Model implements BlockOwnerModel, WordPressModel
         return $this->id && $this->wpUser() !== null;
     }
 
-    final public function id(): int
+    final public function isLoggedIn(): bool
     {
-        return $this->id;
+        return get_current_user_id() === $this->id;
     }
 
     final protected function metaType(): string
     {
         return 'user';
-    }
-
-    final protected function rootBlockType(): string
-    {
-        return 'Awful.Blocks.Root.User';
     }
 }

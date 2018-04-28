@@ -2,9 +2,8 @@
 namespace Awful\Models;
 
 use Awful\Exceptions\UnimplementedException;
-use Awful\Models\Traits\BlockOwnerTrait;
-use Awful\Models\Traits\ModelOwnedBySite;
-use Awful\Models\Traits\ModelWithMetaTable;
+use Awful\Models\Traits\WordPressModelOwnedBySite;
+use Awful\Models\Traits\WordPressModelWithMetaTable;
 use WP_Post;
 
 /**
@@ -13,11 +12,10 @@ use WP_Post;
  * Implements getters for the default post fields along with the base
  * functionality for loading postmeta.
  */
-class GenericPost extends Model implements BlockOwnerModel, WordPressModel
+class GenericPost extends WordPressModel
 {
-    use ModelOwnedBySite;
-    use ModelWithMetaTable;
-    use BlockOwnerTrait;
+    use WordPressModelOwnedBySite;
+    use WordPressModelWithMetaTable;
 
     /**
      * Slug of the post type represented by this class.
@@ -225,10 +223,5 @@ class GenericPost extends Model implements BlockOwnerModel, WordPressModel
     final protected function metaType(): string
     {
         return 'post';
-    }
-
-    protected function rootBlockType(): string
-    {
-        return 'Awful.PostTypes.' . static::TYPE;
     }
 }

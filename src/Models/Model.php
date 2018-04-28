@@ -2,7 +2,9 @@
 namespace Awful\Models;
 
 use Awful\Context\Context;
+use Awful\Models\Database\BlockSet;
 use Awful\Models\Fields\Field;
+use stdClass;
 
 abstract class Model
 {
@@ -20,7 +22,7 @@ abstract class Model
     }
 
     /**
-     * Undocumented function.
+     * The set of fields for this class.
      *
      * @param  Context $context
      * @return Field[]
@@ -39,11 +41,11 @@ abstract class Model
         return self::$allFields[static::class][$key];
     }
 
-    /** @var array */
-    private $data;
+    /** @var BlockSet */
+    private $blockSet;
 
-    /** @var array */
-    private $modifiedData = [];
+    /** @var stdClass */
+    private $block;
 
     /** @var array */
     private $formattedDataCache = [];
@@ -73,12 +75,10 @@ abstract class Model
      */
     final public function getRaw(string $key)
     {
-        if ($this->modifiedData && array_key_exists($key, $this->modifiedData)) {
-            // Have to use `array_key_exists()` to catch values that were set
-            // to `null`.
-            return $this->modifiedData[$key];
+        if ($this->block === null) {
+            $this->block = $this->fetchBlock($this->blockSet);
         }
-        return $this->data[$key] ?? null;
+        return $this->block->data[$key] ?? null;
     }
 
     /**
@@ -91,37 +91,39 @@ abstract class Model
     final public function set(array $data): self
     {
         // TODO: Consider validation at this point.
-        $this->modifiedData = $data + $this->modifiedData;
-        if (!$this->formattedDataCache) {
-            // Don't bother clearing the cache if it's totally empty.
-            return $this;
-        }
-        // Clear the formatted data cache.
+        $this->blockSet->set($this->block->uuid, $data + $this->block->data);
+
+        // Clear the formatted data cache for the newly set fields.
         foreach ($data as $key => $_) {
             if (isset($this->formattedDataCache[$key])) {
                 unset($this->formattedDataCache[$key]);
             }
         }
+
         return $this;
     }
 
-    final public function isModified(): bool
+    final public function blockSet(): BlockSet
     {
-        return (bool) $this->modifiedData;
+        return $this->blockSet;
     }
 
     public function clean(): array
     {
-        $fields = static::fields(self::$context);
-        $data = $this->modifiedData + $this->data;
-
         $cleanedData = [];
-        foreach ($fields as $key => $field) {
-            $cleanedData[$key] = $field->clean($data[$key] ?? null);
+        foreach (static::fields(self::$context) as $key => $field) {
+            $cleanedData[$key] = $field->clean($this->block->data[$key] ?? null);
         }
 
         return $cleanedData;
     }
+
+    /**
+     * The id of this object.
+     *
+     * @return int
+     */
+    abstract public function id(): int;
 
     /**
      * Determines if this model actually exists in the database.
@@ -131,9 +133,11 @@ abstract class Model
      */
     abstract public function exists(): bool;
 
-    protected function initializeData(array $data): void
+    protected function initializeBlockSet(BlockSet $blockSet): void
     {
-        assert($this->data === null, 'Cannot initialize data more than once');
-        $this->data = $data;
+        assert($this->blockSet === null, 'Cannot initialize blockSet more than once');
+        $this->blockSet = $blockSet;
     }
+
+    abstract protected function fetchBlock(BlockSet $blockSet): stdClass;
 }

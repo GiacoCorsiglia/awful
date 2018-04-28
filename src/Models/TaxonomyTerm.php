@@ -1,16 +1,14 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Models\Traits\BlockOwnerTrait;
-use Awful\Models\Traits\ModelOwnedBySite;
-use Awful\Models\Traits\ModelWithMetaTable;
+use Awful\Models\Traits\WordPressModelOwnedBySite;
+use Awful\Models\Traits\WordPressModelWithMetaTable;
 use WP_Term;
 
-class TaxonomyTerm extends Model implements BlockOwnerModel, WordPressModel
+class TaxonomyTerm extends WordPressModel
 {
-    use ModelOwnedBySite;
-    use ModelWithMetaTable;
-    use BlockOwnerTrait;
+    use WordPressModelOwnedBySite;
+    use WordPressModelWithMetaTable;
 
     protected const WP_OBJECT_FIELDS = [
         'term_id' => 'int',
@@ -44,12 +42,6 @@ class TaxonomyTerm extends Model implements BlockOwnerModel, WordPressModel
     final public function exists(): bool
     {
         return $this->id && $this->wpTerm() !== null;
-    }
-
-    protected function rootBlockType(): string
-    {
-        // TODO
-        return '';
     }
 
     final protected function metaType(): string

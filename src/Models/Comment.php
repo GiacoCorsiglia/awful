@@ -1,16 +1,14 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Models\Traits\BlockOwnerTrait;
-use Awful\Models\Traits\ModelOwnedBySite;
-use Awful\Models\Traits\ModelWithMetaTable;
+use Awful\Models\Traits\WordPressModelOwnedBySite;
+use Awful\Models\Traits\WordPressModelWithMetaTable;
 use WP_Comment;
 
-class Comment extends Model implements WordPressModel, BlockOwnerModel
+class Comment extends WordPressModel
 {
-    use ModelWithMetaTable;
-    use ModelOwnedBySite;
-    use BlockOwnerTrait;
+    use WordPressModelOwnedBySite;
+    use WordPressModelWithMetaTable;
 
     protected const WP_OBJECT_FIELDS = [
         'comment_ID' => 'int',

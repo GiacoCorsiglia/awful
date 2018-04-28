@@ -1,7 +1,14 @@
 <?php
 namespace Awful\Models\Query;
 
+use ArrayAccess;
+use Awful\Models\Database\BlockSet;
+use Awful\Models\Database\BlockSetManager;
+use Awful\Models\Database\Query\BlockQueryForSite;
 use Awful\Models\Site;
+use Countable;
+use IteratorAggregate;
+use WP_Site_Query;
 
 class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
 {
@@ -13,8 +20,9 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
     /** @var */
     private $wpSiteQuery;
 
-    public function __construct(array $args = [])
+    public function __construct(BlockSetManager $blockSetManager, array $args = [])
     {
+        $this->blockSetManager = $blockSetManager;
         $this->args = $args + $this->defaults();
     }
 
@@ -31,7 +39,7 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
         $this->objects = [];
         $this->wpSiteQuery = new WP_Site_Query($this->args);
         foreach ($this->wpSiteQuery->sites as $site) {
-            $this->objects[$site->id] = new Site($site->id);
+            $this->objects[$site->id] = new Site($this->blockSetForSite($site->id), $site->id);
         }
 
         return $this->objects;
@@ -51,7 +59,14 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
         if (!$site) {
             return null;
         }
-        return new Site($id);
+
+        return new Site($this->blockSetForSite($id), $id);
+    }
+
+    private function blockSetForSite(int $siteId): BlockSet
+    {
+        $blockSets = $this->blockSetManager->blockSetsForQuery(new BlockQueryForSite($siteId));
+        return $blockSets[$siteId];
     }
 
     //
@@ -64,7 +79,7 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
         return $this->extend(['fields' => $fields]);
     }
 
-    public function chunk(int $number, int $offset)
+    public function chunk(int $number, int $offset): self
     {
         return $this->extend([
             'number' => $number,
@@ -110,6 +125,6 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
     protected function extend(array $args): self
     {
-        return new static($args + $this->args);
+        return new static($this->blockSetManager, $args + $this->args);
     }
 }

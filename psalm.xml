@@ -4,6 +4,7 @@
         <directory name="src" />
         <ignoreFiles>
             <file name="src/Router.php" />
+            <file name="src/Models/Network.php" />
             <file name="src/Models/Fields/BlocksField.php" />
             <file name="src/Models/Fields/BlocksFieldInstance.php" />
             <file name="src/Models/Fields/PostObjectField.php" />

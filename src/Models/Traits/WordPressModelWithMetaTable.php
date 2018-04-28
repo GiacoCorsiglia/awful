@@ -3,14 +3,16 @@ namespace Awful\Models\Traits;
 
 /**
  * For WordPress objects that use `get_metadata()`.
+ *
+ * User, Post, Term, and Comment.
  */
-trait ModelWithMetaTable
+trait WordPressModelWithMetaTable
 {
     /**
      * @param  string $key
      * @return mixed
      */
-    public function getMeta(string $key)
+    final public function getMeta(string $key)
     {
         assert((bool) $key, 'Expected non-empty meta key');
 
@@ -30,7 +32,7 @@ trait ModelWithMetaTable
      * @param  mixed  $value
      * @return void
      */
-    public function updateMeta(string $key, $value): void
+    final public function updateMeta(string $key, $value): void
     {
         assert((bool) $key, 'Expected non-empty meta key');
 

@@ -1,20 +1,21 @@
 <?php
 namespace Awful\Models;
 
-interface WordPressModel
-{
-    /**
-     * The id of this object.
-     *
-     * @return int
-     */
-    public function id(): int;
+use Awful\Models\Database\BlockSet;
+use stdClass;
 
+abstract class WordPressModel extends Model
+{
     /**
      * Fetches the WordPress object corresponding with `$this->id` object, if
      * one exists.
      *
-     * @return \WP_Network|\WP_Site|\WP_User|\WP_Post|\WP_Term|\WP_Comment|null
+     * @return \WP_Site|\WP_User|\WP_Post|\WP_Term|\WP_Comment|null
      */
-    public function wpObject(): ?object;
+    abstract public function wpObject(): ?object;
+
+    final protected function fetchBlock(BlockSet $blockSet): stdClass
+    {
+        return $blockSet->root();
+    }
 }

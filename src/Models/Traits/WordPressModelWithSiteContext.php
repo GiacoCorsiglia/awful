@@ -1,7 +1,13 @@
 <?php
 namespace Awful\Models\Traits;
 
-trait ModelWithSiteContext
+/**
+ * For WordPress objects that exist in the context of a specific Site (or
+ * "blog") in WordPress multisite.
+ *
+ * Site, Post, Term, and Comment.
+ */
+trait WordPressModelWithSiteContext
 {
     /**
      * The ID of the Site which owns $this object.
@@ -23,7 +29,7 @@ trait ModelWithSiteContext
      */
     final protected function callInSiteContext(callable $callable, ...$args)
     {
-        assert(!is_null($this->siteId), 'Expected `$this->siteId` to be set');
+        assert($this->siteId !== null, 'Expected `$this->siteId` to be set');
 
         $switched = $this->siteId && get_current_blog_id() !== $this->siteId;
         if ($switched) {

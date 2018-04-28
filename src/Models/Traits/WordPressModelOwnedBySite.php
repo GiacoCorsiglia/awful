@@ -1,13 +1,18 @@
 <?php
 namespace Awful\Models\Traits;
 
-use Awful\Models\BlockSet;
+use Awful\Models\Database\BlockSet;
 use Awful\Models\Site;
 
-trait ModelOwnedBySite
+/**
+ * For WordPress objects that are the child of a specific Site (or "blog") in
+ * WordPress multisite.
+ *
+ * Post, Term, and Comment.
+ */
+trait WordPressModelOwnedBySite
 {
-    use ModelWithSiteContext;
-    use BlockOwner;
+    use WordPressModelWithSiteContext;
 
     /** @var int */
     private $id;
@@ -17,13 +22,14 @@ trait ModelOwnedBySite
 
     public function __construct(
         Site $site,
-        int $id = 0,
-        BlockSet $blockSet = null
+        BlockSet $blockSet,
+        int $id = 0
     ) {
         $this->site = $site;
+        // Set the `siteId` for WordPressModelWithSiteContext
         $this->siteId = $site->id();
+        $this->initializeBlockSet($blockSet);
         $this->id = $id;
-        $this->initializeBlockSet($blockSet ?: new BlockSet([]));
     }
 
     final public function id(): int

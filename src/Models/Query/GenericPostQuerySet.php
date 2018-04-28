@@ -2,6 +2,7 @@
 namespace Awful\Models\Query;
 
 use ArrayAccess;
+use Awful\Models\Database\Query\BlockQueryForPosts;
 use Awful\Models\GenericPost;
 use Awful\Models\Site;
 use Countable;
@@ -21,10 +22,13 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
     /** @var WP_Query|null */
     protected $wpQuery;
 
+    /** @var GenericPost[]|null */
+    protected $posts;
+
     public function __construct(Site $site, array $args = [])
     {
         $this->site = $site;
-
+        $this->blockSetManager = $site->blockSet()->manager();
         $this->args = $args + $this->defaults();
     }
 
@@ -40,9 +44,13 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
         $this->objects = [];
         $this->wpQuery = new WP_Query($this->args);
+
+        $ids = wp_list_pluck($this->wpQuery->posts, 'ID');
+        $blockSets = $this->blockSetManager->blockSetsForQuery(new BlockQueryForPosts($this->site->id(), ...$ids));
         foreach ($this->wpQuery->posts as $wpPost) {
-            $this->posts[$wp_post->ID] = new GenericPost(
+            $this->posts[$wpPost->ID] = new GenericPost(
                 $this->site,
+                $blockSets[$wpPost->ID],
                 $wpPost->ID
             );
         }
@@ -55,6 +63,7 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         if ($this->objects === null) {
             $this->fetch();
         }
+        /** @psalm-var WP_Query */
         return $this->wpQuery;
     }
 

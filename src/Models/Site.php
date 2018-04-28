@@ -1,15 +1,14 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Models\Query\PostQuerySet;
-use Awful\Models\Traits\BlockOwnerTrait;
-use Awful\Models\Traits\ModelWithSiteContext;
+use Awful\Models\Database\BlockSet;
+use Awful\Models\Query\GenericPostQuerySet;
+use Awful\Models\Traits\WordPressModelWithSiteContext;
 use WP_Site;
 
-class Site extends Model implements BlockOwnerModel, WordPressModel
+class Site extends WordPressModel
 {
-    use ModelWithSiteContext;
-    use BlockOwnerTrait;
+    use WordPressModelWithSiteContext;
 
     /**
      * Only apply when is_multisite().
@@ -46,14 +45,14 @@ class Site extends Model implements BlockOwnerModel, WordPressModel
     /** @var WP_Site|null */
     private $wpSite;
 
-    protected function __construct(
-        int $id = 0,
-        BlockSet $blockSet = null
+    final public function __construct(
+        BlockSet $blockSet,
+        int $id = 0
     ) {
         assert(is_multisite() || $id === 0, 'Expected `$id` of 0 when non-multisite');
 
         $this->id = $this->siteId = $id;
-        $this->initializeBlockSet($blockSet ?: new BlockSet([]));
+        $this->initializeBlockSet($blockSet);
     }
 
     final public function id(): int
@@ -128,13 +127,8 @@ class Site extends Model implements BlockOwnerModel, WordPressModel
         }
     }
 
-    public function posts(): PostQuerySet
+    public function allPosts(): GenericPostQuerySet
     {
-        return new PostQuerySet($this);
-    }
-
-    protected function rootBlockType(): string
-    {
-        return 'Awful.SiteBlockType';
+        return new GenericPostQuerySet($this);
     }
 }

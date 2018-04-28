@@ -39,7 +39,7 @@ class WordPressGlobals
      * @var WP_Widget_Factory
      * @psalm-suppress PropertyNotSetInConstructor
      */
-    private $widget_factory;
+    private $widgetFactory;
 
     /**
      * @var WP_Roles
@@ -57,7 +57,7 @@ class WordPressGlobals
      * @var WP_Locale_Switcher
      * @psalm-suppress PropertyNotSetInConstructor
      */
-    private $locale_switcher;
+    private $localeSwitcher;
 
     public function __construct(array $globals = null)
     {
@@ -107,10 +107,10 @@ class WordPressGlobals
 
     public function widgetFactory(): WP_Widget_Factory
     {
-        if (!$this->widget_factory) {
+        if (!$this->widgetFactory) {
             throw new UninitializedContextException();
         }
-        return $this->widget_factory;
+        return $this->widgetFactory;
     }
 
     public function roles(): WP_Roles
@@ -131,10 +131,10 @@ class WordPressGlobals
 
     public function localeSwitcher(): WP_Locale_Switcher
     {
-        if (!$this->locale_switcher) {
+        if (!$this->localeSwitcher) {
             throw new UninitializedContextException();
         }
-        return $this->locale_switcher;
+        return $this->localeSwitcher;
     }
 
     /**
@@ -143,40 +143,21 @@ class WordPressGlobals
     private function listen(): void
     {
         add_action('mu_plugins_loaded', function (): void {
-            /** @psalm-suppress UndefinedVariable */
-            global $wp_embed;
-
-            $this->embed = $wp_embed;
+            $this->embed = $GLOBALS['wp_embed'];
         }, 1);
 
         add_action('setup_theme', function (): void {
-            /** @psalm-suppress UndefinedVariable */
-            global $wp_query;
-            /** @psalm-suppress UndefinedVariable */
-            global $wp_rewrite;
-            /** @psalm-suppress UndefinedVariable */
-            global $wp;
-            /** @psalm-suppress UndefinedVariable */
-            global $wp_widget_factory;
-            /** @psalm-suppress UndefinedVariable */
-            global $wp_roles;
-
-            $this->query = $wp_query;
-            $this->rewrite = $wp_rewrite;
-            $this->wp = $wp;
-            $this->widget_factory = $wp_widget_factory;
-            $this->roles = $wp_roles;
+            $this->query = $GLOBALS['wp_query'];
+            $this->rewrite = $GLOBALS['wp_rewrite'];
+            $this->wp = $GLOBALS['wp'];
+            $this->widgetFactory = $GLOBALS['wp_widget_factory'];
+            $this->roles = $GLOBALS['wp_roles'];
         }, 1);
 
         // This should run _before_ the listener in Awful.
         add_action('after_setup_theme', function (): void {
-            /** @psalm-suppress UndefinedVariable */
-            global $wp_locale;
-            /** @psalm-suppress UndefinedVariable */
-            global $wp_locale_switcher;
-
-            $this->locale = $wp_locale;
-            $this->locale_switcher = $wp_locale_switcher;
+            $this->locale = $GLOBALS['wp_locale'];
+            $this->localeSwitcher = $GLOBALS['wp_locale_switcher'];
         }, 1);
     }
 }

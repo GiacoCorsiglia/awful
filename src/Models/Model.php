@@ -1,7 +1,6 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Context\Context;
 use Awful\Models\Database\BlockSet;
 use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Fields\Field;
@@ -9,37 +8,26 @@ use stdClass;
 
 abstract class Model
 {
-    /** @var Context */
-    private static $context;
-
     /** @var Field[][] */
     private static $allFields = [];
-
-    final public static function initializeContext(Context $context): void
-    {
-        self::$context = $context;
-        // Reset the set of all fields if context changes (for testing).
-        self::$allFields = [];
-    }
 
     /**
      * The set of fields for this class.
      *
-     * @param  Context $context
      * @return Field[]
      * @psalm-return array<string, Field>
      */
-    public static function fields(Context $context): array
+    public static function fields(): array
     {
         return [];
     }
 
-    private static function field(string $key): Field
+    private static function field(string $key): ?Field
     {
         if (!isset(self::$allFields[static::class])) {
-            self::$allFields[static::class] = static::fields(self::$context);
+            self::$allFields[static::class] = static::fields();
         }
-        return self::$allFields[static::class][$key];
+        return self::$allFields[static::class][$key] ?? null;
     }
 
     /** @var BlockSet */
@@ -63,8 +51,11 @@ abstract class Model
             return $this->formattedDataCache[$key];
         }
 
-        $value = $this->getRaw($key);
         $field = static::field($key);
+        if (!$field) {
+            throw new FieldDoesNotExistException("There is no field '$key' on " . static::class);
+        }
+        $value = $this->getRaw($key);
         return $this->formattedDataCache[$key] = $field->toPhp($value, $this, $key);
     }
 
@@ -112,7 +103,7 @@ abstract class Model
     public function clean(): array
     {
         $cleanedData = [];
-        foreach (static::fields(self::$context) as $key => $field) {
+        foreach (static::fields() as $key => $field) {
             $value = $this->block->data[$key] ?? null;
 
             if ($value === null && $field->isRequired()) {

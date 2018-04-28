@@ -78,7 +78,7 @@ abstract class BlockQuery
         }
 
         if (count($this->values) === 1) {
-            return "`{$this->column}` = {$this->values[1]}";
+            return "`{$this->column}` = {$this->values[0]}";
         }
 
         $valuesString = implode(',', $this->values);

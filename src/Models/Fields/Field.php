@@ -72,7 +72,7 @@ abstract class Field implements JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return $this->args;
+        return ['$type' => strtr(ltrim(static::class, '\\'), '\\', '.')] + $this->args;
     }
 
     protected function extend(array $args): self

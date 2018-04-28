@@ -11,14 +11,23 @@ class BlockSetManager
     /** @var Database */
     private $db;
 
-    public function __construct(Database $db)
+    /** @var BlockTypeMap */
+    private $blockTypeMap;
+
+    public function __construct(Database $db, BlockTypeMap $blockTypeMap)
     {
         $this->db = $db;
+        $this->blockTypeMap = $blockTypeMap;
 
         wp_cache_add_global_groups([
             self::CACHE_GROUP_PREFIX . Database::SITE_COLUMN,
             self::CACHE_GROUP_PREFIX . Database::USER_COLUMN,
         ]);
+    }
+
+    public function blockTypeMap(): BlockTypeMap
+    {
+        return $this->blockTypeMap;
     }
 
     public function blockSetsForQuery(BlockQuery $blockQuery): array

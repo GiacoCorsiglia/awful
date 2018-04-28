@@ -4,9 +4,8 @@ namespace Awful;
 use Awful\Container\Container;
 use Awful\Context\Context;
 use Awful\Context\WordPressGlobals;
-use Awful\Exceptions\UnknownBlockTypeException;
-use Awful\Exceptions\UnregisteredBlockClassException;
 use Awful\Models\Database\BlockSetManager;
+use Awful\Models\Database\BlockTypeMap;
 use Awful\Models\Database\Database;
 use Awful\Models\Database\Query\BlockQueryForSite;
 use Awful\Models\Database\Query\BlockQueryForUsers;
@@ -20,53 +19,15 @@ use WP_CLI;
 final class Awful
 {
     /**
-     * @var string[]
-     * @psalm-var array<string, class-string>
-     */
-    private static $blockClassMap;
-
-    /**
      * @param Provider[] $providers
      * @psalm-param array<int, Provider> $providers
      * @param array $blockClassMap
-     * @psalm-param array<string, class-string> $blockClassMap
+     * @psalm-param array<class-string, string[]|string> $blockClassMap
      * @return void
      */
     public static function bootstrap(array $providers, array $blockClassMap): void
     {
-        $GLOBALS['_awful_instance'] = new self($providers);
-        self::$blockClassMap = $blockClassMap;
-    }
-
-    /**
-     * @param  string $type
-     * @return string
-     * @psalm-return class-string
-     */
-    public static function blockClassForType(string $type): string
-    {
-        if (!isset(self::$blockClassMap[$type])) {
-            throw new UnknownBlockTypeException($type);
-        }
-
-        return self::$blockClassMap[$type];
-    }
-
-    /**
-     * @param string $type
-     * @param string $class
-     * @psalm-param class-string $class
-     * @return string
-     */
-    public static function blockTypeForClass(string $class): string
-    {
-        foreach (self::$blockClassMap as $type => $class) {
-            if ($class === $type) {
-                return $type;
-            }
-        }
-
-        throw new UnregisteredBlockClassException($class);
+        $GLOBALS['_awful_instance'] = new self($providers, $blockClassMap);
     }
 
     /** @var Container */
@@ -106,8 +67,9 @@ final class Awful
      * @internal
      *
      * @param array $providers
+     * @param array $blockTypeMap
      */
-    private function __construct(array $providers)
+    private function __construct(array $providers, array $blockTypeMap)
     {
         assert((bool) $providers, 'Expected at least one provider');
         assert(every($providers, 'Awful\is_instanceof', [Provider::class]), 'Expected array of `ProviderInterface` instances');
@@ -138,7 +100,7 @@ final class Awful
         $database = new Database($GLOBALS['wpdb']);
         $this->container->register($database);
 
-        $this->blockSetManager = new BlockSetManager($database);
+        $this->blockSetManager = new BlockSetManager($database, new BlockTypeMap($blockTypeMap));
         $this->container->register($this->blockSetManager);
 
         /**

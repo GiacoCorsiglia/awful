@@ -1,7 +1,6 @@
 <?php
 namespace Awful\Models\Database;
 
-use Awful\Awful;
 use Awful\Models\Database\Query\BlockOwnerId;
 use stdClass;
 use function Awful\uuid;
@@ -81,7 +80,7 @@ class BlockSet
      */
     public function createForClass(string $class, string $uuid): stdClass
     {
-        $type = Awful::blockTypeForClass($class);
+        $type = $this->blockSetManager->blockTypeMap()->typeForClass($class);
         return $this->create($type, [], $uuid);
     }
 

@@ -1,5 +1,5 @@
 <?php
-namespace Awful\Exceptions;
+namespace Awful\Models\Database\Exceptions;
 
 use Exception;
 

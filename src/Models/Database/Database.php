@@ -215,6 +215,7 @@ class Database
             `$typeColumn` VARCHAR(255) NOT NULL,
             `$dataColumn` JSON NOT NULL CHECK (JSON_VALID(`$dataColumn`)),
             PRIMARY KEY (`$idColumn`),
+            INDEX (`$siteColumn`),
             $userReferenceDeclaration
             FOREIGN KEY (`$postColumn`) REFERENCES `{$this->wpdb->posts}` (`ID`) ON DELETE CASCADE,
             FOREIGN KEY (`$termColumn`) REFERENCES `{$this->wpdb->terms}` (`term_id`) ON DELETE CASCADE,

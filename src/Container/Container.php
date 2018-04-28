@@ -177,9 +177,14 @@ final class Container implements ContainerInterface
      * @param mixed    ...$args  Additional arguments to pass to the callable.
      *
      * @return mixed Whatever value is returned by the callable.
+     *
+     * @psalm-suppress PossiblyInvalidArgument see `new ReflectionFunction()`.
      */
     public function call(callable $callable, ...$args)
     {
+        if (is_string($callable) && strpos($callable, '::')) {
+            $callable = explode('::', $callable);
+        }
         $reflection = is_array($callable)
             ? new ReflectionMethod($callable[0], $callable[1])
             : new ReflectionFunction($callable);

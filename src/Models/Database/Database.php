@@ -82,9 +82,20 @@ class Database
         }
     }
 
-    public function table(): string
+    public function tableForSite(int $siteId): string
     {
-        return "{$this->wpdb->prefix}awful_blocks";
+        $switched = $siteId && get_current_blog_id() !== $siteId;
+        if ($switched) {
+            switch_to_blog($siteId);
+        }
+
+        $table = $this->table();
+
+        if ($switched) {
+            restore_current_blog();
+        }
+
+        return $table;
     }
 
     public function fetchBlocks(BlockQuery $blockQuery): array
@@ -177,6 +188,11 @@ class Database
         if ($switched) {
             restore_current_blog();
         }
+    }
+
+    private function table(): string
+    {
+        return "{$this->wpdb->prefix}awful_blocks";
     }
 
     private function createTable(bool $includeUsers): void

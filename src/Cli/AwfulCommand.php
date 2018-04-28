@@ -17,22 +17,26 @@ class AwfulCommand extends Command
 
     public function install(): void
     {
-        if (!is_multisite()) {
-            $this->db->install();
-            return;
+        foreach ($this->allSiteIds() as $siteId) {
+            $this->db->install($siteId);
         }
     }
 
     public function uninstall(): void
     {
-        if (!is_multisite()) {
-            $this->db->uninstall();
-            return;
+        foreach ($this->allSiteIds() as $siteId) {
+            $this->db->uninstall($siteId);
         }
     }
 
-    public function sayHello(): void
+    private function allSiteIds(): array
     {
-        echo "hello\n";
+        if (!is_multisite()) {
+            return [0];
+        }
+        return get_sites([
+            'fields' => 'ids',
+            'number' => 0,
+        ]);
     }
 }

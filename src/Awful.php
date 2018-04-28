@@ -1,6 +1,7 @@
 <?php
 namespace Awful;
 
+use Awful\Cli\AwfulCommand;
 use Awful\Container\Container;
 use Awful\Context\Context;
 use Awful\Context\WordPressGlobals;
@@ -117,6 +118,13 @@ final class Awful
         //
         // Run bootstrap phases.
         //
+
+        if (AWFUL_ENV === 'dev' && getenv('AWFUL_INSTALLING') === 'yes' && defined('WP_CLI') && WP_CLI) {
+            // Just register the Awful CLI and bail to avoid DB errors.
+            /** @psalm-suppress UndefinedClass */
+            WP_CLI::add_command(AwfulCommand::commandName(), $this->container->get(AwfulCommand::class), AwfulCommand::registrationArguments());
+            return;
+        }
 
         // Awful is run as a mu-plugin, so it's appropriate to run these here.
         $this->runPlugins();

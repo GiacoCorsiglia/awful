@@ -28,6 +28,9 @@ final class Awful
      */
     public static function bootstrap(array $providers, array $blockClassMap): void
     {
+        if (!defined('AWFUL_ENV')) {
+            define('AWFUL_ENV', 'production');
+        }
         $GLOBALS['_awful_instance'] = new self($providers, $blockClassMap);
     }
 
@@ -119,6 +122,7 @@ final class Awful
         // Run bootstrap phases.
         //
 
+        /** @psalm-suppress UndefinedConstant */
         if (AWFUL_ENV === 'dev' && getenv('AWFUL_INSTALLING') === 'yes' && defined('WP_CLI') && WP_CLI) {
             // Just register the Awful CLI and bail to avoid DB errors.
             /** @psalm-suppress UndefinedClass */

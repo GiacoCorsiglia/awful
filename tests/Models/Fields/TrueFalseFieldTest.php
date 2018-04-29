@@ -15,6 +15,8 @@ class TrueFalseFieldTest extends AwfulTestCase
 
     public function setUp()
     {
+        parent::setUp();
+
         $this->field = new TrueFalseField();
         $this->model = $this->getMockForAbstractClass(Model::class);
     }

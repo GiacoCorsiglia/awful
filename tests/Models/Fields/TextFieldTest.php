@@ -9,11 +9,14 @@ class TextFieldTest extends AwfulTestCase
 {
     /** @var TextField */
     private $field;
+
     /** @var Model */
     private $model;
 
     public function setUp()
     {
+        parent::setUp();
+
         $this->field = new TextField();
         $this->model = $this->getMockForAbstractClass(Model::class);
     }

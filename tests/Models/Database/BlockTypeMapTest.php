@@ -16,6 +16,8 @@ class BlockTypeMapTest extends AwfulTestCase
 
     public function setUp()
     {
+        parent::setUp();
+
         $this->map = new BlockTypeMap([
             Cls1::class => 'type1',
             Cls2::class => ['type2'],

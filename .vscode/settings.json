@@ -11,6 +11,8 @@
   "php.suggest.basic": false,
   "php.validate.run": "onType",
   "cSpell.words": [
+    "multisite",
+    "Multisite",
     "unserialization",
     "unserialized"
   ],

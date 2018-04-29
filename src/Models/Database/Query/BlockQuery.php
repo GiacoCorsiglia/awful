@@ -2,6 +2,7 @@
 namespace Awful\Models\Database\Query;
 
 use Awful\Models\Database\Database;
+use Awful\Models\Database\Query\Exceptions\EmptyBlockQueryException;
 
 abstract class BlockQuery
 {
@@ -46,7 +47,7 @@ abstract class BlockQuery
     public function sql(): string
     {
         if (!$this->values) {
-            throw new \Exception();
+            throw new EmptyBlockQueryException();
         }
 
         if (!in_array($this->column, Database::FOREIGN_KEY_COLUMNS)) {

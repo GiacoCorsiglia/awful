@@ -19,10 +19,18 @@ class BlockQueryForSite extends BlockQuery
         return [$this->siteId];
     }
 
+    /**
+     * @todo Calling this method on this class doesn't make sense.
+     *
+     * @param  array      $exclude
+     * @return BlockQuery
+     */
     public function without(array $exclude): BlockQuery
     {
         $bq = new self($this->siteId);
-        $bq->values = [];
+        if (in_array($this->siteId, $exclude)) {
+            $bq->values = [];
+        }
         return $bq;
     }
 

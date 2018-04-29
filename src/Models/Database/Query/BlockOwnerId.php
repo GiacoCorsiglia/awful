@@ -43,5 +43,7 @@ abstract class BlockOwnerId
         return "`{$this->column}` = {$this->value}";
     }
 
+    abstract public function toBlockQuery(): BlockQuery;
+
     abstract public function rootBlockType(): string;
 }

@@ -12,6 +12,11 @@ class BlockOwnerIdForUser extends BlockOwnerId
         $this->value = $userId;
     }
 
+    public function toBlockQuery(): BlockQuery
+    {
+        return new BlockQueryForUsers($this->value);
+    }
+
     public function rootBlockType(): string
     {
         return 'Awful.RootBlocks.User';

@@ -5,26 +5,6 @@ use Awful\Models\Database\Database;
 
 abstract class BlockQuery
 {
-    public static function fromOwnerId(BlockOwnerId $id): self
-    {
-        if ($id instanceof BlockOwnerIdForSite) {
-            return new BlockQueryForSite($id->siteId());
-        }
-        if ($id instanceof BlockOwnerIdForUser) {
-            return new BlockQueryForUsers($id->value());
-        }
-        if ($id instanceof BlockOwnerIdForPost) {
-            return new BlockQueryForPosts($id->siteId(), $id->value());
-        }
-        if ($id instanceof BlockOwnerIdForTerm) {
-            return new BlockQueryForTerms($id->siteId(), $id->value());
-        }
-        if ($id instanceof BlockOwnerIdForComment) {
-            return new BlockQueryForComments($id->siteId(), $id->value());
-        }
-        throw new \Exception();
-    }
-
     /** @var int */
     protected $siteId;
 

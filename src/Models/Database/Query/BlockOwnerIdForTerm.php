@@ -14,6 +14,11 @@ class BlockOwnerIdForTerm extends BlockOwnerId
         $this->value = $termId;
     }
 
+    public function toBlockQuery(): BlockQuery
+    {
+        return new BlockQueryForTerms($this->siteId, $this->value);
+    }
+
     public function rootBlockType(): string
     {
         return 'Awful.RootBlocks.Term';

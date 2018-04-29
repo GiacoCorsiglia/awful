@@ -14,6 +14,11 @@ class BlockOwnerIdForComment extends BlockOwnerId
         $this->value = $commentId;
     }
 
+    public function toBlockQuery(): BlockQuery
+    {
+        return new BlockQueryForComments($this->siteId, $this->value);
+    }
+
     public function rootBlockType(): string
     {
         return 'Awful.RootBlocks.Comment';

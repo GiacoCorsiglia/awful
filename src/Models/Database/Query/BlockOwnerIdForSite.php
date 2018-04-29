@@ -14,6 +14,11 @@ class BlockOwnerIdForSite extends BlockOwnerId
         $this->value = 1;
     }
 
+    public function toBlockQuery(): BlockQuery
+    {
+        return new BlockQueryForSite($this->siteId);
+    }
+
     public function rootBlockType(): string
     {
         return 'Awful.RootBlocks.Site';

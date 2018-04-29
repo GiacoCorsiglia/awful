@@ -2,6 +2,7 @@
 namespace Awful\Models;
 
 use Awful\Models\Database\BlockSet;
+use Awful\Models\Exceptions\FieldDoesNotExistException;
 use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Fields\Field;
 use stdClass;

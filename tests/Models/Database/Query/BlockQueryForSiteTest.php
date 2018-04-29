@@ -32,8 +32,8 @@ class BlockQueryForSiteTest extends AwfulTestCase
 
     public function testWithout()
     {
-        $i = $this->instance();
         $siteId = is_multisite() ? 3 : 0;
+        $i = $this->instance($siteId);
         $this->assertSame([1], $i->without([2])->values());
         $this->assertSame([], $i->without([$siteId])->values());
     }

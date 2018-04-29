@@ -13,7 +13,7 @@ class MultisiteDatabaseHooks
     {
         $this->db = $db;
         add_action('wpmu_new_blog', [$this, 'createSite']);
-        add_filter('wpmu_drop_tables', [$this, 'addTableToDropOnDeleteSite']);
+        add_filter('wpmu_drop_tables', [$this, 'registerTableToDropOnDeleteSite']);
     }
 
     /**
@@ -30,9 +30,11 @@ class MultisiteDatabaseHooks
      * @param  int      $blog_id
      * @return array
      */
-    public function addTableToDropOnDeleteSite($tables, $blog_id): array
+    public function registerTableToDropOnDeleteSite($tables, $blog_id): array
     {
-        $tables[] = $this->db->tableForSite((int) $blog_id);
+        // Put our table first since it has foreign key references to the other
+        // tables that will be dropped.
+        array_unshift($tables, $this->db->tableForSite((int) $blog_id));
         return $tables;
     }
 }

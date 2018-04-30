@@ -2,9 +2,9 @@
 namespace Awful\Models\Database;
 
 use Awful\AwfulTestCase;
-use function Awful\uuid;
-use Awful\Models\Database\Query\BlockQueryForSite;
 use Awful\Models\Database\Query\BlockQueryForPosts;
+use Awful\Models\Database\Query\BlockQueryForSite;
+use function Awful\uuid;
 
 class DatabaseTest extends AwfulTestCase
 {
@@ -113,7 +113,13 @@ class DatabaseTest extends AwfulTestCase
         // User assertEquals since `get_var` will return a string.
         $this->assertEquals(0, $this->wpdb->get_var("SELECT COUNT(*) FROM `$table`;"));
 
+        if ($siteId) {
+            switch_to_blog($siteId);
+        }
         $postId = $this->factory->post->create_and_get()->ID;
+        if ($siteId) {
+            restore_current_blog();
+        }
 
         $postBlockUuid = uuid();
         $postBlockType = 'bar';
@@ -135,14 +141,14 @@ class DatabaseTest extends AwfulTestCase
         ]);
 
         $this->assertEquals(2, $this->wpdb->get_var("SELECT COUNT(*) FROM `$table`;"), '2 blocks were inserted');
-        $this->assertEquals(1, $this->wpdb->get_var("SELECT COUNT(*) FROM `$table` WHERE `" . Database::SITE_COLUMN . "` = 1;"), 'One for_site block was inserted');
+        $this->assertEquals(1, $this->wpdb->get_var("SELECT COUNT(*) FROM `$table` WHERE `" . Database::SITE_COLUMN . '` = 1;'), 'One for_site block was inserted');
         $this->assertEquals(1, $this->wpdb->get_var("SELECT COUNT(*) FROM `$table` WHERE `" . Database::POST_COLUMN . "` = $postId;"), 'One post_id block was inserted');
 
         $id = $this->wpdb->get_var("SELECT `id` FROM `$table` WHERE `" . Database::POST_COLUMN . "` = $postId;");
 
-        $this->assertSame($postBlockType, $this->wpdb->get_var("SELECT `" . Database::TYPE_COLUMN . "` FROM `$table` WHERE `" . Database::ID_COLUMN . "` = $id;"));
+        $this->assertSame($postBlockType, $this->wpdb->get_var('SELECT `' . Database::TYPE_COLUMN . "` FROM `$table` WHERE `" . Database::ID_COLUMN . "` = $id;"));
 
-        $this->assertSame($originalPostBlockData, json_decode($this->wpdb->get_var("SELECT `" . Database::DATA_COLUMN . "` FROM `$table` WHERE `" . Database::ID_COLUMN . "` = $id;"), true));
+        $this->assertSame($originalPostBlockData, json_decode($this->wpdb->get_var('SELECT `' . Database::DATA_COLUMN . "` FROM `$table` WHERE `" . Database::ID_COLUMN . "` = $id;"), true));
 
 
         // Save some more blocks; this time one of them should update.
@@ -158,15 +164,15 @@ class DatabaseTest extends AwfulTestCase
                 Database::ID_COLUMN => $id,
                 Database::UUID_COLUMN => $postBlockUuid,
                 Database::TYPE_COLUMN => $postBlockType,
-                Database::DATA_COLUMN => $updatedPostBlockData
+                Database::DATA_COLUMN => $updatedPostBlockData,
             ],
         ]);
 
         $this->assertEquals(3, $this->wpdb->get_var("SELECT COUNT(*) FROM `$table`;"), '1 new block was inserted');
 
-        $this->assertSame($postBlockUuid, $this->wpdb->get_var("SELECT `" . Database::UUID_COLUMN ."` FROM `$table` WHERE `" . Database::ID_COLUMN . "` = $id;"));
+        $this->assertSame($postBlockUuid, $this->wpdb->get_var('SELECT `' . Database::UUID_COLUMN . "` FROM `$table` WHERE `" . Database::ID_COLUMN . "` = $id;"));
 
-        $this->assertSame($updatedPostBlockData, json_decode($this->wpdb->get_var("SELECT `" . Database::DATA_COLUMN . "` FROM `$table` WHERE `" . Database::ID_COLUMN . "` = $id;"), true));
+        $this->assertSame($updatedPostBlockData, json_decode($this->wpdb->get_var('SELECT `' . Database::DATA_COLUMN . "` FROM `$table` WHERE `" . Database::ID_COLUMN . "` = $id;"), true));
 
         $this->db->uninstall($siteId);
 
@@ -181,8 +187,14 @@ class DatabaseTest extends AwfulTestCase
 
         $this->db->install($siteId);
 
+        if ($siteId) {
+            switch_to_blog($siteId);
+        }
         $postId2 = $this->factory->post->create_and_get()->ID;
         $postId1 = $this->factory->post->create_and_get()->ID;
+        if ($siteId) {
+            restore_current_blog();
+        }
 
         $table = $this->db->tableForSite($siteId);
 

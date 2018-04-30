@@ -30,15 +30,15 @@ function _manually_load_plugin()
 {
     require dirname(__DIR__) . '/vendor/autoload.php';
 
-    $db = new Database($GLOBALS['wpdb']);
-    if (!is_multisite()) {
-        $db->uninstall();
-        $db->install();
-    } else {
-        // TODO: Remove the tables for all sites.
-        $db->uninstall(1);
-        $db->install(1);
-    }
+    // $db = new Database($GLOBALS['wpdb']);
+    // if (!is_multisite()) {
+    //     $db->uninstall();
+    //     $db->install();
+    // } else {
+    //     // TODO: Remove the tables for all sites.
+    //     $db->uninstall(1);
+    //     $db->install(1);
+    // }
 }
 tests_add_filter('muplugins_loaded', '_manually_load_plugin');
 

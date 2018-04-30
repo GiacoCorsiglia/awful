@@ -104,12 +104,11 @@ class BlockSetManager
         $cacheGroup = self::CACHE_GROUP_PREFIX . $blockQuery->column();
         $siteId = $blockQuery->siteId();
 
-        if ($cached = wp_cache_get((string) $siteId, $cacheGroup)) {
-            return $cached;
+        $blocks = $cached = wp_cache_get((string) $siteId, $cacheGroup);
+        if ($blocks === false) {
+            $blocks = $this->db->fetchBlocks($blockQuery);
+            wp_cache_set((string) $siteId, $blocks, $cacheGroup);
         }
-
-        $blocks = $this->db->fetchBlocks($blockQuery);
-        wp_cache_set((string) $siteId, $cacheGroup);
 
         return [$siteId => new BlockSet(
             $this,

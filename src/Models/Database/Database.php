@@ -119,10 +119,11 @@ class Database
             restore_current_blog();
         }
 
+        $dataColumn = self::DATA_COLUMN;
         // Decode the JSON.
         foreach ($blocks as $block) {
             // Pass `true` so `$data` becomes an associative array.
-            $block->data = $block->data ? (json_decode($block->data, true) ?: []) : [];
+            $block->$dataColumn = $block->$dataColumn ? (json_decode($block->$dataColumn, true) ?: []) : [];
         }
 
         return $blocks;
@@ -141,48 +142,61 @@ class Database
             switch_to_blog($siteId);
         }
 
+        $idColumn = self::ID_COLUMN;
+        $uuidColumn = self::UUID_COLUMN;
+        $siteColumn = self::SITE_COLUMN;
+        $userColumn = self::USER_COLUMN;
+        $postColumn = self::POST_COLUMN;
+        $termColumn = self::TERM_COLUMN;
+        $commentColumn = self::COMMENT_COLUMN;
+        $typeColumn = self::TYPE_COLUMN;
+        $dataColumn = self::DATA_COLUMN;
+
         $includeUsers = !$siteId || is_main_site();
-        $userColumn = $includeUsers ? '`user_id`,' : '';
+        $userColumnDeclaration = $includeUsers ? "`$userColumn`," : '';
 
         $sql = "INSERT into {$this->table()} (
-            `block_uuid`,
-            `block_parent_uuid`,
-            `for_site`,
-            `post_id`,
-            `term_id`,
-            $userColumn
-            `comment_id`,
-            `block_type`,
-            `block_data`
+            `$idColumn`,
+            `$uuidColumn`,
+            `$siteColumn`,
+            $userColumnDeclaration
+            `$postColumn`,
+            `$termColumn`,
+            `$commentColumn`,
+            `$typeColumn`,
+            `$dataColumn`
         ) VALUES ";
 
         $rows = [];
-        $userPlaceholder = $includeUsers ? '%d,' : '';
+        $values = []; // The values that will be passed to wpdb::prepare()
         foreach ($blocks as $block) {
-            $values = [
-                $block->block_uuid,
-                $block->block_parent_uuid,
-                $block->for_site,
-                $block->post_id,
-                $block->term_id,
-            ];
-            if ($includeUsers) {
-                $values[] = $block->user_id;
-            }
-            $values[] = $block->comment_id;
-            $values[] = $block->block_type;
-            $values[] = json_encode($block->block_data ?? []);
+            // wpdb::prepare() doesn't support NULL, so we have to sanitize the
+            // foreign key columns ourself.  We do so by just casting to `int`.
 
-            $rows[] = $this->wpdb->prepare(
-                "(%s, %s, %d, %d, %d, $userPlaceholder %d, %s, %s)",
-                $values
-            );
+            $row = [];
+            $row[] = (int) ($block->$idColumn ?? 0);
+            $row[] = '%s'; // uuid
+            $row[] = ($block->$siteColumn ?? 0) ? 1 : 0;
+            if ($includeUsers) {
+                $row[] = ((int) ($block->$userColumn ?? 0)) ?: 'NULL';
+            }
+            $row[] = ((int) ($block->$postColumn ?? 0)) ?: 'NULL';
+            $row[] = ((int) ($block->$termColumn ?? 0)) ?: 'NULL';
+            $row[] = ((int) ($block->$commentColumn ?? 0)) ?: 'NULL';
+            $row[] = '%s'; // type
+            $row[] = '%s'; // data
+
+            $rows[] = '(' . implode(',', $row) . ')';
+
+            $values[] = $block->$uuidColumn;
+            $values[] = $block->$typeColumn;
+            $values[] = !empty($block->$dataColumn) ? json_encode($block->$dataColumn) : '{}';
         }
 
         $sql .= implode(',', $rows);
-        $sql .= ' ON DUPLICATE KEY UPDATE block_data=VALUES(block_data)';
+        $sql .= ' ON DUPLICATE KEY UPDATE `data` = VALUES(`data`);';
 
-        $this->wpdb->query($sql);
+        $this->wpdb->query($this->wpdb->prepare($sql, $values));
         $this->errorToException($this->wpdb->last_error);
 
         if ($switched) {

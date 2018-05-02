@@ -134,7 +134,7 @@ class BlockSetManager
                 throw new SiteMismatchException();
             }
 
-            $allBlocks = array_merge($allBlocks, $blockSet->all());
+            $allBlocks = array_merge($allBlocks, array_values($blockSet->all()));
         }
 
         $this->db->saveBlocks($siteId, $allBlocks);

@@ -2,6 +2,9 @@
 namespace Awful\Models\Database;
 
 use Awful\AwfulTestCase;
+use Awful\Models\Database\Exceptions\SiteMismatchException;
+use Awful\Models\Database\Query\BlockOwnerIdForPost;
+use Awful\Models\Database\Query\BlockOwnerIdForSite;
 use Awful\Models\Database\Query\BlockQueryForPosts;
 use Awful\Models\Database\Query\BlockQueryForSite;
 use function Awful\uuid;
@@ -143,5 +146,53 @@ class BlockSetManagerTest extends AwfulTestCase
         $set2 = $sets[$postId2];
         $this->assertSame($uuid1, $set1->get($uuid1)->uuid);
         $this->assertSame($uuid2, $set2->get($uuid2)->uuid);
+    }
+
+    public function testSaveRejectsBlockSetsForMultipleSites()
+    {
+        $this->skipWithoutMultisite();
+
+        $db = $this->createMock(Database::class);
+        $map = new BlockTypeMap([]);
+        $manager = new BlockSetManager($db, $map);
+
+        $bs1 = new BlockSet($manager, new BlockOwnerIdForSite(1), []);
+        $bs2 = new BlockSet($manager, new BlockOwnerIdForPost(2, 1), []);
+
+        $this->expectException(SiteMismatchException::class);
+        $manager->save($bs1, $bs2);
+    }
+
+    public function testSave()
+    {
+        $siteId = is_multisite() ? 1 : 0;
+
+        $uuid = uuid();
+        $block1 = (object) [
+            'uuid' => $uuid,
+        ];
+        $block2 = (object) [
+            'uuid' => $uuid,
+        ];
+
+        $db = $this->createMock(Database::class);
+        $db->expects($this->once())
+            ->method('saveBlocks')
+            ->with($siteId, [
+                $block1,
+                $block2,
+            ]);
+
+        $map = new BlockTypeMap([]);
+        $manager = new BlockSetManager($db, $map);
+
+        $bs1 = new BlockSet($manager, new BlockOwnerIdForSite($siteId), [
+            $block1,
+        ]);
+        $bs2 = new BlockSet($manager, new BlockOwnerIdForPost($siteId, 1), [
+            $block2,
+        ]);
+
+        $manager->save($bs1, $bs2);
     }
 }

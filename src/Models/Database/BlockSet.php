@@ -1,6 +1,8 @@
 <?php
 namespace Awful\Models\Database;
 
+use Awful\Models\Database\Exceptions\BlockNotFoundException;
+use Awful\Models\Database\Exceptions\UuidCollisionException;
 use Awful\Models\Database\Query\BlockOwnerId;
 use stdClass;
 use function Awful\uuid;
@@ -52,7 +54,7 @@ class BlockSet
     public function set(string $uuid, array $data): void
     {
         if (!isset($this->blocks[$uuid])) {
-            throw new \Exception();
+            throw new BlockNotFoundException($uuid);
         }
 
         $this->blocks[$uuid]->data = $data;
@@ -61,7 +63,7 @@ class BlockSet
     public function create(string $type, array $data = [], string $uuid = ''): stdClass
     {
         if ($uuid && isset($this->blocks[$uuid])) {
-            throw new \Exception();
+            throw new UuidCollisionException($uuid);
         }
         $uuid = $uuid ?: uuid();
         $this->blocks[$uuid] = (object) [

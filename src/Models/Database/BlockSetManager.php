@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Models\Database;
 
+use Awful\Models\Database\Exceptions\SiteMismatchException;
 use Awful\Models\Database\Query\BlockQuery;
 use Awful\Models\Database\Query\BlockQueryForSite;
 
@@ -130,7 +131,7 @@ class BlockSetManager
         $allBlocks = [];
         foreach ($blockSets as $blockSet) {
             if ($blockSet->ownerId()->siteId() !== $siteId) {
-                throw new \Exception();
+                throw new SiteMismatchException();
             }
 
             $allBlocks = array_merge($allBlocks, $blockSet->all());

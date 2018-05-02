@@ -67,6 +67,7 @@ class BlockSet
         }
         $uuid = $uuid ?: uuid();
         $this->blocks[$uuid] = (object) [
+            'uuid' => $uuid,
             $this->ownerId->column() => $this->ownerId->value(),
             'type' => $type,
             'data' => $data,

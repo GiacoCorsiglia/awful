@@ -57,7 +57,9 @@ class BlockSetManager
         foreach ($ids as $id) {
             $cachedBlocks = wp_cache_get((string) $id, $cacheGroup);
 
-            if ($cachedBlocks) {
+            // `false` indicates that the value isn't in the cache; we will
+            // however store empty arrays of blocks in the cache.
+            if ($cachedBlocks !== false) {
                 $cachedIds = $ids;
                 $result[$id] = $cachedBlocks;
             }

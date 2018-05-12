@@ -1,11 +1,15 @@
 <?xml version="1.0"?>
-<psalm stopOnFirstError="true" useDocblockTypes="true" useAssertForType="true" rememberPropertyAssignmentsAfterCall="true">
+<psalm stopOnFirstError="true"
+    useDocblockTypes="true"
+    useAssertForType="true"
+    rememberPropertyAssignmentsAfterCall="true"
+>
     <projectFiles>
         <directory name="src" />
         <ignoreFiles>
             <file name="src/Router.php" />
             <file name="src/Models/Network.php" />
-            <file name="src/Utilities/FilesystemCache.php" />
+            <directory name="src/Utilities" />
             <directory name="src/Templates" />
             <file name="src/render.php" />
         </ignoreFiles>

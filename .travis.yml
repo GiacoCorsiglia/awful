@@ -3,15 +3,15 @@ sudo: false
 language: php
 
 php:
-  - '7.1'
-  # - '7.2'
+  # - '7.1'
+  - '7.2'
   # - nightly
 
 env:
-  - WP_VERSION=4.9.4 WP_MULTISITE=0
-  - WP_VERSION=4.9.4 WP_MULTISITE=1
-  # - WP_VERSION=latest WP_MULTISITE=0
-  # - WP_VERSION=latest WP_MULTISITE=1
+  # - WP_VERSION=4.9.4 WP_MULTISITE=0
+  # - WP_VERSION=4.9.4 WP_MULTISITE=1
+  - WP_VERSION=latest WP_MULTISITE=0
+  - WP_VERSION=latest WP_MULTISITE=1
 
 matrix:
   allow_failures:
@@ -31,3 +31,7 @@ before_script:
 script:
   - vendor/bin/psalm
   - vendor/bin/phpunit
+
+addons:
+  # Install MariaDB version which supports JSON
+  mariadb: '10.2'

@@ -2,13 +2,8 @@
 namespace Awful\Models\Traits;
 
 use Awful\Models\Comment;
-use Awful\Models\Database\BlockSet;
-use Awful\Models\Database\Query\BlockOwnerIdForComment;
-use Awful\Models\Database\Query\BlockOwnerIdForPost;
-use Awful\Models\Database\Query\BlockOwnerIdForTerm;
-use Awful\Models\GenericPost;
+use Awful\Models\Database\EntityManager;
 use Awful\Models\Site;
-use Awful\Models\TaxonomyTerm;
 
 /**
  * For WordPress objects that are the child of a specific Site (or "blog") in
@@ -26,21 +21,24 @@ trait WordPressModelOwnedBySite
     /** @var Site */
     private $site;
 
-    final public function __construct(Site $site, BlockSet $blockSet)
-    {
-        $ownerId = $blockSet->ownerId();
-        assert(
-            ($this instanceof GenericPost && $ownerId instanceof BlockOwnerIdForPost)
-            || ($this instanceof Comment && $ownerId instanceof BlockOwnerIdForComment)
-            || ($this instanceof TaxonomyTerm && $ownerId instanceof BlockOwnerIdForTerm)
-        );
-        assert($ownerId->siteId() === $site->id());
-
+    final public function __construct(
+        Site $site,
+        int $id = 0
+    ) {
         $this->site = $site;
         // Set the `siteId` for WordPressModelWithSiteContext
         $this->siteId = $site->id();
-        $this->initializeBlockSet($blockSet);
-        $this->id = $ownerId->value();
+        $this->id = $id;
+    }
+
+    final public function entityManager(): EntityManager
+    {
+        return $this->site->entityManager();
+    }
+
+    final public function blockRecordColumnValue(): int
+    {
+        return $this->id;
     }
 
     final public function id(): int

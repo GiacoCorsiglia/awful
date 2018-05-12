@@ -17,9 +17,4 @@ class BlockQueryForUsers extends BlockQuery
         $newValues = array_diff($this->values, $exclude);
         return new self(...$newValues);
     }
-
-    public function getOwnerId(int $id): BlockOwnerId
-    {
-        return new BlockOwnerIdForUser($id);
-    }
 }

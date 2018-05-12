@@ -3,7 +3,7 @@ namespace Awful\Models\Database;
 
 use Awful\Models\Database\Exceptions\BlockNotFoundException;
 use Awful\Models\Database\Exceptions\UuidCollisionException;
-use Awful\Models\Database\Query\BlockOwnerId;
+use Awful\Models\WordPressModel;
 use stdClass;
 use function Awful\uuid;
 
@@ -12,23 +12,23 @@ use function Awful\uuid;
  */
 class BlockSet
 {
-    /** @var BlockSetManager */
-    private $blockSetManager;
+    /** @var BlockTypeMap */
+    private $blockTypeMap;
 
-    /** @var BlockOwnerId */
-    private $ownerId;
+    /** @var WordPressModel */
+    private $owner;
 
     /** @var array */
     private $blocks;
 
     public function __construct(
-        BlockSetManager $blockSetManager,
-        BlockOwnerId $ownerId,
+        BlockTypeMap $blockTypeMap,
+        WordPressModel $owner,
         array $blocks
     ) {
-        $this->blockSetManager = $blockSetManager;
+        $this->blockTypeMap = $blockTypeMap;
 
-        $this->ownerId = $ownerId;
+        $this->owner = $owner;
 
         $this->blocks = [];
         foreach ($blocks as $block) {
@@ -36,14 +36,14 @@ class BlockSet
         }
     }
 
-    public function manager(): BlockSetManager
+    public function blockTypeMap(): BlockTypeMap
     {
-        return $this->blockSetManager;
+        return $this->blockTypeMap;
     }
 
-    public function ownerId(): BlockOwnerId
+    public function owner(): WordPressModel
     {
-        return $this->ownerId;
+        return $this->owner;
     }
 
     public function all(): array
@@ -73,7 +73,7 @@ class BlockSet
         $uuid = $uuid ?: uuid();
         $this->blocks[$uuid] = (object) [
             'uuid' => $uuid,
-            $this->ownerId->column() => $this->ownerId->value(),
+            $this->owner->blockRecordColumn() => $this->owner->blockRecordColumnValue(),
             'type' => $type,
             'data' => $data,
         ];
@@ -88,20 +88,15 @@ class BlockSet
      */
     public function createForClass(string $class, string $uuid): stdClass
     {
-        $type = $this->blockSetManager->blockTypeMap()->typeForClass($class);
+        $type = $this->blockTypeMap->typeForClass($class);
         return $this->create($type, [], $uuid);
     }
 
     public function root(): stdClass
     {
-        $type = $this->ownerId->rootBlockType();
+        $type = $this->owner->rootBlockType();
 
         return $this->firstOfType($type) ?: $this->create($type);
-    }
-
-    public function save(): void
-    {
-        $this->blockSetManager->save($this);
     }
 
     private function firstOfType(string $type): ?stdClass

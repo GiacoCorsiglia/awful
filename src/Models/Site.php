@@ -1,8 +1,8 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Models\Database\BlockSet;
-use Awful\Models\Database\Query\BlockOwnerIdForSite;
+use Awful\Models\Database\Database;
+use Awful\Models\Database\EntityManager;
 use Awful\Models\Query\GenericPostQuerySet;
 use Awful\Models\Traits\WordPressModelWithSiteContext;
 use WP_Site;
@@ -40,18 +40,41 @@ class Site extends WordPressModel
         return [];
     }
 
+    /** @var EntityManager */
+    private $entityManager;
+
     /** @var int */
     private $id;
 
     /** @var WP_Site|null */
     private $wpSite;
 
-    final public function __construct(BlockSet $blockSet)
-    {
-        assert($blockSet->ownerId() instanceof BlockOwnerIdForSite);
+    final public function __construct(
+        EntityManager $entityManager,
+        int $id
+    ) {
+        $this->entityManager = $entityManager;
+        $this->id = $this->siteId = $id;
+    }
 
-        $this->id = $this->siteId = $blockSet->ownerId()->siteId();
-        $this->initializeBlockSet($blockSet);
+    final public function entityManager(): EntityManager
+    {
+        return $this->entityManager;
+    }
+
+    final public function blockRecordColumn(): string
+    {
+        return Database::SITE_COLUMN;
+    }
+
+    final public function blockRecordColumnValue(): int
+    {
+        return 1; // It's a boolean column.
+    }
+
+    final public function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.Site';
     }
 
     final public function id(): int

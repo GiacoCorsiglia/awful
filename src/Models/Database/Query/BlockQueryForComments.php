@@ -19,9 +19,4 @@ class BlockQueryForComments extends BlockQuery
         $newValues = array_diff($this->values, $exclude);
         return new self($this->siteId, ...$newValues);
     }
-
-    public function getOwnerId(int $id): BlockOwnerId
-    {
-        return new BlockOwnerIdForComment($this->siteId, $id);
-    }
 }

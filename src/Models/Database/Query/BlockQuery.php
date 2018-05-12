@@ -37,8 +37,6 @@ abstract class BlockQuery
 
     abstract public function without(array $exclude): self;
 
-    abstract public function getOwnerId(int $id): BlockOwnerId;
-
     public function any(): bool
     {
         return (bool) $this->values;

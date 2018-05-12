@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Models;
 
+use Awful\Models\Database\Database;
 use Awful\Models\Traits\WordPressModelOwnedBySite;
 use Awful\Models\Traits\WordPressModelWithMetaTable;
 use WP_Term;
@@ -19,6 +20,16 @@ class TaxonomyTerm extends WordPressModel
 
     /** @var WP_Term|null */
     private $wpTerm;
+
+    final public function blockRecordColumn(): string
+    {
+        return Database::TERM_COLUMN;
+    }
+
+    final public function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.Term';
+    }
 
     /**
      * Fetches the WordPress object representing this term, if one exists.

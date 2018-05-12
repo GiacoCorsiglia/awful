@@ -31,10 +31,7 @@ abstract class Model
         return self::$allFields[static::class][$key] ?? null;
     }
 
-    /** @var BlockSet */
-    private $blockSet;
-
-    /** @var stdClass */
+    /** @var stdClass|null */
     private $block;
 
     /** @var array */
@@ -69,8 +66,9 @@ abstract class Model
     final public function getRaw(string $key)
     {
         if ($this->block === null) {
-            $this->block = $this->fetchBlockRecord($this->blockSet);
+            $this->block = $this->fetchBlockRecord();
         }
+
         return $this->block->data[$key] ?? null;
     }
 
@@ -83,8 +81,12 @@ abstract class Model
      */
     final public function set(array $data): self
     {
+        if ($this->block === null) {
+            $this->block = $this->fetchBlockRecord();
+        }
+
         // TODO: Consider validation at this point.
-        $this->blockSet->set($this->block->uuid, $data + $this->block->data);
+        $this->blockSet()->set($this->block->uuid, $data + $this->block->data);
 
         // Clear the formatted data cache for the newly set fields.
         foreach ($data as $key => $_) {
@@ -96,13 +98,12 @@ abstract class Model
         return $this;
     }
 
-    final public function blockSet(): BlockSet
-    {
-        return $this->blockSet;
-    }
-
     public function clean(): array
     {
+        if ($this->block === null) {
+            $this->block = $this->fetchBlockRecord();
+        }
+
         $cleanedData = [];
         foreach (static::fields() as $key => $field) {
             $value = $this->block->data[$key] ?? null;
@@ -116,6 +117,8 @@ abstract class Model
 
         return $cleanedData;
     }
+
+    abstract public function blockSet(): BlockSet;
 
     /**
      * The id of this object.
@@ -132,11 +135,5 @@ abstract class Model
      */
     abstract public function exists(): bool;
 
-    protected function initializeBlockSet(BlockSet $blockSet): void
-    {
-        assert($this->blockSet === null, 'Cannot initialize blockSet more than once');
-        $this->blockSet = $blockSet;
-    }
-
-    abstract protected function fetchBlockRecord(BlockSet $blockSet): stdClass;
+    abstract protected function fetchBlockRecord(): stdClass;
 }

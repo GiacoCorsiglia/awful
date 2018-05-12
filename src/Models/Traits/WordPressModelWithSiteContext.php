@@ -16,6 +16,11 @@ trait WordPressModelWithSiteContext
      */
     private $siteId;
 
+    final public function siteId(): int
+    {
+        return $this->siteId;
+    }
+
     /**
      * Calls the given function in the context of the owner site ID set for this
      * instance, passing along the remaining args and returning the result.

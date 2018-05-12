@@ -34,15 +34,6 @@ class BlockQueryForCommentsTest extends AwfulTestCase
         $this->assertSame([1, 3], $i->without([2, 4])->ids());
     }
 
-    public function testGetOwnerId()
-    {
-        $siteId = is_multisite() ? 1 : 0;
-        $oid = (new BlockQueryForComments($siteId, 1))->getOwnerId(1);
-        $this->assertTrue($oid instanceof BlockOwnerIdForComment);
-        $this->assertSame($siteId, $oid->siteId());
-        $this->assertSame(1, $oid->value());
-    }
-
     public function testAny()
     {
         $this->assertFalse($this->instance()->any());

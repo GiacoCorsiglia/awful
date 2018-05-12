@@ -28,7 +28,7 @@ class BlocksFieldInstance extends ObjectsFieldInstance
 
         $this->blockSet = $model->blockSet();
 
-        $blockTypeMap = $this->blockSet->manager()->blockTypeMap();
+        $blockTypeMap = $this->blockSet->blockTypeMap();
         foreach ($uuids as $uuid) {
             $record = $this->blockSet->get($uuid);
 

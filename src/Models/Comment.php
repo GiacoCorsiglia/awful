@@ -1,6 +1,7 @@
 <?php
 namespace Awful\Models;
 
+use Awful\Models\Database\Database;
 use Awful\Models\Traits\WordPressModelOwnedBySite;
 use Awful\Models\Traits\WordPressModelWithMetaTable;
 use WP_Comment;
@@ -31,6 +32,16 @@ class Comment extends WordPressModel
     /** @var WP_Comment|null */
     private $wpComment;
 
+    final public function blockRecordColumn(): string
+    {
+        return Database::COMMENT_COLUMN;
+    }
+
+    final public function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.Comment';
+    }
+
     /**
      * Fetches the WordPress object representing this comment, if one exists.
      *
@@ -58,11 +69,5 @@ class Comment extends WordPressModel
     final protected function metaType(): string
     {
         return 'comment';
-    }
-
-    final protected function rootBlockType(): string
-    {
-        // TODO
-        return '';
     }
 }

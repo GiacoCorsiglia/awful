@@ -196,6 +196,10 @@ class Database
         $sql .= implode(',', $rows);
         $sql .= ' ON DUPLICATE KEY UPDATE `data` = VALUES(`data`);';
 
+        /**
+         * @psalm-suppress PossiblyNullArgument
+         * $wpdb->prepare will always return a string in this case.
+         */
         $this->wpdb->query($this->wpdb->prepare($sql, $values));
         $this->errorToException($this->wpdb->last_error);
 

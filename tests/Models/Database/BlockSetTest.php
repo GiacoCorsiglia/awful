@@ -4,40 +4,36 @@ namespace Awful\Models\Database;
 use Awful\AwfulTestCase;
 use Awful\Models\Database\Exceptions\BlockNotFoundException;
 use Awful\Models\Database\Exceptions\UuidCollisionException;
-use Awful\Models\Database\Query\BlockOwnerIdForSite;
 use function Awful\uuid;
 
 class BlockSetTest extends AwfulTestCase
 {
-    public function testManager()
+    public function blockTypeMap()
     {
-        $manager = $this->createMock(BlockSetManager::class);
-        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
+        $map = new BlockTypeMap([]);
+        $owner = $this->mockSite();
 
-        $set = new BlockSet($manager, $ownerId, []);
+        $set = new BlockSet($map, $owner, []);
 
-        $this->assertSame($manager, $set->manager());
+        $this->assertSame($map, $set->blockTypeMap());
     }
 
-    public function testOwnerId()
+    public function testOwner()
     {
-        $manager = $this->createMock(BlockSetManager::class);
-        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
+        $map = new BlockTypeMap([]);
+        $owner = $this->mockSite();
 
-        $set = new BlockSet($manager, $ownerId, []);
+        $set = new BlockSet($map, $owner, []);
 
-        $this->assertSame($ownerId, $set->ownerId());
+        $this->assertSame($owner, $set->owner());
     }
 
     public function testAll()
     {
-        $manager = $this->createMock(BlockSetManager::class);
-        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
-
         $block1 = (object) ['uuid' => uuid()];
         $block2 = (object) ['uuid' => uuid()];
         $blocks = [$block1, $block2];
-        $set = new BlockSet($manager, $ownerId, $blocks);
+        $set = new BlockSet(new BlockTypeMap([]), $this->mockSite(), $blocks);
 
         $this->assertSame([
             $block1->uuid => $block1,
@@ -47,13 +43,10 @@ class BlockSetTest extends AwfulTestCase
 
     public function testGet()
     {
-        $manager = $this->createMock(BlockSetManager::class);
-        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
-
         $block1 = (object) ['uuid' => uuid()];
         $block2 = (object) ['uuid' => uuid()];
         $blocks = [$block1, $block2];
-        $set = new BlockSet($manager, $ownerId, $blocks);
+        $set = new BlockSet(new BlockTypeMap([]), $this->mockSite(), $blocks);
 
         $this->assertSame($block1, $set->get($block1->uuid));
         $this->assertSame($block2, $set->get($block2->uuid));
@@ -61,13 +54,10 @@ class BlockSetTest extends AwfulTestCase
 
     public function testSet()
     {
-        $manager = $this->createMock(BlockSetManager::class);
-        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
-
         $block1 = (object) ['uuid' => uuid()];
         $block2 = (object) ['uuid' => uuid(), 'data' => ['foo' => 'bar']];
         $blocks = [$block1, $block2];
-        $set = new BlockSet($manager, $ownerId, $blocks);
+        $set = new BlockSet(new BlockTypeMap([]), $this->mockSite(), $blocks);
 
         $set->set($block1->uuid, ['fiz', 'buz']);
         $this->assertSame(['fiz', 'buz'], $block1->data, 'Block 1 data referentially updated.');
@@ -79,22 +69,20 @@ class BlockSetTest extends AwfulTestCase
 
     public function testCreate()
     {
-        $manager = $this->createMock(BlockSetManager::class);
-        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
-
+        $owner = $this->mockSite();
         $block1 = (object) ['uuid' => uuid()];
-        $set = new BlockSet($manager, $ownerId, [$block1]);
+        $set = new BlockSet(new BlockTypeMap([]), $owner, [$block1]);
 
         $created1 = $set->create('Type', ['hi' => 'there']);
         $this->assertSame('Type', $created1->type);
-        $this->assertSame($ownerId->value(), $created1->{$ownerId->column()});
+        $this->assertSame($owner->blockRecordColumnValue(), $created1->{$owner->blockRecordColumn()});
         $this->assertSame(['hi' => 'there'], $created1->data);
         $this->assertTrue(!empty($created1->uuid));
 
         $created2 = $set->create('Type', ['hi' => 'there'], 'my-uuid');
         $this->assertSame('my-uuid', $created2->uuid);
         $this->assertSame('Type', $created2->type);
-        $this->assertSame($ownerId->value(), $created2->{$ownerId->column()});
+        $this->assertSame($owner->blockRecordColumnValue(), $created2->{$owner->blockRecordColumn()});
         $this->assertSame(['hi' => 'there'], $created2->data);
 
         $this->assertSame($created1, $set->get($created1->uuid));
@@ -111,9 +99,7 @@ class BlockSetTest extends AwfulTestCase
             'class1' => 'type1',
             'class2' => 'type2',
         ]);
-        $manager = new BlockSetManager($db, $map);
-        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
-        $set = new BlockSet($manager, $ownerId, []);
+        $set = new BlockSet($map, $this->mockSite(), []);
 
         $uuid1 = uuid();
         $created1 = $set->createForClass('class1', $uuid1);
@@ -128,27 +114,11 @@ class BlockSetTest extends AwfulTestCase
 
     public function testRoot()
     {
-        $manager = $this->createMock(BlockSetManager::class);
-        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
-
-        $set = new BlockSet($manager, $ownerId, []);
+        $owner = $this->mockSite();
+        $set = new BlockSet(new BlockTypeMap([]), $owner, []);
 
         $root = $set->root();
-        $this->assertSame($ownerId->rootBlockType(), $root->type, 'It creates the root if needed');
+        $this->assertSame($owner->rootBlockType(), $root->type, 'It creates the root if needed');
         $this->assertSame($root, $set->root(), " It doesn't create the root twice.");
-    }
-
-    public function testSave()
-    {
-        $manager = $this->createMock(BlockSetManager::class);
-        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
-
-        $set = new BlockSet($manager, $ownerId, []);
-
-        $manager->expects($this->once())
-            ->method('save')
-            ->with($this->equalTo($set));
-
-        $set->save();
     }
 }

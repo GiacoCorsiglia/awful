@@ -32,7 +32,7 @@ class BlocksField extends Field
         }
 
         $blockSet = $model->blockSet();
-        $blockTypeMap = $blockSet->manager()->blockTypeMap();
+        $blockTypeMap = $blockSet->blockTypeMap();
         foreach ($value as $uuid) {
             $record = $blockSet->get($uuid);
             if (!$record) {

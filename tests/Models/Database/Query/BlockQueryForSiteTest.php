@@ -38,14 +38,6 @@ class BlockQueryForSiteTest extends AwfulTestCase
         $this->assertSame([], $i->without([$siteId])->values());
     }
 
-    public function testGetOwnerId()
-    {
-        $siteId = is_multisite() ? 3 : 0;
-        $oid = (new BlockQueryForSite($siteId))->getOwnerId($siteId);
-        $this->assertTrue($oid instanceof BlockOwnerIdForSite);
-        $this->assertSame($siteId, $oid->siteId());
-    }
-
     public function testAny()
     {
         $this->assertTrue($this->instance()->any());

@@ -2,6 +2,7 @@
 namespace Awful\Models;
 
 use Awful\Exceptions\UnimplementedException;
+use Awful\Models\Database\Database;
 use Awful\Models\Traits\WordPressModelOwnedBySite;
 use Awful\Models\Traits\WordPressModelWithMetaTable;
 use WP_Post;
@@ -102,6 +103,16 @@ class GenericPost extends WordPressModel
      * @var User|null
      */
     private $author;
+
+    final public function blockRecordColumn(): string
+    {
+        return Database::POST_COLUMN;
+    }
+
+    final public function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.Post';
+    }
 
     /**
      * Fetches the WordPress object representing this post, if one exists.

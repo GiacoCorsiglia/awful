@@ -8,8 +8,7 @@ use Awful\Context\WordPressGlobals;
 use Awful\Models\Database\BlockSetManager;
 use Awful\Models\Database\BlockTypeMap;
 use Awful\Models\Database\Database;
-use Awful\Models\Database\Query\BlockQueryForSite;
-use Awful\Models\Database\Query\BlockQueryForUsers;
+use Awful\Models\Database\EntityManager;
 use Awful\Models\Network;
 use Awful\Models\Site;
 use Awful\Models\User;
@@ -46,8 +45,8 @@ final class Awful
     /** @var string[] */
     private $commands = [];
 
-    /** @var BlockSetManager */
-    private $blockSetManager;
+    /** @var EntityManager */
+    private $entityManager;
 
     /**
      * @var string
@@ -104,8 +103,11 @@ final class Awful
         $database = new Database($GLOBALS['wpdb']);
         $this->container->register($database);
 
-        $this->blockSetManager = new BlockSetManager($database, new BlockTypeMap($blockTypeMap));
-        $this->container->register($this->blockSetManager);
+        $blockSetManager = new BlockSetManager($database, new BlockTypeMap($blockTypeMap));
+        $this->container->register($blockSetManager);
+
+        $this->entityManager = new EntityManager($blockSetManager);
+        $this->container->register($this->entityManager);
 
         /**
          * `get_network()` will always return an object when `is_multisite()`.
@@ -170,8 +172,7 @@ final class Awful
 
         $siteClass = $theme->siteClass() ?: Site::class;
         $siteId = is_multisite() ? get_current_blog_id() : 0;
-        $blockSets = $this->blockSetManager->blockSetsForQuery(new BlockQueryForSite($siteId));
-        ($this->setSiteCallback)(new $siteClass($blockSets[$siteId], $siteId));
+        ($this->setSiteCallback)(new $siteClass($this->entityManager, $siteId));
 
         $this->userClass = $theme->userClass() ?: User::class;
         if (did_action('set_current_user')) {
@@ -197,8 +198,7 @@ final class Awful
             return;
         }
         $userId = get_current_user_id();
-        $blockSets = $this->blockSetManager->blockSetsForQuery(new BlockQueryForUsers($userId));
-        ($this->setUserCallback)(new $userClass($blockSets[$userId], $userId));
+        ($this->setUserCallback)(new $userClass($this->entityManager, $userId));
         remove_action('set_current_user', [$this, 'setUser'], 1);
     }
 

@@ -3,7 +3,10 @@ namespace Awful\Models\Database;
 
 use Awful\Models\Database\Exceptions\SiteMismatchException;
 use Awful\Models\Database\Query\BlockQuery;
+use Awful\Models\Database\Query\BlockQueryForSingleObject;
 use Awful\Models\Database\Query\BlockQueryForSite;
+use Awful\Models\Site;
+use Awful\Models\WordPressModel;
 
 class BlockSetManager
 {
@@ -26,15 +29,55 @@ class BlockSetManager
         ]);
     }
 
-    public function blockTypeMap(): BlockTypeMap
+    public function fetchBlockSet(WordPressModel $owner): BlockSet
     {
-        return $this->blockTypeMap;
+        if ($owner instanceof Site) {
+            $blockQuery = new BlockQueryForSite($owner->id());
+        } else {
+            $blockQuery = new BlockQueryForSingleObject(
+                $owner->siteId(),
+                $owner->blockRecordColumn(),
+                $owner->blockRecordColumnValue()
+            );
+        }
+
+        return new BlockSet(
+            $this->blockTypeMap,
+            $owner,
+            $this->fetchBlockRecords($blockQuery)[$owner->id()]
+        );
     }
 
-    public function blockSetsForQuery(BlockQuery $blockQuery): array
+    public function prefetchBlockRecords(BlockQuery $blockQuery): void
+    {
+        // This warms the cache.
+        $this->fetchBlockRecords($blockQuery);
+    }
+
+    public function save(BlockSet ...$blockSets): void
+    {
+        if (!$blockSets) {
+            return;
+        }
+
+        $siteId = $blockSets[0]->owner()->siteId();
+
+        $allBlocks = [];
+        foreach ($blockSets as $blockSet) {
+            if ($blockSet->owner()->siteId() !== $siteId) {
+                throw new SiteMismatchException();
+            }
+
+            $allBlocks = array_merge($allBlocks, array_values($blockSet->all()));
+        }
+
+        $this->db->saveBlocks($siteId, $allBlocks);
+    }
+
+    private function fetchBlockRecords(BlockQuery $blockQuery): array
     {
         if ($blockQuery instanceof BlockQueryForSite) {
-            return $this->blockSetForSite($blockQuery);
+            return $this->fetchBlockRecordsForSite($blockQuery);
         }
 
         $siteId = $blockQuery->siteId();
@@ -90,19 +133,10 @@ class BlockSetManager
             restore_current_blog();
         }
 
-        $blockSets = [];
-        foreach ($result as $id => $blocks) {
-            $blockSets[$id] = new BlockSet(
-                $this,
-                $blockQuery->getOwnerId($id),
-                $blocks
-            );
-        }
-
-        return $blockSets;
+        return $result;
     }
 
-    private function blockSetForSite(BlockQueryForSite $blockQuery): array
+    private function fetchBlockRecordsForSite(BlockQueryForSite $blockQuery): array
     {
         $cacheGroup = self::CACHE_GROUP_PREFIX . $blockQuery->column();
         $siteId = $blockQuery->siteId();
@@ -113,30 +147,6 @@ class BlockSetManager
             wp_cache_set((string) $siteId, $blocks, $cacheGroup);
         }
 
-        return [$siteId => new BlockSet(
-            $this,
-            $blockQuery->getOwnerId($siteId),
-            $blocks
-        )];
-    }
-
-    public function save(BlockSet ...$blockSets): void
-    {
-        if (!$blockSets) {
-            return;
-        }
-
-        $siteId = $blockSets[0]->ownerId()->siteId();
-
-        $allBlocks = [];
-        foreach ($blockSets as $blockSet) {
-            if ($blockSet->ownerId()->siteId() !== $siteId) {
-                throw new SiteMismatchException();
-            }
-
-            $allBlocks = array_merge($allBlocks, array_values($blockSet->all()));
-        }
-
-        $this->db->saveBlocks($siteId, $allBlocks);
+        return [$siteId => $blocks];
     }
 }

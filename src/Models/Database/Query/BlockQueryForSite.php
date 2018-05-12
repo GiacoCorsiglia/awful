@@ -33,9 +33,4 @@ class BlockQueryForSite extends BlockQuery
         }
         return $bq;
     }
-
-    public function getOwnerId(int $id): BlockOwnerId
-    {
-        return new BlockOwnerIdForSite($this->siteId);
-    }
 }

@@ -3,30 +3,31 @@ namespace Awful\Models\Database;
 
 use Awful\AwfulTestCase;
 use Awful\Models\Database\Exceptions\SiteMismatchException;
-use Awful\Models\Database\Query\BlockOwnerIdForPost;
-use Awful\Models\Database\Query\BlockOwnerIdForSite;
 use Awful\Models\Database\Query\BlockQueryForPosts;
-use Awful\Models\Database\Query\BlockQueryForSite;
+use Awful\Models\GenericPost;
 use function Awful\uuid;
 
 class BlockSetManagerTest extends AwfulTestCase
 {
-    public function testBlockTypeMap()
+    public function testFetchBlockSetThreadsBlockTypeMap()
     {
+        $site = $this->mockSite();
         $db = $this->createMock(Database::class);
         $map = new BlockTypeMap([]);
         $manager = new BlockSetManager($db, $map);
-
-        $this->assertSame($map, $manager->blockTypeMap());
+        $set = $manager->fetchBlockSet($site);
+        $this->assertSame($map, $set->blockTypeMap());
     }
 
-    public function testBlockSetsForQueryWithSiteQuery()
+    public function testFetchBlockSetForSite()
     {
         if (is_multisite()) {
             $siteId = (int) $this->factory->blog->create_and_get()->blog_id;
         } else {
             $siteId = 0;
         }
+
+        $site = $this->mockSite($siteId);
 
         $db = $this->createMock(Database::class);
         $uuid = uuid();
@@ -49,30 +50,24 @@ class BlockSetManagerTest extends AwfulTestCase
         $map = new BlockTypeMap([]);
         $manager = new BlockSetManager($db, $map);
 
-        $bq = new BlockQueryForSite($siteId);
-
-        $sets = $manager->blockSetsForQuery($bq);
-        $this->assertSame(1, count($sets));
-        $this->assertTrue(!empty($sets[$siteId]) && $sets[$siteId] instanceof BlockSet);
-        $set = $sets[$siteId];
+        $set = $manager->fetchBlockSet($site);
         $this->assertSame($uuid, $set->get($uuid)->uuid);
 
         // Now do it all again, but this time should read from cache.  Note that
         // above we `expect()` that the `$db` method will only be called once.
-        $sets = $manager->blockSetsForQuery($bq);
-        $this->assertSame(1, count($sets));
-        $this->assertTrue(!empty($sets[$siteId]) && $sets[$siteId] instanceof BlockSet);
-        $set = $sets[$siteId];
+        $set = $manager->fetchBlockSet($site);
         $this->assertSame($uuid, $set->get($uuid)->uuid);
     }
 
-    public function testBlockSetsForQueryWithPostsQuery()
+    public function testFetchAndPrefetchBlockSetsForPosts()
     {
         if (is_multisite()) {
             $siteId = (int) $this->factory->blog->create_and_get()->blog_id;
         } else {
             $siteId = 0;
         }
+
+        $site = $this->mockSite($siteId);
 
         if ($siteId) {
             switch_to_blog($siteId);
@@ -87,7 +82,8 @@ class BlockSetManagerTest extends AwfulTestCase
         $db = $this->createMock(Database::class);
         $uuid1 = uuid();
         $uuid2 = uuid();
-        $db->expects($this->once()) // The second call should be cached.
+        // 4 total uncached calls.
+        $db->expects($this->exactly(4))
             ->method('fetchBlocks')
             ->willReturn([
                 (object) [
@@ -123,29 +119,48 @@ class BlockSetManagerTest extends AwfulTestCase
         $map = new BlockTypeMap([]);
         $manager = new BlockSetManager($db, $map);
 
-        $bq = new BlockQueryForPosts($siteId, $postId1, $postId2, $postId3);
+        $post1 = new GenericPost($site, $postId1);
+        $post2 = new GenericPost($site, $postId2);
+        $post3 = new GenericPost($site, $postId3);
 
-        $sets = $manager->blockSetsForQuery($bq);
-        $this->assertSame(3, count($sets), '3 BlockSets returned.');
-        $this->assertTrue(!empty($sets[$postId1]) && $sets[$postId1] instanceof BlockSet);
-        $this->assertTrue(!empty($sets[$postId2]) && $sets[$postId2] instanceof BlockSet);
-        $this->assertTrue(!empty($sets[$postId3]) && $sets[$postId3] instanceof BlockSet);
-        $set1 = $sets[$postId1];
-        $set2 = $sets[$postId2];
+        $set1 = $manager->fetchBlockSet($post1); // Uncached call 1.
+        $set2 = $manager->fetchBlockSet($post2); // Uncached call 2.
+        $set3 = $manager->fetchBlockSet($post3); // Uncached call 3.
+        $this->assertSame(2, count($set1->all()));
         $this->assertSame($uuid1, $set1->get($uuid1)->uuid);
+        $this->assertSame(2, count($set2->all()));
         $this->assertSame($uuid2, $set2->get($uuid2)->uuid);
+        $this->assertSame(0, count($set3->all()));
 
         // Now do it all again, but this time should read from cache.  Note that
         // above we `expect()` that the `$db` method will only be called once.
-        $sets = $manager->blockSetsForQuery($bq);
-        $this->assertSame(3, count($sets), '3 BlockSets returned from cache.');
-        $this->assertTrue(!empty($sets[$postId1]) && $sets[$postId1] instanceof BlockSet);
-        $this->assertTrue(!empty($sets[$postId2]) && $sets[$postId2] instanceof BlockSet);
-        $this->assertTrue(!empty($sets[$postId3]) && $sets[$postId3] instanceof BlockSet);
-        $set1 = $sets[$postId1];
-        $set2 = $sets[$postId2];
+        $set1 = $manager->fetchBlockSet($post1);
+        $set2 = $manager->fetchBlockSet($post2);
+        $set3 = $manager->fetchBlockSet($post3);
+        $this->assertSame(2, count($set1->all()));
         $this->assertSame($uuid1, $set1->get($uuid1)->uuid);
+        $this->assertSame(2, count($set2->all()));
         $this->assertSame($uuid2, $set2->get($uuid2)->uuid);
+        $this->assertSame(0, count($set3->all()));
+
+        // Now flush the cache and do it all again, but with prefetching.
+        wp_cache_flush();
+
+        $manager->prefetchBlockRecords(new BlockQueryForPosts(
+            $siteId,
+            $postId1,
+            $postId2,
+            $postId3
+        )); // Uncached call 4.
+
+        $set1 = $manager->fetchBlockSet($post1);
+        $set2 = $manager->fetchBlockSet($post2);
+        $set3 = $manager->fetchBlockSet($post3);
+        $this->assertSame(2, count($set1->all()));
+        $this->assertSame($uuid1, $set1->get($uuid1)->uuid);
+        $this->assertSame(2, count($set2->all()));
+        $this->assertSame($uuid2, $set2->get($uuid2)->uuid);
+        $this->assertSame(0, count($set3->all()));
     }
 
     public function testSaveRejectsBlockSetsForMultipleSites()
@@ -156,8 +171,8 @@ class BlockSetManagerTest extends AwfulTestCase
         $map = new BlockTypeMap([]);
         $manager = new BlockSetManager($db, $map);
 
-        $bs1 = new BlockSet($manager, new BlockOwnerIdForSite(1), []);
-        $bs2 = new BlockSet($manager, new BlockOwnerIdForPost(2, 1), []);
+        $bs1 = new BlockSet($map, $this->mockSite(1), []);
+        $bs2 = new BlockSet($map, $this->mockSite(2), []);
 
         $this->expectException(SiteMismatchException::class);
         $manager->save($bs1, $bs2);
@@ -186,10 +201,12 @@ class BlockSetManagerTest extends AwfulTestCase
         $map = new BlockTypeMap([]);
         $manager = new BlockSetManager($db, $map);
 
-        $bs1 = new BlockSet($manager, new BlockOwnerIdForSite($siteId), [
+        $site = $this->mockSite();
+        $post = new GenericPost($site, 5);
+        $bs1 = new BlockSet($map, $site, [
             $block1,
         ]);
-        $bs2 = new BlockSet($manager, new BlockOwnerIdForPost($siteId, 1), [
+        $bs2 = new BlockSet($map, $post, [
             $block2,
         ]);
 

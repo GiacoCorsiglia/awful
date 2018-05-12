@@ -1,8 +1,8 @@
 <?php
 namespace Awful\Models;
 
-use Awful\Models\Database\BlockSet;
-use Awful\Models\Database\Query\BlockOwnerIdForUser;
+use Awful\Models\Database\Database;
+use Awful\Models\Database\EntityManager;
 use Awful\Models\Traits\WordPressModelWithMetaTable;
 use WP_User;
 
@@ -26,18 +26,46 @@ class User extends WordPressModel
         'deleted' => 'bool',
     ];
 
+    /** @var EntityManager */
+    private $entityManager;
+
     /** @var int */
     private $id;
 
     /** @var WP_User|null */
     private $wpUser;
 
-    final public function __construct(BlockSet $blockSet)
-    {
-        assert($blockSet->ownerId() instanceof BlockOwnerIdForUser);
+    final public function __construct(
+        EntityManager $entityManager,
+        int $id = 0
+    ) {
+        $this->entityManager = $entityManager;
+        $this->id = $id;
+    }
 
-        $this->id = $blockSet->ownerId()->value();
-        $this->initializeBlockSet($blockSet);
+    final public function entityManager(): EntityManager
+    {
+        return $this->entityManager;
+    }
+
+    final public function siteId(): int
+    {
+        return is_multisite() ? 1 : 0;
+    }
+
+    final public function blockRecordColumn(): string
+    {
+        return Database::USER_COLUMN;
+    }
+
+    final public function blockRecordColumnValue(): int
+    {
+        return $this->id;
+    }
+
+    final public function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.User';
     }
 
     final public function id(): int

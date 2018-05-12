@@ -2,9 +2,7 @@
 namespace Awful\Models\Query;
 
 use ArrayAccess;
-use Awful\Models\Database\BlockSet;
-use Awful\Models\Database\BlockSetManager;
-use Awful\Models\Database\Query\BlockQueryForSite;
+use Awful\Models\Database\EntityManager;
 use Awful\Models\Site;
 use Countable;
 use IteratorAggregate;
@@ -20,9 +18,12 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
     /** @var */
     private $wpSiteQuery;
 
-    public function __construct(BlockSetManager $blockSetManager, array $args = [])
+    /** @var EntityManager */
+    private $entityManager;
+
+    public function __construct(EntityManager $entityManager, array $args = [])
     {
-        $this->blockSetManager = $blockSetManager;
+        $this->entityManager = $entityManager;
         $this->args = $args + $this->defaults();
     }
 
@@ -39,7 +40,7 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
         $this->objects = [];
         $this->wpSiteQuery = new WP_Site_Query($this->args);
         foreach ($this->wpSiteQuery->sites as $site) {
-            $this->objects[$site->id] = new Site($this->blockSetForSite($site->id), $site->id);
+            $this->objects[$site->id] = new Site($this->entityManager, $site->id);
         }
 
         return $this->objects;
@@ -60,13 +61,7 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
             return null;
         }
 
-        return new Site($this->blockSetForSite($id), $id);
-    }
-
-    private function blockSetForSite(int $siteId): BlockSet
-    {
-        $blockSets = $this->blockSetManager->blockSetsForQuery(new BlockQueryForSite($siteId));
-        return $blockSets[$siteId];
+        return new Site($this->entityManager, $id);
     }
 
     //
@@ -125,6 +120,6 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
     protected function extend(array $args): self
     {
-        return new static($this->blockSetManager, $args + $this->args);
+        return new static($this->entityManager, $args + $this->args);
     }
 }

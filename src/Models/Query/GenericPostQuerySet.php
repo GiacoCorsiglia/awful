@@ -28,7 +28,6 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
     public function __construct(Site $site, array $args = [])
     {
         $this->site = $site;
-        $this->blockSetManager = $site->blockSet()->manager();
         $this->args = $args + $this->defaults();
     }
 
@@ -46,11 +45,15 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         $this->wpQuery = new WP_Query($this->args);
 
         $ids = wp_list_pluck($this->wpQuery->posts, 'ID');
-        $blockSets = $this->blockSetManager->blockSetsForQuery(new BlockQueryForPosts($this->site->id(), ...$ids));
+
+        if ($this->args['awful_prefetch_blocks']) {
+            $blockSetManager = $this->site->entityManager()->blockSetManager();
+            $blockSetManager->prefetchBlockRecords(new BlockQueryForPosts($this->site->id(), ...$ids));
+        }
+
         foreach ($this->wpQuery->posts as $wpPost) {
             $this->posts[$wpPost->ID] = new GenericPost(
                 $this->site,
-                $blockSets[$wpPost->ID],
                 $wpPost->ID
             );
         }
@@ -169,6 +172,8 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         return [
             // SEE: https://codex.wordpress.org/Class_Reference/WP_Query#Type_Parameters
             'post_type' => 'any',
+
+            'awful_prefetch_blocks' => true,
         ];
     }
 

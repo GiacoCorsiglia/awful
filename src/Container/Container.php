@@ -179,6 +179,7 @@ final class Container implements ContainerInterface
      * @return mixed Whatever value is returned by the callable.
      *
      * @psalm-suppress PossiblyInvalidArgument see `new ReflectionFunction()`.
+     * @psalm-suppress InvalidArgument see `new ReflectionFunction()`.
      */
     public function call(callable $callable, ...$args)
     {

@@ -19,6 +19,16 @@ class BlockSetTest extends AwfulTestCase
         $this->assertSame($manager, $set->manager());
     }
 
+    public function testOwnerId()
+    {
+        $manager = $this->createMock(BlockSetManager::class);
+        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
+
+        $set = new BlockSet($manager, $ownerId, []);
+
+        $this->assertSame($ownerId, $set->ownerId());
+    }
+
     public function testAll()
     {
         $manager = $this->createMock(BlockSetManager::class);
@@ -92,5 +102,53 @@ class BlockSetTest extends AwfulTestCase
 
         $this->expectException(UuidCollisionException::class);
         $set->create('', [], $created1->uuid);
+    }
+
+    public function testCreateForClass()
+    {
+        $db = $this->createMock(Database::class);
+        $map = new BlockTypeMap([
+            'class1' => 'type1',
+            'class2' => 'type2',
+        ]);
+        $manager = new BlockSetManager($db, $map);
+        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
+        $set = new BlockSet($manager, $ownerId, []);
+
+        $uuid1 = uuid();
+        $created1 = $set->createForClass('class1', $uuid1);
+        $this->assertSame('type1', $created1->type);
+        $this->assertSame($uuid1, $created1->uuid);
+
+        $uuid2 = uuid();
+        $created1 = $set->createForClass('class2', $uuid2);
+        $this->assertSame('type2', $created1->type);
+        $this->assertSame($uuid2, $created1->uuid);
+    }
+
+    public function testRoot()
+    {
+        $manager = $this->createMock(BlockSetManager::class);
+        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
+
+        $set = new BlockSet($manager, $ownerId, []);
+
+        $root = $set->root();
+        $this->assertSame($ownerId->rootBlockType(), $root->type, 'It creates the root if needed');
+        $this->assertSame($root, $set->root(), " It doesn't create the root twice.");
+    }
+
+    public function testSave()
+    {
+        $manager = $this->createMock(BlockSetManager::class);
+        $ownerId = new BlockOwnerIdForSite(is_multisite() ? 1 : 0);
+
+        $set = new BlockSet($manager, $ownerId, []);
+
+        $manager->expects($this->once())
+            ->method('save')
+            ->with($this->equalTo($set));
+
+        $set->save();
     }
 }

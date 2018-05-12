@@ -41,6 +41,11 @@ class BlockSet
         return $this->blockSetManager;
     }
 
+    public function ownerId(): BlockOwnerId
+    {
+        return $this->ownerId;
+    }
+
     public function all(): array
     {
         return $this->blocks;
@@ -97,11 +102,6 @@ class BlockSet
     public function save(): void
     {
         $this->blockSetManager->save($this);
-    }
-
-    public function ownerId(): BlockOwnerId
-    {
-        return $this->ownerId;
     }
 
     private function firstOfType(string $type): ?stdClass

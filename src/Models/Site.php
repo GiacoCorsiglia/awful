@@ -2,6 +2,7 @@
 namespace Awful\Models;
 
 use Awful\Models\Database\BlockSet;
+use Awful\Models\Database\Query\BlockOwnerIdForSite;
 use Awful\Models\Query\GenericPostQuerySet;
 use Awful\Models\Traits\WordPressModelWithSiteContext;
 use WP_Site;
@@ -45,13 +46,11 @@ class Site extends WordPressModel
     /** @var WP_Site|null */
     private $wpSite;
 
-    final public function __construct(
-        BlockSet $blockSet,
-        int $id = 0
-    ) {
-        assert(is_multisite() || $id === 0, 'Expected `$id` of 0 when non-multisite');
+    final public function __construct(BlockSet $blockSet)
+    {
+        assert($blockSet->ownerId() instanceof BlockOwnerIdForSite);
 
-        $this->id = $this->siteId = $id;
+        $this->id = $this->siteId = $blockSet->ownerId()->siteId();
         $this->initializeBlockSet($blockSet);
     }
 

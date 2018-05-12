@@ -2,6 +2,7 @@
 namespace Awful\Models;
 
 use Awful\Models\Database\BlockSet;
+use Awful\Models\Database\Query\BlockOwnerIdForUser;
 use Awful\Models\Traits\WordPressModelWithMetaTable;
 use WP_User;
 
@@ -31,11 +32,11 @@ class User extends WordPressModel
     /** @var WP_User|null */
     private $wpUser;
 
-    final public function __construct(
-        BlockSet $blockSet,
-        int $id = 0
-    ) {
-        $this->id = $id;
+    final public function __construct(BlockSet $blockSet)
+    {
+        assert($blockSet->ownerId() instanceof BlockOwnerIdForUser);
+
+        $this->id = $blockSet->ownerId()->value();
         $this->initializeBlockSet($blockSet);
     }
 

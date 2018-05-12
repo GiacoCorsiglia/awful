@@ -2,6 +2,8 @@
 
 WordPress development, made more awful.
 
+[![Build Status](https://travis-ci.org/GiacoCorsiglia/awful.svg?branch=master)](https://travis-ci.org/GiacoCorsiglia/awful)
+
 **Very much a work in progress.**
 
 ## TODO
@@ -61,4 +63,3 @@ WordPress development, made more awful.
 - [ ] Add test cases with and without multisite enabled
 
 ## NOTES
-

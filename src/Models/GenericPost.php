@@ -143,7 +143,7 @@ class GenericPost extends WordPressModel
      *
      * @return string The post type, or an empty string if no post exists.
      */
-    public function type(): string
+    final public function type(): string
     {
         return ($wpPost = $this->wpPost()) ? $wpPost->post_type : '';
     }
@@ -216,7 +216,7 @@ class GenericPost extends WordPressModel
     {
         if (!$this->author && ($wpPost = $this->wpPost())) {
             $authorId = $wpPost->post_author;
-            $this->author = $authorId ? new User($authorId) : null;
+            $this->author = $authorId ? new User($this->entityManager(), $authorId) : null;
         }
         return $this->author;
     }

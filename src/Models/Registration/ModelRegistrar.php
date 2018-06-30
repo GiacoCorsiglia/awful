@@ -3,6 +3,7 @@ namespace Awful\Models\Registration;
 
 use Awful\Container\Container;
 use Awful\Models\GenericPost;
+use Closure;
 
 /**
  * Utility class.
@@ -20,7 +21,7 @@ class ModelRegistrar
      *
      * @var bool
      */
-    private $has_init = false;
+    private $hasInit;
 
     /**
      * @param Container $container
@@ -29,10 +30,16 @@ class ModelRegistrar
     {
         $this->container = $container;
 
+        $this->hasInit = (bool) did_action('init');
+
+        if ($this->hasInit) {
+            return;
+        }
+
         add_action('init', function (): void {
-            $this->has_init = true;
-            foreach ($this->deferred as $post_subclass) {
-                $this->registerPostType($post_subclass);
+            $this->hasInit = true;
+            foreach ($this->deferred as $postClass) {
+                $this->registerPostType($postClass);
             }
         });
     }
@@ -40,24 +47,28 @@ class ModelRegistrar
     /**
      * Registers a post type with WordPress, given an Awful model class.
      *
-     * @param  string $post_subclass Name of a subclass of `Awful\GenericPost`.
+     * @param  string $postClass Name of a subclass of `Awful\GenericPost`.
      * @return void
      */
-    public function registerPostType(string $post_subclass): void
+    public function registerPostType(string $postClass): void
     {
-        assert(is_subclass_of($post_subclass, GenericPost::class), 'Expected `GenericPost` subclass');
+        assert(is_subclass_of($postClass, GenericPost::class), 'Expected `GenericPost` subclass');
 
-        if (!$this->has_init) {
-            $this->deferred[] = $post_subclass;
+        if ($postClass::IS_BUILTIN) {
             return;
         }
 
-        $settings = $post_subclass::getSettings();
-        if (is_callable($settings)) {
+        if (!$this->hasInit) {
+            $this->deferred[] = $postClass;
+            return;
+        }
+
+        $settings = $postClass::settings();
+        if ($settings instanceof Closure) {
             $settings = $this->container->call($settings);
         }
         assert(is_array($settings), 'Expected array of post type settings.');
 
-        \register_post_type($post_subclass::TYPE, $settings);
+        register_post_type($postClass::TYPE, $settings);
     }
 }

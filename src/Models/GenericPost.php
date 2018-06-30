@@ -59,17 +59,16 @@ class GenericPost extends WordPressModel
     ];
 
     /**
-     * Returns the array of arguments that should be passed to
-     * WordPress' `register_post_type()` when registering the `static::TYPE`
-     * post type.
+     * Returns the array of arguments that should be passed to WordPress'
+     * `register_post_type()` when registering the `static::TYPE` post type.
      *
-     * If a callable is returned, it will be invoked via the dependency
-     * injection container, and is expected to return an array itself.
+     * If a Closure is returned, it will be invoked via the dependency injection
+     * container, and is expected to return an array itself.
      *
-     * @return array|callable Either an array of settings, or a function that
+     * @return array|\Closure Either an array of settings, or a function that
      *                        resolves to an array of settings.
      */
-    public static function getSettings()
+    public static function settings()
     {
         // Don't make this an abstract method since it isn't required for
         // builtin post types.
@@ -216,7 +215,7 @@ class GenericPost extends WordPressModel
     {
         if (!$this->author && ($wpPost = $this->wpPost())) {
             $authorId = $wpPost->post_author;
-            $this->author = $authorId ? new User($this->entityManager(), $authorId) : null;
+            $this->author = $authorId ? new User($this->entityManager(), (int) $authorId) : null;
         }
         return $this->author;
     }

@@ -3,7 +3,7 @@ namespace Awful\Models\Fields;
 
 use Awful\Models\Block;
 use Awful\Models\Database\BlockSet;
-use Awful\Models\Database\Exceptions\UnknownBlockTypeException;
+use Awful\Models\Database\Map\Exceptions\UnknownTypeException;
 use Awful\Models\Model;
 
 class BlocksFieldInstance extends ObjectsFieldInstance
@@ -38,7 +38,7 @@ class BlocksFieldInstance extends ObjectsFieldInstance
 
             try {
                 $class = $blockTypeMap->classForType($record->type);
-            } catch (UnknownBlockTypeException $e) {
+            } catch (UnknownTypeException $e) {
                 continue;
             }
 

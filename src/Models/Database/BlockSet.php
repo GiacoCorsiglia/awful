@@ -3,6 +3,7 @@ namespace Awful\Models\Database;
 
 use Awful\Models\Database\Exceptions\BlockNotFoundException;
 use Awful\Models\Database\Exceptions\UuidCollisionException;
+use Awful\Models\Database\Map\BlockTypeMap;
 use Awful\Models\WordPressModel;
 use stdClass;
 use function Awful\uuid;

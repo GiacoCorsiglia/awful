@@ -4,6 +4,7 @@ namespace Awful\Models\Database;
 use Awful\AwfulTestCase;
 use Awful\Models\Database\Exceptions\BlockNotFoundException;
 use Awful\Models\Database\Exceptions\UuidCollisionException;
+use Awful\Models\Database\Map\BlockTypeMap;
 use function Awful\uuid;
 
 class BlockSetTest extends AwfulTestCase

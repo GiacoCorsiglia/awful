@@ -1,23 +1,23 @@
 <?php
-namespace Awful\Models\Database;
+namespace Awful\Models\Database\Map;
 
-use Awful\Models\Database\Exceptions\DuplicateBlockTypeException;
-use Awful\Models\Database\Exceptions\UnknownBlockTypeException;
-use Awful\Models\Database\Exceptions\UnregisteredBlockClassException;
+use Awful\Models\Database\Map\Exceptions\DuplicateTypeException;
+use Awful\Models\Database\Map\Exceptions\UnknownTypeException;
+use Awful\Models\Database\Map\Exceptions\UnregisteredClassException;
 
-class BlockTypeMap
+abstract class AbstractTypeMap
 {
     /**
      * @var array
      * @psalm-var array<class-string, string>
      */
-    public $classToTypeMap = [];
+    private $classToTypeMap = [];
 
     /**
      * @var array
      * @psalm-var array<string, class-string>
      */
-    public $typeToClassMap = [];
+    private $typeToClassMap = [];
 
     /**
      * @param array $classToTypesMap
@@ -32,7 +32,7 @@ class BlockTypeMap
 
             foreach ($types as $type) {
                 if (isset($this->typeToClassMap[$type])) {
-                    throw new DuplicateBlockTypeException($type);
+                    throw new DuplicateTypeException($type);
                 }
                 $this->typeToClassMap[$type] = $class;
             }
@@ -47,7 +47,7 @@ class BlockTypeMap
     public function classForType(string $type): string
     {
         if (empty($this->typeToClassMap[$type])) {
-            throw new UnknownBlockTypeException($type);
+            throw new UnknownTypeException($type);
         }
         return $this->typeToClassMap[$type];
     }
@@ -60,7 +60,7 @@ class BlockTypeMap
     public function typeForClass(string $class): string
     {
         if (empty($this->classToTypeMap[$class])) {
-            throw new UnregisteredBlockClassException($class);
+            throw new UnregisteredClassException($class);
         }
         return $this->classToTypeMap[$class];
     }

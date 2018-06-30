@@ -2,7 +2,7 @@
 namespace Awful\Models\Fields;
 
 use Awful\Models\Block;
-use Awful\Models\Database\Exceptions\UnknownBlockTypeException;
+use Awful\Models\Database\Map\Exceptions\UnknownTypeException;
 use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 use function Awful\every;
@@ -41,7 +41,7 @@ class BlocksField extends Field
 
             try {
                 $class = $blockTypeMap->classForType($record->type);
-            } catch (UnknownBlockTypeException $e) {
+            } catch (UnknownTypeException $e) {
                 throw new ValidationException("Unknown block type '{$record->type}'", 0, $e);
             }
 

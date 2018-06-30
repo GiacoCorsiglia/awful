@@ -2,6 +2,7 @@
 namespace Awful\Models\Database;
 
 use Awful\Models\Database\Exceptions\SiteMismatchException;
+use Awful\Models\Database\Map\BlockTypeMap;
 use Awful\Models\Database\Query\BlockQuery;
 use Awful\Models\Database\Query\BlockQueryForSingleObject;
 use Awful\Models\Database\Query\BlockQueryForSite;

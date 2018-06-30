@@ -3,6 +3,7 @@ namespace Awful\Models\Database;
 
 use Awful\AwfulTestCase;
 use Awful\Models\Database\Exceptions\SiteMismatchException;
+use Awful\Models\Database\Map\BlockTypeMap;
 use Awful\Models\Database\Query\BlockQueryForPosts;
 use Awful\Models\GenericPost;
 use function Awful\uuid;

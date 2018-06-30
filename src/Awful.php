@@ -6,9 +6,9 @@ use Awful\Container\Container;
 use Awful\Context\Context;
 use Awful\Context\WordPressGlobals;
 use Awful\Models\Database\BlockSetManager;
-use Awful\Models\Database\BlockTypeMap;
 use Awful\Models\Database\Database;
 use Awful\Models\Database\EntityManager;
+use Awful\Models\Database\Map\BlockTypeMap;
 use Awful\Models\Network;
 use Awful\Models\Site;
 use Awful\Models\User;
@@ -103,7 +103,10 @@ final class Awful
         $database = new Database($GLOBALS['wpdb']);
         $this->container->register($database);
 
-        $blockSetManager = new BlockSetManager($database, new BlockTypeMap($blockTypeMap));
+        $blockTypeMapInstance = new BlockTypeMap($blockTypeMap);
+        $this->container->register($blockTypeMapInstance);
+
+        $blockSetManager = new BlockSetManager($database, $blockTypeMapInstance);
         $this->container->register($blockSetManager);
 
         $this->entityManager = new EntityManager($blockSetManager);
@@ -183,7 +186,7 @@ final class Awful
             $this->container->get($hook);
         }
 
-        $models = $theme->models();
+        $postTypes = $theme->postTypes();
     }
 
     /**

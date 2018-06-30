@@ -72,8 +72,7 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
     public function fetchByIds(int ...$ids): array
     {
-        $this->extend(['post__in', $ids]);
-        return $this->fetch();
+        return $this->extend(['post__in', $ids])->fetch();
     }
 
     //

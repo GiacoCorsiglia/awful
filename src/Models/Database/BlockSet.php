@@ -93,11 +93,14 @@ class BlockSet
         return $this->create($type, [], $uuid);
     }
 
-    public function root(): stdClass
+    public function root(bool $create = true): stdClass
     {
         $type = $this->owner->rootBlockType();
-
-        return $this->firstOfType($type) ?: $this->create($type);
+        $root = $this->firstOfType($type);
+        if (!$root && $create) {
+            $root = $this->create($type);
+        }
+        return $root;
     }
 
     private function firstOfType(string $type): ?stdClass

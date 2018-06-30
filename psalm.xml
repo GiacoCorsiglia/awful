@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<psalm stopOnFirstError="true"
-    useDocblockTypes="true"
+<psalm useDocblockTypes="true"
     useAssertForType="true"
     rememberPropertyAssignmentsAfterCall="true"
 >

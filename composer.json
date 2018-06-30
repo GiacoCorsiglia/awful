@@ -40,8 +40,8 @@
         "giacocorsiglia/wordpress-stubs": "^4.9",
         "johnpbloch/wordpress": "^4.9",
         "phpunit/phpunit": "6.*",
-        "psy/psysh": "^0.8.17",
-        "vimeo/psalm": "^1.0",
+        "psy/psysh": "^0.9",
+        "vimeo/psalm": "^2.0",
         "wp-phpunit/wp-phpunit": "^4.9"
     },
     "config": {

@@ -124,6 +124,7 @@ class ModelTest extends AwfulTestCase
 
     public function testStaticFieldsMethod()
     {
+        MockModel::$registerFieldsCallCount = 0;
         $fields = MockModel::fields();
         $this->assertSame(2, count($fields));
         $this->assertContainsOnlyInstancesOf(Field::class, $fields);

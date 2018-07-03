@@ -9,7 +9,8 @@ namespace Awful\Models\Traits;
 trait WordPressModelWithMetaTable
 {
     /**
-     * @param  string $key
+     * @param string $key
+     *
      * @return mixed
      */
     final public function getMeta(string $key)
@@ -28,8 +29,9 @@ trait WordPressModelWithMetaTable
     }
 
     /**
-     * @param  string $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed $value
+     *
      * @return void
      */
     final public function updateMeta(string $key, $value): void
@@ -55,8 +57,9 @@ trait WordPressModelWithMetaTable
     abstract protected function metaType(): string;
 
     /**
-     * @param  string $name
-     * @param  mixed  ...$args
+     * @param string $name
+     * @param mixed ...$args
+     *
      * @return mixed
      */
     private function callMetaFunction(string $name, ...$args)

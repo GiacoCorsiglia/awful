@@ -116,8 +116,9 @@ class Site extends WordPressModel
      *
      * This is also equivalent to `get_blog_option()`.
      *
-     * @param  string $option
-     * @param  mixed  $default
+     * @param string $option
+     * @param mixed $default
+     *
      * @return mixed
      */
     final public function getOption(string $option, $default = false)
@@ -133,9 +134,10 @@ class Site extends WordPressModel
      *
      * This is also equivalent to `update_blog_option()`.
      *
-     * @param  string $option
-     * @param  mixed  $value
-     * @param  bool   $autoload
+     * @param string $option
+     * @param mixed $value
+     * @param bool $autoload
+     *
      * @return void
      */
     final public function updateOption(string $option, $value, bool $autoload = true): void

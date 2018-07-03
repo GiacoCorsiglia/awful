@@ -98,7 +98,8 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param  bool|string $value
+     * @param bool|string $value
+     *
      * @return self
      */
     public function password($value = true): self

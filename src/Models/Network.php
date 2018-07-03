@@ -66,8 +66,9 @@ class Network
      *
      * This is also equivalent to `get_site_option()`.
      *
-     * @param  string $option
-     * @param  mixed  $default
+     * @param string $option
+     * @param mixed $default
+     *
      * @return mixed
      */
     final public function getOption(string $option, $default = false)
@@ -83,9 +84,10 @@ class Network
      *
      * This is also equivalent to `update_site_option()`.
      *
-     * @param  string $option
-     * @param  mixed  $value
-     * @param  bool   $autoload
+     * @param string $option
+     * @param mixed $value
+     * @param bool $autoload
+     *
      * @return void
      */
     final public function updateOption(string $option, $value, bool $autoload = true): void

@@ -28,7 +28,7 @@ trait WordPressModelWithSiteContext
      * @final
      *
      * @param callable $callable Function to invoke.
-     * @param mixed    ...$args  Positional arguments to pass to $callable.
+     * @param mixed ...$args Positional arguments to pass to $callable.
      *
      * @return mixed Return value of invoked function.
      */

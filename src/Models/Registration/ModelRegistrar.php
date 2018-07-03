@@ -47,7 +47,8 @@ class ModelRegistrar
     /**
      * Registers a post type with WordPress, given an Awful model class.
      *
-     * @param  string $postClass Name of a subclass of `Awful\GenericPost`.
+     * @param string $postClass Name of a subclass of `Awful\GenericPost`.
+     *
      * @return void
      */
     public function registerPostType(string $postClass): void

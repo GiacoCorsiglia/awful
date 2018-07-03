@@ -40,7 +40,8 @@ abstract class AbstractTypeMap
     }
 
     /**
-     * @param  string $type
+     * @param string $type
+     *
      * @return string
      * @psalm-return class-string
      */
@@ -55,6 +56,7 @@ abstract class AbstractTypeMap
     /**
      * @param string $class
      * @psalm-param class-string $class
+     *
      * @return string
      */
     public function typeForClass(string $class): string

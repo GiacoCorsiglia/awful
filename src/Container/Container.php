@@ -20,12 +20,14 @@ final class Container implements ContainerInterface
 {
     /**
      * Stash of already resolved instances.
+     *
      * @var object[]
      */
     private $instances = [];
 
     /**
      * Dictionary of aliases that maps alias to class.
+     *
      * @var string[]
      */
     private $aliases = [];
@@ -33,6 +35,7 @@ final class Container implements ContainerInterface
     /**
      * Stack of classnames that are resolving to track circular dependencies.
      * Classnames are stored as the array keys for faster lookups.
+     *
      * @var bool[]
      */
     private $currently_resolving = [];
@@ -45,7 +48,8 @@ final class Container implements ContainerInterface
     }
 
     /**
-     * @param  string $id
+     * @param string $id
+     *
      * @return object Entry.
      */
     public function get($id)
@@ -75,7 +79,7 @@ final class Container implements ContainerInterface
      *
      * The $instance will be registered under its own class name.
      *
-     * @param object $instance   Instance to register.
+     * @param object $instance Instance to register.
      * @param string ...$aliases Optional list of aliases for the $instance.
      *
      * @throws AlreadyRegisteredException
@@ -104,7 +108,7 @@ final class Container implements ContainerInterface
      * Though no warnings will be issued, the only proper use of aliasing is to
      * tie a particular subclass to a parent class or interface.
      *
-     * @param string $class      Name of the class to actually instantiate.
+     * @param string $class Name of the class to actually instantiate.
      * @param string ...$aliases One or more alternative class/interface names.
      *
      * @return self $this
@@ -126,8 +130,8 @@ final class Container implements ContainerInterface
      * Dependency resolution stops with the first positional parameter that
      * either does not specify a type or specifies a scalar type.
      *
-     * @param string $class   Class to instantiate.
-     * @param mixed  ...$args Additional arguments to pass to the constructor.
+     * @param string $class Class to instantiate.
+     * @param mixed ...$args Additional arguments to pass to the constructor.
      *
      * @throws ClassDoesNotExistException
      * @throws UninstantiatableClassException
@@ -174,7 +178,7 @@ final class Container implements ContainerInterface
      * either does not specify a type or specifies a scalar type.
      *
      * @param callable $callable Function or method to call.
-     * @param mixed    ...$args  Additional arguments to pass to the callable.
+     * @param mixed ...$args Additional arguments to pass to the callable.
      *
      * @return mixed Whatever value is returned by the callable.
      *

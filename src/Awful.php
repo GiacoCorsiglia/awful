@@ -23,6 +23,7 @@ final class Awful
      * @psalm-param array<int, Provider> $providers
      * @param array $blockClassMap
      * @psalm-param array<class-string, string[]|string> $blockClassMap
+     *
      * @return void
      */
     public static function bootstrap(array $providers, array $blockClassMap): void
@@ -208,8 +209,9 @@ final class Awful
     /**
      * @internal Exposed to be called by Context.
      *
-     * @param  callable $setSite
-     * @param  callable $setUser
+     * @param callable $setSite
+     * @param callable $setUser
+     *
      * @return void
      */
     public function registerContextCallbacks(

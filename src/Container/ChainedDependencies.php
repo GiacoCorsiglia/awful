@@ -36,9 +36,11 @@ trait ChainedDependencies
      * the Container.
      *
      * @see \Awful\Container\Container::instantiate()
+     *
      * @internal
      *
-     * @param  object[] $dependencies Resolved instances keyed by property name.
+     * @param object[] $dependencies Resolved instances keyed by property name.
+     *
      * @return void
      */
     public function injectDependencies(array $dependencies): void

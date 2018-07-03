@@ -23,7 +23,7 @@ class TwigTemplateEngine implements TemplateEngine
 
     /**
      * @param Container $container
-     * @param Theme     $theme
+     * @param Theme $theme
      */
     public function __construct(Container $container, Theme $theme)
     {

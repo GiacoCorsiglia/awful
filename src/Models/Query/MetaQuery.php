@@ -36,7 +36,7 @@ class MetaQuery
 
     /**
      * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $compare
      * @param string $type
      */

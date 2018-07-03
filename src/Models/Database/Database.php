@@ -210,8 +210,10 @@ class Database
 
     /**
      * @todo This should probably just take block IDs instead.
-     * @param  BlockQuery $blockQuery
-     * @param  string[]   $uuids
+     *
+     * @param BlockQuery $blockQuery
+     * @param string[] $uuids
+     *
      * @return void
      */
     public function deleteBlocksFor(BlockQuery $blockQuery, array $uuids): void

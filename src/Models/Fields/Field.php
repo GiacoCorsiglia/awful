@@ -44,10 +44,10 @@ abstract class Field implements JsonSerializable
      * Filters the value of the field when it is loaded from the database by a
      * Model instance.
      *
-     * @param null|bool|int|float|string|array $value    The raw value as it is
-     *                                                   saved in the database.
-     * @param Model                            $model
-     * @param string                           $fieldKey
+     * @param null|bool|int|float|string|array $value The raw value as it is
+     *                                                saved in the database.
+     * @param Model $model
+     * @param string $fieldKey
      *
      * @return mixed The filtered value.
      */
@@ -57,7 +57,7 @@ abstract class Field implements JsonSerializable
      * Validates and optionally modifies the value before it is saved.
      *
      * @param null|bool|int|float|string|array $value
-     * @param Model                            $model
+     * @param Model $model
      *
      * @throws ValidationException
      *

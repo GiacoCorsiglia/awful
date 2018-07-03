@@ -76,7 +76,8 @@ abstract class Router
      * Generates a simple route handler that redirects to the given URL when
      * the route is matched.
      *
-     * @param  string $to URL to redirect to
+     * @param string $to URL to redirect to
+     *
      * @return string Implementation detail.
      */
     final protected function redirectHandler(string $to): string
@@ -91,7 +92,8 @@ abstract class Router
      * The method should always return null, or the name of a Controller subclass
      * (or an array of such names).
      *
-     * @param  string $method_name The name of the instance method.
+     * @param string $method_name The name of the instance method.
+     *
      * @return string Implementation detail.
      */
     final protected function methodHandler(string $method_name): string
@@ -102,8 +104,9 @@ abstract class Router
     /**
      * Extracts the URL to which to redirect from a route handler if applicable.
      *
-     * @param  string|mixed $handler
-     * @return string|null  The URL if $handler is a redirect handler, else null.
+     * @param string|mixed $handler
+     *
+     * @return string|null The URL if $handler is a redirect handler, else null.
      */
     private function asRedirectHandler($handler): ?string
     {
@@ -115,9 +118,10 @@ abstract class Router
     /**
      * Extracts a method handler from a route handler if applicable.
      *
-     * @param  string|mixed  $handler
-     * @return callable|null The method as a callable if $handler is in fact
-     *                               a method handler, null otherwise.
+     * @param string|mixed $handler
+     *
+     * @return callable|null The method as a callable if $handler is in fact a
+     *                       method handler, null otherwise.
      */
     private function asMethodHandler($handler): ?callable
     {

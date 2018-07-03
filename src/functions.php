@@ -8,16 +8,15 @@ namespace Awful;
  * Checks each element in `$array` against a `$predicate`; useful for verifying
  * arrays in assertions.
  *
- * @param array    $array     The array to check.
+ * @param array $array The array to check.
  * @param callable $predicate A function which returns a bool and accepts at
  *                            least one or two arguments, depending on `$flag`.
  *                            You can leave off the Awful namespace.
- * @param array    $args      Additional positional arguments to pass to the
- *                            $predicate after they value, key, or both,
- *                            depending on the $flag.
- * @param int      $flag      One of `ARRAY_FILTER_USE_KEY` or
- *                            `ARRAY_FILTER_USE_BOTH`. Defaults to 0, meaning
- *                            only the value will be passed to the `$predicate`.
+ * @param array $args Additional positional arguments to pass to the $predicate
+ *                    after they value, key, or both, depending on the $flag.
+ * @param int $flag One of `ARRAY_FILTER_USE_KEY` or `ARRAY_FILTER_USE_BOTH`.
+ *                  Defaults to 0, meaning only the value will be passed to the
+ *                  `$predicate`.
  *
  * @return bool If each key-value pair in the array passes the predicate.
  */
@@ -55,7 +54,7 @@ function every(
  *
  * Use instead of `is_subclass_of()` if `$class` might equal `$parent_class`.
  *
- * @param mixed  $class        Expected to be a string, but confirms.
+ * @param mixed $class Expected to be a string, but confirms.
  * @param string $parent_class
  *
  * @return bool
@@ -71,7 +70,7 @@ function is_subclass($class, string $parent_class): bool
  *
  * Doesn't check if `$class` can be instantiated (e.g. if it's not abstract).
  *
- * @param mixed  $class     Expected to be a string, but confirms.
+ * @param mixed $class Expected to be a string, but confirms.
  * @param string $interface
  *
  * @return bool
@@ -87,7 +86,7 @@ function is_implementation($class, string $interface): bool
  *
  * Just a functional wrapper around the `instanceof` operator.
  *
- * @param mixed  $object             Expected to be an object, but confirms.
+ * @param mixed $object Expected to be an object, but confirms.
  * @param string $class_or_interface
  *
  * @return bool

@@ -26,9 +26,9 @@ class BlockSet
     private $blocks;
 
     /**
-     * @param BlockTypeMap   $blockTypeMap
+     * @param BlockTypeMap $blockTypeMap
      * @param WordPressModel $owner
-     * @param stdClass[]     $blocks
+     * @param stdClass[] $blocks
      * @psalm-param array<string|int, stdClass> $blocks
      */
     public function __construct(
@@ -96,7 +96,8 @@ class BlockSet
     /**
      * @param string $class
      * @psalm-param class-string $class
-     * @param  string   $uuid
+     * @param string $uuid
+     *
      * @return stdClass
      */
     public function createForClass(string $class, string $uuid): stdClass

@@ -11,7 +11,7 @@ interface TemplateEngine
      *
      * @param string $template Template file path relative to the the current
      *                         theme's template directory.
-     * @param array  $context  Associative array of template variables.
+     * @param array $context Associative array of template variables.
      *
      * @return string Rendered output.
      */

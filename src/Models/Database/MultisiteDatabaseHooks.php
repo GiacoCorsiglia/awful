@@ -17,7 +17,8 @@ class MultisiteDatabaseHooks
     }
 
     /**
-     * @param  int  $blog_id ID of the site
+     * @param int $blog_id ID of the site
+     *
      * @return void
      */
     public function createSite($blog_id): void
@@ -26,8 +27,9 @@ class MultisiteDatabaseHooks
     }
 
     /**
-     * @param  string[] $tables
-     * @param  int      $blog_id
+     * @param string[] $tables
+     * @param int $blog_id
+     *
      * @return array
      */
     public function registerTableToDropOnDeleteSite($tables, $blog_id): array

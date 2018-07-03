@@ -49,7 +49,8 @@ abstract class Model
     /**
      * Gets a field value.
      *
-     * @param  string $key
+     * @param string $key
+     *
      * @return mixed
      */
     final public function get(string $key)
@@ -69,7 +70,8 @@ abstract class Model
     /**
      * Gets a raw field value.
      *
-     * @param  string $key
+     * @param string $key
+     *
      * @return mixed
      */
     final public function getRaw(string $key)
@@ -86,6 +88,7 @@ abstract class Model
      *
      * @param array $data
      * @psalm-param array<string, mixed> $data
+     *
      * @return $this
      */
     final public function set(array $data): self

@@ -22,7 +22,8 @@ class BlockQueryForSite extends BlockQuery
     /**
      * @todo Calling this method on this class doesn't make sense.
      *
-     * @param  array      $exclude
+     * @param array $exclude
+     *
      * @return BlockQuery
      */
     public function without(array $exclude): BlockQuery

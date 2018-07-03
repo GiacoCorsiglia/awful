@@ -32,14 +32,14 @@ trait WordPressModelOwnedBySite
         $this->id = $id;
     }
 
-    final public function entityManager(): EntityManager
-    {
-        return $this->site->entityManager();
-    }
-
     final public function blockRecordColumnValue(): int
     {
         return $this->id;
+    }
+
+    final public function entityManager(): EntityManager
+    {
+        return $this->site->entityManager();
     }
 
     final public function id(): int

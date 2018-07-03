@@ -9,8 +9,9 @@ use Awful\Container\Container;
  */
 abstract class Provider
 {
-    public function register(Container $container): void
+    public function commands(): array
     {
+        return [];
     }
 
     public function plugins(): array
@@ -18,9 +19,8 @@ abstract class Provider
         return [];
     }
 
-    public function commands(): array
+    public function register(Container $container): void
     {
-        return [];
     }
 
     public function themes(): array

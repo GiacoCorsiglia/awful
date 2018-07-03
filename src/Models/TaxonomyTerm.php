@@ -26,9 +26,19 @@ class TaxonomyTerm extends WordPressModel
         return Database::TERM_COLUMN;
     }
 
+    final public function exists(): bool
+    {
+        return $this->id && $this->wpTerm() !== null;
+    }
+
     final public function rootBlockType(): string
     {
         return 'Awful.RootBlocks.Term';
+    }
+
+    final public function wpObject(): ?object
+    {
+        return $this->wpTerm();
     }
 
     /**
@@ -43,16 +53,6 @@ class TaxonomyTerm extends WordPressModel
             $this->wpTerm = $this->callInSiteContext('get_term', $this->id);
         }
         return $this->wpTerm;
-    }
-
-    final public function wpObject(): ?object
-    {
-        return $this->wpTerm();
-    }
-
-    final public function exists(): bool
-    {
-        return $this->id && $this->wpTerm() !== null;
     }
 
     final protected function metaType(): string

@@ -14,17 +14,6 @@ use Awful\Models\WordPressModel;
  */
 class PostsField extends Field
 {
-    public function toPhp($value, Model $model, string $fieldKey)
-    {
-        if (!is_array($value)) {
-            $value = [];
-        } else {
-            $value = array_map('absint', $value);
-        }
-
-        return new PostsFieldInstance($value, $model, $fieldKey, $this->determineSite($model));
-    }
-
     public function clean($value, Model $model): array
     {
         if (!$value) {
@@ -59,6 +48,17 @@ class PostsField extends Field
         return $value;
     }
 
+    public function toPhp($value, Model $model, string $fieldKey)
+    {
+        if (!is_array($value)) {
+            $value = [];
+        } else {
+            $value = array_map('absint', $value);
+        }
+
+        return new PostsFieldInstance($value, $model, $fieldKey, $this->determineSite($model));
+    }
+
     private function determineSite(Model $model): ?Site
     {
         /** @var WordPressModel */
@@ -66,7 +66,7 @@ class PostsField extends Field
         $entityManager = $wpModel->entityManager();
 
         if (!empty($this->args['site_id'])) {
-            return (new SiteQuerySet($entityManager))->fetchById($$this->args['site_id']);
+            return (new SiteQuerySet($entityManager))->fetchById(${$this}->args['site_id']);
         }
         if ($wpModel instanceof User) {
             // Users are on the main site by default in multisite.

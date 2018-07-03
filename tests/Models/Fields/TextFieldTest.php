@@ -21,16 +21,6 @@ class TextFieldTest extends AwfulTestCase
         $this->model = $this->getMockForAbstractClass(Model::class);
     }
 
-    public function testToPhp()
-    {
-        $this->assertSame('', $this->field->toPhp('', $this->model, ''));
-        $this->assertSame('foo', $this->field->toPhp('foo', $this->model, ''));
-        $this->assertSame('', $this->field->toPhp(false, $this->model, ''));
-        $this->assertSame('', $this->field->toPhp(null, $this->model, ''));
-        $this->assertSame('1', $this->field->toPhp(true, $this->model, ''));
-        $this->assertSame('', $this->field->toPhp(['foo'], $this->model, ''));
-    }
-
     public function testCleanAcceptsStringOrNull()
     {
         $this->assertSame(null, $this->field->clean(null, $this->model));
@@ -41,5 +31,15 @@ class TextFieldTest extends AwfulTestCase
     {
         $this->expectException(ValidationException::class);
         $this->field->clean(false, $this->model);
+    }
+
+    public function testToPhp()
+    {
+        $this->assertSame('', $this->field->toPhp('', $this->model, ''));
+        $this->assertSame('foo', $this->field->toPhp('foo', $this->model, ''));
+        $this->assertSame('', $this->field->toPhp(false, $this->model, ''));
+        $this->assertSame('', $this->field->toPhp(null, $this->model, ''));
+        $this->assertSame('1', $this->field->toPhp(true, $this->model, ''));
+        $this->assertSame('', $this->field->toPhp(['foo'], $this->model, ''));
     }
 }

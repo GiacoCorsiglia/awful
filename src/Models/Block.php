@@ -6,11 +6,11 @@ use stdClass;
 
 abstract class Block extends Model
 {
-    /** @var WordPressModel */
-    private $owner;
-
     /** @var BlockSet */
     private $blockSet;
+
+    /** @var WordPressModel */
+    private $owner;
 
     /** @var string */
     private $uuid;
@@ -24,19 +24,9 @@ abstract class Block extends Model
         $this->uuid = $uuid;
     }
 
-    final public function owner(): WordPressModel
+    final public function blockSet(): BlockSet
     {
-        return $this->owner;
-    }
-
-    final public function id(): int
-    {
-        return $this->fetchBlockRecord()->id ?? 0;
-    }
-
-    final public function uuid(): string
-    {
-        return $this->uuid;
+        return $this->blockSet;
     }
 
     final public function exists(): bool
@@ -44,19 +34,29 @@ abstract class Block extends Model
         return (bool) $this->id();
     }
 
-    final public function blockSet(): BlockSet
+    final public function id(): int
     {
-        return $this->blockSet;
+        return $this->fetchBlockRecord()->id ?? 0;
     }
 
-    final protected function fetchBlockRecord(): stdClass
+    final public function owner(): WordPressModel
     {
-        return $this->blockSet->get($this->uuid) ?: $this->blockSet->createForClass(static::class, $this->uuid);
+        return $this->owner;
     }
 
     final public function reloadBlocks(): void
     {
         $this->blockSet = $this->owner->blockSet();
         parent::reloadBlocks();
+    }
+
+    final public function uuid(): string
+    {
+        return $this->uuid;
+    }
+
+    final protected function fetchBlockRecord(): stdClass
+    {
+        return $this->blockSet->get($this->uuid) ?: $this->blockSet->createForClass(static::class, $this->uuid);
     }
 }

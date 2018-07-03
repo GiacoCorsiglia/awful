@@ -9,11 +9,6 @@ use Awful\Models\Model;
  */
 class TrueFalseField extends Field
 {
-    public function toPhp($value, Model $model, string $fieldKey): bool
-    {
-        return (bool) $value;
-    }
-
     public function clean($value, Model $model): ?bool
     {
         if ($value === null) {
@@ -25,5 +20,10 @@ class TrueFalseField extends Field
         }
 
         return $value;
+    }
+
+    public function toPhp($value, Model $model, string $fieldKey): bool
+    {
+        return (bool) $value;
     }
 }

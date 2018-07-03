@@ -9,17 +9,6 @@ use Awful\Models\Model;
  */
 class TextField extends Field
 {
-    public function toPhp($value, Model $model, string $fieldKey): string
-    {
-        if (is_array($value)) {
-            // Avoid "Array to string conversion" warning.  Could return
-            // $value[0], but maybe that's too magic.
-            return '';
-        }
-
-        return (string) $value;
-    }
-
     public function clean($value, Model $model): ?string
     {
         if ($value === null) {
@@ -31,5 +20,16 @@ class TextField extends Field
         }
 
         return $value;
+    }
+
+    public function toPhp($value, Model $model, string $fieldKey): string
+    {
+        if (is_array($value)) {
+            // Avoid "Array to string conversion" warning.  Could return
+            // $value[0], but maybe that's too magic.
+            return '';
+        }
+
+        return (string) $value;
     }
 }

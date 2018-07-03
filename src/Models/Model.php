@@ -46,68 +46,10 @@ abstract class Model
     /** @var array */
     private $formattedDataCache = [];
 
-    /**
-     * Gets a field value.
-     *
-     * @param string $key
-     *
-     * @return mixed
-     */
-    final public function get(string $key)
+    abstract public function blockSet(): BlockSet;
+
+    public function clean(): void
     {
-        if (isset($this->formattedDataCache[$key])) {
-            return $this->formattedDataCache[$key];
-        }
-
-        $field = static::fields()[$key] ?? null;
-        if (!$field) {
-            throw new FieldDoesNotExistException("There is no field '$key' on " . static::class);
-        }
-        $value = $this->getRaw($key);
-        return $this->formattedDataCache[$key] = $field->toPhp($value, $this, $key);
-    }
-
-    /**
-     * Gets a raw field value.
-     *
-     * @param string $key
-     *
-     * @return mixed
-     */
-    final public function getRaw(string $key)
-    {
-        if ($this->block === null) {
-            $this->block = $this->fetchBlockRecord();
-        }
-
-        return $this->block->data[$key] ?? null;
-    }
-
-    /**
-     * Sets raw field values.
-     *
-     * @param array $data
-     * @psalm-param array<string, mixed> $data
-     *
-     * @return $this
-     */
-    final public function set(array $data): self
-    {
-        if ($this->block === null) {
-            $this->block = $this->fetchBlockRecord();
-        }
-
-        // TODO: Consider validation at this point.
-        $this->blockSet()->set($this->block->uuid, $data + $this->block->data);
-
-        // Clear the formatted data cache for the newly set fields.
-        foreach ($data as $key => $_) {
-            if (isset($this->formattedDataCache[$key])) {
-                unset($this->formattedDataCache[$key]);
-            }
-        }
-
-        return $this;
     }
 
     /**
@@ -155,17 +97,50 @@ abstract class Model
         return null; // Indicates success
     }
 
-    public function clean(): void
+    /**
+     * Determines if this model actually exists in the database.
+     *
+     * @return bool True if there is a row in the database which represents this
+     *              instance, otherwise false.
+     */
+    abstract public function exists(): bool;
+
+    /**
+     * Gets a field value.
+     *
+     * @param string $key
+     *
+     * @return mixed
+     */
+    final public function get(string $key)
     {
+        if (isset($this->formattedDataCache[$key])) {
+            return $this->formattedDataCache[$key];
+        }
+
+        $field = static::fields()[$key] ?? null;
+        if (!$field) {
+            throw new FieldDoesNotExistException("There is no field '$key' on " . static::class);
+        }
+        $value = $this->getRaw($key);
+        return $this->formattedDataCache[$key] = $field->toPhp($value, $this, $key);
     }
 
-    public function reloadBlocks(): void
+    /**
+     * Gets a raw field value.
+     *
+     * @param string $key
+     *
+     * @return mixed
+     */
+    final public function getRaw(string $key)
     {
-        $this->block = null;
-        $this->formattedDataCache = [];
-    }
+        if ($this->block === null) {
+            $this->block = $this->fetchBlockRecord();
+        }
 
-    abstract public function blockSet(): BlockSet;
+        return $this->block->data[$key] ?? null;
+    }
 
     /**
      * The id of this object.
@@ -174,13 +149,38 @@ abstract class Model
      */
     abstract public function id(): int;
 
+    public function reloadBlocks(): void
+    {
+        $this->block = null;
+        $this->formattedDataCache = [];
+    }
+
     /**
-     * Determines if this model actually exists in the database.
+     * Sets raw field values.
      *
-     * @return bool True if there is a row in the database which represents this
-     *              instance, otherwise false.
+     * @param array $data
+     * @psalm-param array<string, mixed> $data
+     *
+     * @return $this
      */
-    abstract public function exists(): bool;
+    final public function set(array $data): self
+    {
+        if ($this->block === null) {
+            $this->block = $this->fetchBlockRecord();
+        }
+
+        // TODO: Consider validation at this point.
+        $this->blockSet()->set($this->block->uuid, $data + $this->block->data);
+
+        // Clear the formatted data cache for the newly set fields.
+        foreach ($data as $key => $_) {
+            if (isset($this->formattedDataCache[$key])) {
+                unset($this->formattedDataCache[$key]);
+            }
+        }
+
+        return $this;
+    }
 
     abstract protected function fetchBlockRecord(): stdClass;
 }

@@ -11,54 +11,24 @@ use function Awful\uuid;
 
 class BlockSetManagerTest extends AwfulTestCase
 {
-    public function testFetchBlockSetThreadsBlockTypeMap()
+    public function testDeleteBlocksFor()
     {
-        $site = $this->mockSite();
-        $db = $this->createMock(Database::class);
-        $map = new BlockTypeMap([]);
-        $manager = new BlockSetManager($db, $map);
-        $set = $manager->fetchBlockSet($site);
-        $this->assertSame($map, $set->blockTypeMap());
-    }
-
-    public function testFetchBlockSetForSite()
-    {
-        if (is_multisite()) {
-            $siteId = (int) $this->factory->blog->create_and_get()->blog_id;
-        } else {
-            $siteId = 0;
-        }
-
+        $siteId = is_multisite() ? 1 : 0;
         $site = $this->mockSite($siteId);
 
+        $uuids = ['uuid1', 'uuid2'];
+
         $db = $this->createMock(Database::class);
-        $uuid = uuid();
-        $db->expects($this->once()) // The second call should be cached.
-            ->method('fetchBlocks')
-            ->willReturn([
-                (object) [
-                    'id' => 1,
-                    'uuid' => $uuid,
-                    'type' => 'hi',
-                    'data' => [],
-                ],
-                (object) [
-                    'id' => 2,
-                    'uuid' => uuid(),
-                    'type' => 'yo',
-                    'data' => [],
-                ],
-            ]);
+        $db->expects($this->once())
+            ->method('deleteBlocksFor')
+            ->with($this->callback(function (BlockQueryForSite $bq) use ($siteId) {
+                return $bq->siteId() === $siteId;
+            }), $uuids);
+
         $map = new BlockTypeMap([]);
         $manager = new BlockSetManager($db, $map);
 
-        $set = $manager->fetchBlockSet($site);
-        $this->assertSame($uuid, $set->get($uuid)->uuid);
-
-        // Now do it all again, but this time should read from cache.  Note that
-        // above we `expect()` that the `$db` method will only be called once.
-        $set = $manager->fetchBlockSet($site);
-        $this->assertSame($uuid, $set->get($uuid)->uuid);
+        $manager->deleteBlocksFor($site, $uuids);
     }
 
     public function testFetchAndPrefetchBlockSetsForPosts()
@@ -165,19 +135,54 @@ class BlockSetManagerTest extends AwfulTestCase
         $this->assertSame(0, count($set3->all()));
     }
 
-    public function testSaveRejectsBlockSetsForMultipleSites()
+    public function testFetchBlockSetForSite()
     {
-        $this->skipWithoutMultisite();
+        if (is_multisite()) {
+            $siteId = (int) $this->factory->blog->create_and_get()->blog_id;
+        } else {
+            $siteId = 0;
+        }
+
+        $site = $this->mockSite($siteId);
 
         $db = $this->createMock(Database::class);
+        $uuid = uuid();
+        $db->expects($this->once()) // The second call should be cached.
+            ->method('fetchBlocks')
+            ->willReturn([
+                (object) [
+                    'id' => 1,
+                    'uuid' => $uuid,
+                    'type' => 'hi',
+                    'data' => [],
+                ],
+                (object) [
+                    'id' => 2,
+                    'uuid' => uuid(),
+                    'type' => 'yo',
+                    'data' => [],
+                ],
+            ]);
         $map = new BlockTypeMap([]);
         $manager = new BlockSetManager($db, $map);
 
-        $bs1 = new BlockSet($map, $this->mockSite(1), []);
-        $bs2 = new BlockSet($map, $this->mockSite(2), []);
+        $set = $manager->fetchBlockSet($site);
+        $this->assertSame($uuid, $set->get($uuid)->uuid);
 
-        $this->expectException(SiteMismatchException::class);
-        $manager->save($bs1, $bs2);
+        // Now do it all again, but this time should read from cache.  Note that
+        // above we `expect()` that the `$db` method will only be called once.
+        $set = $manager->fetchBlockSet($site);
+        $this->assertSame($uuid, $set->get($uuid)->uuid);
+    }
+
+    public function testFetchBlockSetThreadsBlockTypeMap()
+    {
+        $site = $this->mockSite();
+        $db = $this->createMock(Database::class);
+        $map = new BlockTypeMap([]);
+        $manager = new BlockSetManager($db, $map);
+        $set = $manager->fetchBlockSet($site);
+        $this->assertSame($map, $set->blockTypeMap());
     }
 
     public function testSave()
@@ -215,23 +220,18 @@ class BlockSetManagerTest extends AwfulTestCase
         $manager->save($bs1, $bs2);
     }
 
-    public function testDeleteBlocksFor()
+    public function testSaveRejectsBlockSetsForMultipleSites()
     {
-        $siteId = is_multisite() ? 1 : 0;
-        $site = $this->mockSite($siteId);
-
-        $uuids = ['uuid1', 'uuid2'];
+        $this->skipWithoutMultisite();
 
         $db = $this->createMock(Database::class);
-        $db->expects($this->once())
-            ->method('deleteBlocksFor')
-            ->with($this->callback(function (BlockQueryForSite $bq) use ($siteId) {
-                return $bq->siteId() === $siteId;
-            }), $uuids);
-
         $map = new BlockTypeMap([]);
         $manager = new BlockSetManager($db, $map);
 
-        $manager->deleteBlocksFor($site, $uuids);
+        $bs1 = new BlockSet($map, $this->mockSite(1), []);
+        $bs2 = new BlockSet($map, $this->mockSite(2), []);
+
+        $this->expectException(SiteMismatchException::class);
+        $manager->save($bs1, $bs2);
     }
 }

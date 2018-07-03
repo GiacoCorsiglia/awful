@@ -11,26 +11,43 @@ use function Awful\uuid;
 
 class ModelTest extends AwfulTestCase
 {
-    public function testStaticFieldsMethod()
-    {
-        $fields = MockModel::fields();
-        $this->assertSame(2, count($fields));
-        $this->assertContainsOnlyInstancesOf(Field::class, $fields);
-
-        $this->assertSame(MockModel::fields(), MockModel::fields(), 'The call was memoized');
-        $this->assertSame(1, MockModel::$registerFieldsCallCount, 'The call was memoized: registerFields was only called once');
-    }
-
-    public function testGetRaw()
+    public function testCleanFieldsWithInvalidField()
     {
         $model = $this->mockModel([
-            'foo' => 'bar',
-            'fiz' => ['buz'],
+            'required' => 'invalid',
         ]);
 
-        $this->assertSame('bar', $model->getRaw('foo'));
-        $this->assertSame(['buz'], $model->getRaw('fiz'));
-        $this->assertSame(null, $model->getRaw('non-existent'));
+        $errors = $model->cleanFields();
+        $this->assertSame(1, count($errors), 'Optional field is allow');
+        $this->assertTrue(!empty($errors['required']));
+        $this->assertSame(['invalid message'], $errors['required']);
+    }
+
+    public function testCleanFieldsWithMissingRequiredField()
+    {
+        $model = $this->mockModel([]);
+
+        $errors = $model->cleanFields();
+        $this->assertSame(1, count($errors), 'Optional field is allow');
+        $this->assertTrue(!empty($errors['required']));
+        $this->assertSame(1, count($errors['required']));
+        $this->assertTrue(strpos($errors['required'][0], 'is required') !== false);
+    }
+
+    public function testCleanFieldsWithValidFields()
+    {
+        $model = $this->mockModel([
+            'optional' => 'raw',
+            'required' => 'bar',
+        ]);
+
+        $optionalBefore = $model->get('optional');
+        $this->assertSame('raw', $model->getRaw('optional'));
+
+        $this->assertSame(null, $model->cleanFields(), 'no errors');
+
+        $this->assertSame('clean', $model->getRaw('optional'), 'cleaned value is set');
+        $this->assertNotSame($optionalBefore, $model->get('optional'), 'cleanFields should reset formatted data cache');
     }
 
     public function testGet()
@@ -48,6 +65,36 @@ class ModelTest extends AwfulTestCase
 
         $this->expectException(FieldDoesNotExistException::class);
         $model->get('non-existent');
+    }
+
+    public function testGetRaw()
+    {
+        $model = $this->mockModel([
+            'foo' => 'bar',
+            'fiz' => ['buz'],
+        ]);
+
+        $this->assertSame('bar', $model->getRaw('foo'));
+        $this->assertSame(['buz'], $model->getRaw('fiz'));
+        $this->assertSame(null, $model->getRaw('non-existent'));
+    }
+
+    public function testReloadBlocks()
+    {
+        $model = $this->mockModel([
+            'optional' => 'clean',
+        ]);
+
+        $optionalBefore = $model->get('optional');
+        $this->assertSame(1, $model->fetchBlockRecordCallCount);
+        $this->assertTrue(is_object($optionalBefore) && $optionalBefore->test);
+
+        $model->reloadBlocks();
+
+        $optionalAfter = $model->get('optional');
+        $this->assertSame(2, $model->fetchBlockRecordCallCount);
+        $this->assertTrue(is_object($optionalAfter) && $optionalAfter->test);
+        $this->assertNotSame($optionalBefore, $optionalAfter);
     }
 
     public function testSet()
@@ -75,61 +122,14 @@ class ModelTest extends AwfulTestCase
         $this->assertSame($optional, $model->get('optional'), 'Other values untouched by set');
     }
 
-    public function testCleanFieldsWithValidFields()
+    public function testStaticFieldsMethod()
     {
-        $model = $this->mockModel([
-            'optional' => 'raw',
-            'required' => 'bar',
-        ]);
+        $fields = MockModel::fields();
+        $this->assertSame(2, count($fields));
+        $this->assertContainsOnlyInstancesOf(Field::class, $fields);
 
-        $optionalBefore = $model->get('optional');
-        $this->assertSame('raw', $model->getRaw('optional'));
-
-        $this->assertSame(null, $model->cleanFields(), 'no errors');
-
-        $this->assertSame('clean', $model->getRaw('optional'), 'cleaned value is set');
-        $this->assertNotSame($optionalBefore, $model->get('optional'), 'cleanFields should reset formatted data cache');
-    }
-
-    public function testCleanFieldsWithMissingRequiredField()
-    {
-        $model = $this->mockModel([]);
-
-        $errors = $model->cleanFields();
-        $this->assertSame(1, count($errors), 'Optional field is allow');
-        $this->assertTrue(!empty($errors['required']));
-        $this->assertSame(1, count($errors['required']));
-        $this->assertTrue(strpos($errors['required'][0], 'is required') !== false);
-    }
-
-    public function testCleanFieldsWithInvalidField()
-    {
-        $model = $this->mockModel([
-            'required' => 'invalid',
-        ]);
-
-        $errors = $model->cleanFields();
-        $this->assertSame(1, count($errors), 'Optional field is allow');
-        $this->assertTrue(!empty($errors['required']));
-        $this->assertSame(['invalid message'], $errors['required']);
-    }
-
-    public function testReloadBlocks()
-    {
-        $model = $this->mockModel([
-            'optional' => 'clean',
-        ]);
-
-        $optionalBefore = $model->get('optional');
-        $this->assertSame(1, $model->fetchBlockRecordCallCount);
-        $this->assertTrue(is_object($optionalBefore) && $optionalBefore->test);
-
-        $model->reloadBlocks();
-
-        $optionalAfter = $model->get('optional');
-        $this->assertSame(2, $model->fetchBlockRecordCallCount);
-        $this->assertTrue(is_object($optionalAfter) && $optionalAfter->test);
-        $this->assertNotSame($optionalBefore, $optionalAfter);
+        $this->assertSame(MockModel::fields(), MockModel::fields(), 'The call was memoized');
+        $this->assertSame(1, MockModel::$registerFieldsCallCount, 'The call was memoized: registerFields was only called once');
     }
 
     private function mockModel(array $data): MockModel
@@ -202,11 +202,11 @@ class MockModel extends Model
     /** @var BlockSet */
     public $blockSet;
 
-    /** @var string */
-    public $uuid;
-
     /** @var int */
     public $fetchBlockRecordCallCount = 0;
+
+    /** @var string */
+    public $uuid;
 
     public function __construct(BlockSet $blockSet, string $uuid)
     {
@@ -219,14 +219,14 @@ class MockModel extends Model
         return $this->blockSet;
     }
 
-    public function id(): int
-    {
-        return 0;
-    }
-
     public function exists(): bool
     {
         return true;
+    }
+
+    public function id(): int
+    {
+        return 0;
     }
 
     protected function fetchBlockRecord(): \stdClass

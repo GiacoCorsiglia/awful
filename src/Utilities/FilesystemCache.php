@@ -6,14 +6,14 @@ use Awful\Theme;
 
 final class FilesystemCache
 {
-    /** @var Theme */
-    private $theme;
+    /** @var bool[] */
+    private $mkdir_cache = [];
 
     /** @var Site */
     private $site;
 
-    /** @var bool[] */
-    private $mkdir_cache = [];
+    /** @var Theme */
+    private $theme;
 
     public function __construct(Theme $theme, Site $site)
     {

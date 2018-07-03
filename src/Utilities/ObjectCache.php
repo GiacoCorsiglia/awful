@@ -16,6 +16,24 @@ interface ObjectCache
     public function add(string $key, $data, string $group = '', int $expire = 0): bool;
 
     /**
+     * Wraps `wp_cache_add_global_groups()`.
+     *
+     * @param string[] $groups
+     *
+     * @return void
+     */
+    public function addGlobalGroups(array $groups): void;
+
+    /**
+     * Wraps `wp_cache_add_non_persistent_groups()`.
+     *
+     * @param string[] $groups
+     *
+     * @return void
+     */
+    public function addNonPersistentGroups(array $groups): void;
+
+    /**
      * Wraps `wp_cache_decr()`.
      *
      * @param string $key
@@ -98,22 +116,4 @@ interface ObjectCache
      * @return void
      */
     public function switchToBlog(int $siteId): void;
-
-    /**
-     * Wraps `wp_cache_add_global_groups()`.
-     *
-     * @param string[] $groups
-     *
-     * @return void
-     */
-    public function addGlobalGroups(array $groups): void;
-
-    /**
-     * Wraps `wp_cache_add_non_persistent_groups()`.
-     *
-     * @param string[] $groups
-     *
-     * @return void
-     */
-    public function addNonPersistentGroups(array $groups): void;
 }

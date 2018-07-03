@@ -34,26 +34,17 @@ final class Awful
         $GLOBALS['_awful_instance'] = new self($providers, $blockClassMap);
     }
 
-    /** @var Container */
-    private $container;
-
-    /** @var string[] */
-    private $themes = [];
-
-    /** @var string[] */
-    private $plugins = [];
-
     /** @var string[] */
     private $commands = [];
+
+    /** @var Container */
+    private $container;
 
     /** @var EntityManager */
     private $entityManager;
 
-    /**
-     * @var string
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    private $userClass;
+    /** @var string[] */
+    private $plugins = [];
 
     /**
      * @var callable
@@ -66,6 +57,15 @@ final class Awful
      * @psalm-suppress PropertyNotSetInConstructor
      */
     private $setUserCallback;
+
+    /** @var string[] */
+    private $themes = [];
+
+    /**
+     * @var string
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $userClass;
 
     /**
      * @internal
@@ -143,20 +143,19 @@ final class Awful
     }
 
     /**
+     * @internal Exposed to be called by Context.
+     *
+     * @param callable $setSite
+     * @param callable $setUser
+     *
      * @return void
      */
-    private function runPlugins(): void
-    {
-        foreach ($this->plugins as $plugin) {
-            $this->container->get($plugin);
-        }
-
-        if (defined('WP_CLI') && WP_CLI) {
-            foreach ($this->commands as $command) {
-                /** @psalm-suppress UndefinedClass */
-                WP_CLI::add_command($command::commandName(), $this->container->get($command), $command::registrationArguments());
-            }
-        }
+    public function registerContextCallbacks(
+        callable $setSite,
+        callable $setUser
+    ): void {
+        $this->setSiteCallback = $setSite;
+        $this->setUserCallback = $setUser;
     }
 
     /**
@@ -207,18 +206,19 @@ final class Awful
     }
 
     /**
-     * @internal Exposed to be called by Context.
-     *
-     * @param callable $setSite
-     * @param callable $setUser
-     *
      * @return void
      */
-    public function registerContextCallbacks(
-        callable $setSite,
-        callable $setUser
-    ): void {
-        $this->setSiteCallback = $setSite;
-        $this->setUserCallback = $setUser;
+    private function runPlugins(): void
+    {
+        foreach ($this->plugins as $plugin) {
+            $this->container->get($plugin);
+        }
+
+        if (defined('WP_CLI') && WP_CLI) {
+            foreach ($this->commands as $command) {
+                /** @psalm-suppress UndefinedClass */
+                WP_CLI::add_command($command::commandName(), $this->container->get($command), $command::registrationArguments());
+            }
+        }
     }
 }

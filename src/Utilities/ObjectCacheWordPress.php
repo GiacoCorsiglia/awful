@@ -8,6 +8,16 @@ class ObjectCacheWordPress
         return wp_cache_add($key, $data, $group = '', $expire = 0);
     }
 
+    public function addGlobalGroups(array $groups): void
+    {
+        wp_cache_add_global_groups($groups);
+    }
+
+    public function addNonPersistentGroups(array $groups): void
+    {
+        wp_cache_add_non_persistent_groups($groups);
+    }
+
     public function decr(string $key, int $offset = 1, string $group = '')
     {
         return wp_cache_decr($key, $offset, $group);
@@ -46,15 +56,5 @@ class ObjectCacheWordPress
     public function switchToBlog(int $siteId): void
     {
         wp_cache_switch_to_blog($siteId);
-    }
-
-    public function addGlobalGroups(array $groups): void
-    {
-        wp_cache_add_global_groups($groups);
-    }
-
-    public function addNonPersistentGroups(array $groups): void
-    {
-        wp_cache_add_non_persistent_groups($groups);
     }
 }

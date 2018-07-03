@@ -7,10 +7,9 @@ use Awful\Models\Database\EntityManager;
 
 class UserTest extends AwfulTestCase
 {
-    public function testSiteId()
+    public function testBlockRecordColumnValue()
     {
-        $siteId = is_multisite() ? 1 : 0;
-        $this->assertSame($siteId, $this->instance()->siteId());
+        $this->assertSame(3, $this->instance(3)->blockRecordColumnValue());
     }
 
     public function testColumn()
@@ -18,14 +17,15 @@ class UserTest extends AwfulTestCase
         $this->assertSame(Database::USER_COLUMN, $this->instance()->blockRecordColumn());
     }
 
-    public function testBlockRecordColumnValue()
-    {
-        $this->assertSame(3, $this->instance(3)->blockRecordColumnValue());
-    }
-
     public function testRootBlockType()
     {
         $this->assertSame('Awful.RootBlocks.User', $this->instance()->rootBlockType());
+    }
+
+    public function testSiteId()
+    {
+        $siteId = is_multisite() ? 1 : 0;
+        $this->assertSame($siteId, $this->instance()->siteId());
     }
 
     private function instance(int $userId = 1): User

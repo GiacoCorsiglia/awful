@@ -11,11 +11,11 @@ class BlocksFieldInstance extends ObjectsFieldInstance
     /** @var BlockSet */
     private $blockSet;
 
-    /** @var Model */
-    private $model;
-
     /** @var string */
     private $fieldKey;
+
+    /** @var Model */
+    private $model;
 
     public function __construct(
         array $uuids,
@@ -51,6 +51,11 @@ class BlocksFieldInstance extends ObjectsFieldInstance
         }
     }
 
+    protected function emit(): void
+    {
+        $this->model->set([$this->fieldKey => $this->ids]);
+    }
+
     protected function validateAndGetId(object $object): string
     {
         if (!$object instanceof Block) {
@@ -60,10 +65,5 @@ class BlocksFieldInstance extends ObjectsFieldInstance
             throw new \Exception();
         }
         return $object->uuid();
-    }
-
-    protected function emit(): void
-    {
-        $this->model->set([$this->fieldKey => $this->ids]);
     }
 }

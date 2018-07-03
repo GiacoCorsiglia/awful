@@ -13,11 +13,11 @@ class BlockSetManager
 {
     private const CACHE_GROUP_PREFIX = 'awful_';
 
-    /** @var Database */
-    private $db;
-
     /** @var BlockTypeMap */
     private $blockTypeMap;
+
+    /** @var Database */
+    private $db;
 
     public function __construct(Database $db, BlockTypeMap $blockTypeMap)
     {
@@ -28,6 +28,11 @@ class BlockSetManager
             self::CACHE_GROUP_PREFIX . Database::SITE_COLUMN,
             self::CACHE_GROUP_PREFIX . Database::USER_COLUMN,
         ]);
+    }
+
+    public function deleteBlocksFor(WordPressModel $owner, array $uuids): void
+    {
+        $this->db->deleteBlocksFor($this->ownerToBlockQuery($owner), $uuids);
     }
 
     public function fetchBlockSet(WordPressModel $owner): BlockSet
@@ -64,23 +69,6 @@ class BlockSetManager
         }
 
         $this->db->saveBlocks($siteId, $allBlocks);
-    }
-
-    public function deleteBlocksFor(WordPressModel $owner, array $uuids): void
-    {
-        $this->db->deleteBlocksFor($this->ownerToBlockQuery($owner), $uuids);
-    }
-
-    private function ownerToBlockQuery(WordPressModel $owner): BlockQuery
-    {
-        if ($owner instanceof Site) {
-            return new BlockQueryForSite($owner->id());
-        }
-        return new BlockQueryForSingleObject(
-            $owner->siteId(),
-            $owner->blockRecordColumn(),
-            $owner->blockRecordColumnValue()
-        );
     }
 
     private function fetchBlockRecords(BlockQuery $blockQuery): array
@@ -121,7 +109,7 @@ class BlockSetManager
         $uncachedBlockQuery = $blockQuery->without($cachedIds);
         if ($uncachedBlockQuery->any()) {
             foreach ($this->db->fetchBlocks($uncachedBlockQuery) as $block) {
-                $id = $block->$column;
+                $id = $block->{$column};
                 if (!isset($result[$id])) {
                     $result[$id] = [];
                 }
@@ -157,5 +145,17 @@ class BlockSetManager
         }
 
         return [$siteId => $blocks];
+    }
+
+    private function ownerToBlockQuery(WordPressModel $owner): BlockQuery
+    {
+        if ($owner instanceof Site) {
+            return new BlockQueryForSite($owner->id());
+        }
+        return new BlockQueryForSingleObject(
+            $owner->siteId(),
+            $owner->blockRecordColumn(),
+            $owner->blockRecordColumnValue()
+        );
     }
 }

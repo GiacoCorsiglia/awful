@@ -7,9 +7,10 @@ use Awful\Models\Database\Query\Exceptions\EmptyBlockQueryException;
 
 class BlockQueryForUsersTest extends AwfulTestCase
 {
-    public function testSiteId()
+    public function testAny()
     {
-        $this->assertSame(is_multisite() ? 1 : 0, $this->instance()->siteId());
+        $this->assertFalse($this->instance()->any());
+        $this->assertTrue($this->instance(1)->any());
     }
 
     public function testColumn()
@@ -17,26 +18,14 @@ class BlockQueryForUsersTest extends AwfulTestCase
         $this->assertSame(Database::USER_COLUMN, $this->instance()->column());
     }
 
-    public function testValues()
-    {
-        $this->assertSame([1, 2, 3], $this->instance(1, 2, 3)->values());
-    }
-
     public function testIds()
     {
         $this->assertSame([1, 2, 3], $this->instance(1, 2, 3)->ids());
     }
 
-    public function testWithout()
+    public function testSiteId()
     {
-        $i = $this->instance(1, 2, 3, 4);
-        $this->assertSame([1, 3], $i->without([2, 4])->ids());
-    }
-
-    public function testAny()
-    {
-        $this->assertFalse($this->instance()->any());
-        $this->assertTrue($this->instance(1)->any());
+        $this->assertSame(is_multisite() ? 1 : 0, $this->instance()->siteId());
     }
 
     public function testSql()
@@ -50,6 +39,17 @@ class BlockQueryForUsersTest extends AwfulTestCase
     {
         $this->expectException(EmptyBlockQueryException::class);
         $this->instance()->sql();
+    }
+
+    public function testValues()
+    {
+        $this->assertSame([1, 2, 3], $this->instance(1, 2, 3)->values());
+    }
+
+    public function testWithout()
+    {
+        $i = $this->instance(1, 2, 3, 4);
+        $this->assertSame([1, 3], $i->without([2, 4])->ids());
     }
 
     private function instance(int ...$userIds): BlockQueryForUsers

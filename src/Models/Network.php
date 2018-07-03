@@ -32,30 +32,6 @@ class Network
         $this->id = $id;
     }
 
-    final public function id(): int
-    {
-        return $this->id;
-    }
-
-    /**
-     * Fetches the WordPress object representing this network, if one exists.
-     *
-     * @return WP_Network|null The `WP_Network` object corresponding with
-     *                         $this->id, or `null` if none exists.
-     */
-    final public function wpNetwork(): ?WP_Network
-    {
-        if ($this->id && !$this->wpNetwork) {
-            $this->wpNetwork = get_network($this->id);
-        }
-        return $this->wpNetwork;
-    }
-
-    final public function wpObject(): ?object
-    {
-        return $this->wpNetwork();
-    }
-
     final public function exists(): bool
     {
         return $this->id && $this->wpNetwork() !== null;
@@ -76,6 +52,11 @@ class Network
         assert((bool) $option, 'Expected non-empty option');
 
         return get_network_option($this->id, $option, $default);
+    }
+
+    final public function id(): int
+    {
+        return $this->id;
     }
 
     /**
@@ -99,5 +80,24 @@ class Network
         } else {
             update_network_option($this->id, $option, $value);
         }
+    }
+
+    /**
+     * Fetches the WordPress object representing this network, if one exists.
+     *
+     * @return WP_Network|null The `WP_Network` object corresponding with
+     *                         $this->id, or `null` if none exists.
+     */
+    final public function wpNetwork(): ?WP_Network
+    {
+        if ($this->id && !$this->wpNetwork) {
+            $this->wpNetwork = get_network($this->id);
+        }
+        return $this->wpNetwork;
+    }
+
+    final public function wpObject(): ?object
+    {
+        return $this->wpNetwork();
     }
 }

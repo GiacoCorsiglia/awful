@@ -35,9 +35,31 @@ abstract class Field implements JsonSerializable
         // TODO: Potentially add lots of assertions to validate config.
     }
 
+    /**
+     * Validates and optionally modifies the value before it is saved.
+     *
+     * @param null|bool|int|float|string|array $value
+     * @param Model $model
+     *
+     * @throws ValidationException
+     *
+     * @return mixed
+     */
+    abstract public function clean($value, Model $model);
+
     public function isRequired(): bool
     {
         return $this->args['required'];
+    }
+
+    /**
+     * Prepares the field for serialization to be sent to the front-end.
+     *
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return ['$type' => strtr(ltrim(static::class, '\\'), '\\', '.')] + $this->args;
     }
 
     /**
@@ -52,28 +74,6 @@ abstract class Field implements JsonSerializable
      * @return mixed The filtered value.
      */
     abstract public function toPhp($value, Model $model, string $fieldKey);
-
-    /**
-     * Validates and optionally modifies the value before it is saved.
-     *
-     * @param null|bool|int|float|string|array $value
-     * @param Model $model
-     *
-     * @throws ValidationException
-     *
-     * @return mixed
-     */
-    abstract public function clean($value, Model $model);
-
-    /**
-     * Prepares the field for serialization to be sent to the front-end.
-     *
-     * @return array
-     */
-    public function jsonSerialize(): array
-    {
-        return ['$type' => strtr(ltrim(static::class, '\\'), '\\', '.')] + $this->args;
-    }
 
     protected function extend(array $args): self
     {

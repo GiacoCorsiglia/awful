@@ -6,7 +6,7 @@ namespace Awful\Models;
  */
 class Post extends GenericPost
 {
-    const TYPE = 'post';
-
     const IS_BUILTIN = true;
+
+    const TYPE = 'post';
 }

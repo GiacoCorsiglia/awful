@@ -43,16 +43,6 @@ class User extends WordPressModel
         $this->id = $id;
     }
 
-    final public function entityManager(): EntityManager
-    {
-        return $this->entityManager;
-    }
-
-    final public function siteId(): int
-    {
-        return is_multisite() ? 1 : 0;
-    }
-
     final public function blockRecordColumn(): string
     {
         return Database::USER_COLUMN;
@@ -63,14 +53,39 @@ class User extends WordPressModel
         return $this->id;
     }
 
-    final public function rootBlockType(): string
+    final public function entityManager(): EntityManager
     {
-        return 'Awful.RootBlocks.User';
+        return $this->entityManager;
+    }
+
+    final public function exists(): bool
+    {
+        return $this->id && $this->wpUser() !== null;
     }
 
     final public function id(): int
     {
         return $this->id;
+    }
+
+    final public function isLoggedIn(): bool
+    {
+        return get_current_user_id() === $this->id;
+    }
+
+    final public function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.User';
+    }
+
+    final public function siteId(): int
+    {
+        return is_multisite() ? 1 : 0;
+    }
+
+    final public function wpObject(): ?object
+    {
+        return $this->wpUser();
     }
 
     /**
@@ -87,28 +102,13 @@ class User extends WordPressModel
         return $this->wpUser;
     }
 
-    final public function wpObject(): ?object
+    final protected function clone(): WordPressModel
     {
-        return $this->wpUser();
-    }
-
-    final public function exists(): bool
-    {
-        return $this->id && $this->wpUser() !== null;
-    }
-
-    final public function isLoggedIn(): bool
-    {
-        return get_current_user_id() === $this->id;
+        return new static($this->entityManager, $this->id);
     }
 
     final protected function metaType(): string
     {
         return 'user';
-    }
-
-    final protected function clone(): WordPressModel
-    {
-        return new static($this->entityManager, $this->id);
     }
 }

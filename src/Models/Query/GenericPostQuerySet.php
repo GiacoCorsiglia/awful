@@ -13,22 +13,27 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 {
     use QuerySetTrait;
 
-    /** @var Site */
-    protected $site;
-
     /** @var array */
     protected $args;
 
-    /** @var WP_Query|null */
-    protected $wpQuery;
-
     /** @var GenericPost[]|null */
     protected $posts;
+
+    /** @var Site */
+    protected $site;
+
+    /** @var WP_Query|null */
+    protected $wpQuery;
 
     public function __construct(Site $site, array $args = [])
     {
         $this->site = $site;
         $this->args = $args + $this->defaults();
+    }
+
+    public function currentUserHasPermission(string $permission): self
+    {
+        return $this->extend(['perm' => $permission]);
     }
 
     //
@@ -61,56 +66,26 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         return $this->objects;
     }
 
-    public function wpQuery(): WP_Query
-    {
-        if ($this->objects === null) {
-            $this->fetch();
-        }
-        /** @psalm-var WP_Query */
-        return $this->wpQuery;
-    }
-
     public function fetchByIds(int ...$ids): array
     {
         return $this->extend(['post__in', $ids])->fetch();
     }
 
-    //
-    // Filter methods.
-    //
-
-    public function type(string ...$types): self
+    public function fields(string $fields): self
     {
-        return $this->extend(['post_type' => $types]);
+        assert(in_array($fields, ['ids', 'id=>parent']));
+        return $this->extend(['fields' => $fields]);
     }
 
-    public function status(string ...$statuses): self
+    public function metaQuery(MetaQuery $meta_query): self
     {
-        return $this->extend(['post_status' => $statuses]);
+        return $this->extend(['meta_query' => $meta_query->toArray()]);
     }
 
-    public function search(string $keyword, bool $excludes = false): self
+    public function mimeType(string ...$mime_types): self
     {
-        if ($excludes) {
-            $keyword = "-$keyword";
-        }
-        return $this->extend(['s' => $keyword]);
-    }
-
-    /**
-     * @param bool|string $value
-     *
-     * @return self
-     */
-    public function password($value = true): self
-    {
-        if (is_string($value)) {
-            return $this->extend([
-                'has_password' => null,
-                'post_password' => $value,
-            ]);
-        }
-        return $this->extend(['has_password' => $value]);
+        assert($this->args['post_type'] === 'attachment');
+        return $this->extend(['post_mime_type' => $mime_types]);
     }
 
     public function orderBy(string ...$orders): self
@@ -136,9 +111,33 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         ]);
     }
 
-    public function metaQuery(MetaQuery $meta_query): self
+    /**
+     * @param bool|string $value
+     *
+     * @return self
+     */
+    public function password($value = true): self
     {
-        return $this->extend(['meta_query' => $meta_query->toArray()]);
+        if (is_string($value)) {
+            return $this->extend([
+                'has_password' => null,
+                'post_password' => $value,
+            ]);
+        }
+        return $this->extend(['has_password' => $value]);
+    }
+
+    public function search(string $keyword, bool $excludes = false): self
+    {
+        if ($excludes) {
+            $keyword = "-$keyword";
+        }
+        return $this->extend(['s' => $keyword]);
+    }
+
+    public function status(string ...$statuses): self
+    {
+        return $this->extend(['post_status' => $statuses]);
     }
 
     public function taxonomyQuery(TaxonomyQuery $tax_query): self
@@ -146,21 +145,22 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         return $this->extend(['tax_query' => $tax_query->toArray()]);
     }
 
-    public function fields(string $fields): self
+    //
+    // Filter methods.
+    //
+
+    public function type(string ...$types): self
     {
-        assert(in_array($fields, ['ids', 'id=>parent']));
-        return $this->extend(['fields' => $fields]);
+        return $this->extend(['post_type' => $types]);
     }
 
-    public function currentUserHasPermission(string $permission): self
+    public function wpQuery(): WP_Query
     {
-        return $this->extend(['perm' => $permission]);
-    }
-
-    public function mimeType(string ...$mime_types): self
-    {
-        assert($this->args['post_type'] === 'attachment');
-        return $this->extend(['post_mime_type' => $mime_types]);
+        if ($this->objects === null) {
+            $this->fetch();
+        }
+        /** @psalm-var WP_Query */
+        return $this->wpQuery;
     }
 
     //

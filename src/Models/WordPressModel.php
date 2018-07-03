@@ -10,32 +10,9 @@ abstract class WordPressModel extends Model
     /** @var null|BlockSet */
     private $blockSet;
 
-    /**
-     * Fetches the WordPress object corresponding with `$this->id` object, if
-     * one exists.
-     *
-     * @return \WP_Site|\WP_User|\WP_Post|\WP_Term|\WP_Comment|null
-     */
-    abstract public function wpObject(): ?object;
-
-    abstract public function siteId(): int;
-
     abstract public function blockRecordColumn(): string;
 
     abstract public function blockRecordColumnValue(): int;
-
-    abstract public function rootBlockType(): string;
-
-    abstract public function entityManager(): EntityManager;
-
-    abstract protected function clone(): self;
-
-    final public function cloneWithBlockSet(BlockSet $blockSet): self
-    {
-        $clone = $this->clone();
-        $clone->blockSet = $blockSet;
-        return $clone;
-    }
 
     final public function blockSet(): BlockSet
     {
@@ -45,11 +22,34 @@ abstract class WordPressModel extends Model
         return $this->blockSet;
     }
 
+    final public function cloneWithBlockSet(BlockSet $blockSet): self
+    {
+        $clone = $this->clone();
+        $clone->blockSet = $blockSet;
+        return $clone;
+    }
+
+    abstract public function entityManager(): EntityManager;
+
     final public function reloadBlocks(): void
     {
         $this->blockSet = null;
         parent::reloadBlocks();
     }
+
+    abstract public function rootBlockType(): string;
+
+    abstract public function siteId(): int;
+
+    /**
+     * Fetches the WordPress object corresponding with `$this->id` object, if
+     * one exists.
+     *
+     * @return \WP_Site|\WP_User|\WP_Post|\WP_Term|\WP_Comment|null
+     */
+    abstract public function wpObject(): ?object;
+
+    abstract protected function clone(): self;
 
     final protected function fetchBlockRecord(): stdClass
     {

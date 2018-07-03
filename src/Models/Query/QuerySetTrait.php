@@ -9,12 +9,35 @@ trait QuerySetTrait
     /** @var array|null */
     private $objects;
 
+    public function any(): bool
+    {
+        return (bool) $this->count();
+    }
+
+    public function array(): array
+    {
+        if ($this->objects === null) {
+            $this->objects = $this->fetch();
+        }
+        return $this->objects;
+    }
+
     public function count(): int
     {
         if ($this->objects === null) {
             $this->objects = $this->fetch();
         }
         return count($this->objects);
+    }
+
+    abstract public function fetch(): array;
+
+    public function first(): ?object
+    {
+        if ($this->objects === null) {
+            $this->objects = $this->fetch();
+        }
+        return reset($this->objects);
     }
 
     public function getIterator(): ArrayIterator
@@ -50,27 +73,4 @@ trait QuerySetTrait
     {
         throw new ImmutabilityException();
     }
-
-    public function any(): bool
-    {
-        return (bool) $this->count();
-    }
-
-    public function array(): array
-    {
-        if ($this->objects === null) {
-            $this->objects = $this->fetch();
-        }
-        return $this->objects;
-    }
-
-    public function first(): ?object
-    {
-        if ($this->objects === null) {
-            $this->objects = $this->fetch();
-        }
-        return reset($this->objects);
-    }
-
-    abstract public function fetch(): array;
 }

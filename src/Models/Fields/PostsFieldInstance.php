@@ -7,11 +7,11 @@ use Awful\Models\Site;
 
 class PostsFieldInstance extends ObjectsFieldInstance
 {
-    /** @var Model */
-    private $model;
-
     /** @var string */
     private $fieldKey;
+
+    /** @var Model */
+    private $model;
 
     public function __construct(
         array $ids,
@@ -33,16 +33,16 @@ class PostsFieldInstance extends ObjectsFieldInstance
         $this->objects = array_values($posts);
     }
 
+    protected function emit(): void
+    {
+        $this->model->set([$this->fieldKey => $this->ids]);
+    }
+
     protected function validateAndGetId(object $object): int
     {
         if (!$object instanceof GenericPost) {
             throw new \Exception();
         }
         return $object->id();
-    }
-
-    protected function emit(): void
-    {
-        $this->model->set([$this->fieldKey => $this->ids]);
     }
 }

@@ -6,18 +6,18 @@ use Awful\Models\Database\Query\Exceptions\EmptyBlockQueryException;
 
 abstract class BlockQuery
 {
-    /** @var int */
-    protected $siteId;
-
     /** @var string */
     protected $column;
+
+    /** @var int */
+    protected $siteId;
 
     /** @var array */
     protected $values;
 
-    public function siteId(): int
+    public function any(): bool
     {
-        return $this->siteId;
+        return (bool) $this->values;
     }
 
     public function column(): string
@@ -25,21 +25,14 @@ abstract class BlockQuery
         return $this->column;
     }
 
-    public function values(): array
-    {
-        return $this->values;
-    }
-
     public function ids(): array
     {
         return $this->values;
     }
 
-    abstract public function without(array $exclude): self;
-
-    public function any(): bool
+    public function siteId(): int
     {
-        return (bool) $this->values;
+        return $this->siteId;
     }
 
     public function sql(): string
@@ -63,4 +56,11 @@ abstract class BlockQuery
         $valuesString = implode(',', $this->values);
         return "`{$this->column}` IN ($valuesString)";
     }
+
+    public function values(): array
+    {
+        return $this->values;
+    }
+
+    abstract public function without(array $exclude): self;
 }

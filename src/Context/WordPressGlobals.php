@@ -19,35 +19,6 @@ class WordPressGlobals
     private $embed;
 
     /**
-     * @var WP_Query
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    private $query;
-
-    /** @var WP_Rewrite
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    private $rewrite;
-
-    /**
-     * @var WP
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    private $wp;
-
-    /**
-     * @var WP_Widget_Factory
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    private $widgetFactory;
-
-    /**
-     * @var WP_Roles
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    private $roles;
-
-    /**
      * @var WP_Locale
      * @psalm-suppress PropertyNotSetInConstructor
      */
@@ -59,6 +30,35 @@ class WordPressGlobals
      */
     private $localeSwitcher;
 
+    /**
+     * @var WP_Query
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $query;
+
+    /** @var WP_Rewrite
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $rewrite;
+
+    /**
+     * @var WP_Roles
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $roles;
+
+    /**
+     * @var WP_Widget_Factory
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $widgetFactory;
+
+    /**
+     * @var WP
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $wp;
+
     public function __construct(array $globals = null)
     {
         if ($globals === null) {
@@ -69,7 +69,7 @@ class WordPressGlobals
 
         foreach ($globals as $key => $global) {
             assert(property_exists($this, $key), "Expected a recognized global, given '$key'");
-            $this->$key = $global;
+            $this->{$key} = $global;
         }
     }
 
@@ -79,6 +79,22 @@ class WordPressGlobals
             throw new UninitializedContextException();
         }
         return $this->embed;
+    }
+
+    public function locale(): WP_Locale
+    {
+        if (!$this->locale) {
+            throw new UninitializedContextException();
+        }
+        return $this->locale;
+    }
+
+    public function localeSwitcher(): WP_Locale_Switcher
+    {
+        if (!$this->localeSwitcher) {
+            throw new UninitializedContextException();
+        }
+        return $this->localeSwitcher;
     }
 
     public function query(): WP_Query
@@ -97,12 +113,12 @@ class WordPressGlobals
         return $this->rewrite;
     }
 
-    public function wp(): WP
+    public function roles(): WP_Roles
     {
-        if (!$this->wp) {
+        if (!$this->roles) {
             throw new UninitializedContextException();
         }
-        return $this->wp;
+        return $this->roles;
     }
 
     public function widgetFactory(): WP_Widget_Factory
@@ -113,28 +129,12 @@ class WordPressGlobals
         return $this->widgetFactory;
     }
 
-    public function roles(): WP_Roles
+    public function wp(): WP
     {
-        if (!$this->roles) {
+        if (!$this->wp) {
             throw new UninitializedContextException();
         }
-        return $this->roles;
-    }
-
-    public function locale(): WP_Locale
-    {
-        if (!$this->locale) {
-            throw new UninitializedContextException();
-        }
-        return $this->locale;
-    }
-
-    public function localeSwitcher(): WP_Locale_Switcher
-    {
-        if (!$this->localeSwitcher) {
-            throw new UninitializedContextException();
-        }
-        return $this->localeSwitcher;
+        return $this->wp;
     }
 
     /**

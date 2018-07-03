@@ -13,17 +13,17 @@ use function Awful\uuid;
  */
 class BlockSet
 {
-    /** @var BlockTypeMap */
-    private $blockTypeMap;
-
-    /** @var WordPressModel */
-    private $owner;
-
     /**
      * @var stdClass[]
      * @psalm-var array<string, stdClass>
      */
     private $blocks;
+
+    /** @var BlockTypeMap */
+    private $blockTypeMap;
+
+    /** @var WordPressModel */
+    private $owner;
 
     /**
      * @param BlockTypeMap $blockTypeMap
@@ -46,16 +46,6 @@ class BlockSet
         }
     }
 
-    public function blockTypeMap(): BlockTypeMap
-    {
-        return $this->blockTypeMap;
-    }
-
-    public function owner(): WordPressModel
-    {
-        return $this->owner;
-    }
-
     /**
      * @return array<string, stdClass>
      */
@@ -64,18 +54,9 @@ class BlockSet
         return $this->blocks;
     }
 
-    public function get(string $uuid): ?stdClass
+    public function blockTypeMap(): BlockTypeMap
     {
-        return $this->blocks[$uuid] ?? null;
-    }
-
-    public function set(string $uuid, array $data): void
-    {
-        if (!isset($this->blocks[$uuid])) {
-            throw new BlockNotFoundException($uuid);
-        }
-
-        $this->blocks[$uuid]->data = $data;
+        return $this->blockTypeMap;
     }
 
     public function create(string $type, array $data = [], string $uuid = ''): stdClass
@@ -106,10 +87,29 @@ class BlockSet
         return $this->create($type, [], $uuid);
     }
 
+    public function get(string $uuid): ?stdClass
+    {
+        return $this->blocks[$uuid] ?? null;
+    }
+
+    public function owner(): WordPressModel
+    {
+        return $this->owner;
+    }
+
     public function root(): stdClass
     {
         $type = $this->owner->rootBlockType();
         return $this->firstOfType($type) ?: $this->create($type);
+    }
+
+    public function set(string $uuid, array $data): void
+    {
+        if (!isset($this->blocks[$uuid])) {
+            throw new BlockNotFoundException($uuid);
+        }
+
+        $this->blocks[$uuid]->data = $data;
     }
 
     private function firstOfType(string $type): ?stdClass

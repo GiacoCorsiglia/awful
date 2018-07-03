@@ -64,7 +64,7 @@ trait WordPressModelWithMetaTable
      */
     private function callMetaFunction(string $name, ...$args)
     {
-        $func = "$name\_{$this->metaType()}_meta";
+        $func = "$name\\_{$this->metaType()}_meta";
         if (method_exists($this, 'callInSiteContext')) {
             // For objects which use `WordPressModelWithSiteContext`.
             return $this->callInSiteContext($func, $this->id, ...$args);

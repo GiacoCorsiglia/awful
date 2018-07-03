@@ -46,7 +46,7 @@ trait ChainedDependencies
     public function injectDependencies(array $dependencies): void
     {
         foreach ($dependencies as $key => $instance) {
-            $this->$key = $instance;
+            $this->{$key} = $instance;
         }
     }
 }

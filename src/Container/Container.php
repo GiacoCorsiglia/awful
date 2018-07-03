@@ -19,13 +19,6 @@ use ReflectionMethod;
 final class Container implements ContainerInterface
 {
     /**
-     * Stash of already resolved instances.
-     *
-     * @var object[]
-     */
-    private $instances = [];
-
-    /**
      * Dictionary of aliases that maps alias to class.
      *
      * @var string[]
@@ -40,11 +33,66 @@ final class Container implements ContainerInterface
      */
     private $currently_resolving = [];
 
+    /**
+     * Stash of already resolved instances.
+     *
+     * @var object[]
+     */
+    private $instances = [];
+
     public function __construct()
     {
         // Allow injection of the container itself.
         $this->instances[self::class] = $this;
         $this->aliases[ContainerInterface::class] = self::class;
+    }
+
+    /**
+     * Associates the list of $aliases with the given $class, meaning an
+     * instance of $class will be returned whenever any of the $aliases is
+     * requested.
+     *
+     * Though no warnings will be issued, the only proper use of aliasing is to
+     * tie a particular subclass to a parent class or interface.
+     *
+     * @param string $class Name of the class to actually instantiate.
+     * @param string ...$aliases One or more alternative class/interface names.
+     *
+     * @return self $this
+     */
+    public function alias(string $class, string ...$aliases): self
+    {
+        foreach ($aliases as $alias) {
+            $this->aliases[$alias] = $class;
+        }
+        return $this;
+    }
+
+    /**
+     * Calls the given function or method, resolving and passing any
+     * dependencies indicated by parameter type hints.
+     *
+     * Dependency resolution stops with the first positional parameter that
+     * either does not specify a type or specifies a scalar type.
+     *
+     * @param callable $callable Function or method to call.
+     * @param mixed ...$args Additional arguments to pass to the callable.
+     *
+     * @return mixed Whatever value is returned by the callable.
+     *
+     * @psalm-suppress PossiblyInvalidArgument see `new ReflectionFunction()`.
+     * @psalm-suppress InvalidArgument see `new ReflectionFunction()`.
+     */
+    public function call(callable $callable, ...$args)
+    {
+        if (is_string($callable) && strpos($callable, '::')) {
+            $callable = explode('::', $callable);
+        }
+        $reflection = is_array($callable)
+            ? new ReflectionMethod($callable[0], $callable[1])
+            : new ReflectionFunction($callable);
+        $dependencies = $this->resolveParameters($reflection);
+        return call_user_func($callable, ...$dependencies, ...$args);
     }
 
     /**
@@ -72,53 +120,6 @@ final class Container implements ContainerInterface
     public function has($id): bool
     {
         return class_exists($aliases[$id] ?? $id);
-    }
-
-    /**
-     * Explicitly registers an instance in the container.
-     *
-     * The $instance will be registered under its own class name.
-     *
-     * @param object $instance Instance to register.
-     * @param string ...$aliases Optional list of aliases for the $instance.
-     *
-     * @throws AlreadyRegisteredException
-     *
-     * @return self $this
-     */
-    public function register(object $instance, string ...$aliases): self
-    {
-        $class = get_class($instance);
-
-        if (isset($this->instances[$class])) {
-            throw new AlreadyRegisteredException($class);
-        }
-
-        $this->instances[$class] = $instance;
-        $this->alias($class, ...$aliases);
-
-        return $this;
-    }
-
-    /**
-     * Associates the list of $aliases with the given $class, meaning an
-     * instance of $class will be returned whenever any of the $aliases is
-     * requested.
-     *
-     * Though no warnings will be issued, the only proper use of aliasing is to
-     * tie a particular subclass to a parent class or interface.
-     *
-     * @param string $class Name of the class to actually instantiate.
-     * @param string ...$aliases One or more alternative class/interface names.
-     *
-     * @return self $this
-     */
-    public function alias(string $class, string ...$aliases): self
-    {
-        foreach ($aliases as $alias) {
-            $this->aliases[$alias] = $class;
-        }
-        return $this;
     }
 
     /**
@@ -171,30 +172,57 @@ final class Container implements ContainerInterface
     }
 
     /**
-     * Calls the given function or method, resolving and passing any
-     * dependencies indicated by parameter type hints.
+     * Explicitly registers an instance in the container.
      *
-     * Dependency resolution stops with the first positional parameter that
-     * either does not specify a type or specifies a scalar type.
+     * The $instance will be registered under its own class name.
      *
-     * @param callable $callable Function or method to call.
-     * @param mixed ...$args Additional arguments to pass to the callable.
+     * @param object $instance Instance to register.
+     * @param string ...$aliases Optional list of aliases for the $instance.
      *
-     * @return mixed Whatever value is returned by the callable.
+     * @throws AlreadyRegisteredException
      *
-     * @psalm-suppress PossiblyInvalidArgument see `new ReflectionFunction()`.
-     * @psalm-suppress InvalidArgument see `new ReflectionFunction()`.
+     * @return self $this
      */
-    public function call(callable $callable, ...$args)
+    public function register(object $instance, string ...$aliases): self
     {
-        if (is_string($callable) && strpos($callable, '::')) {
-            $callable = explode('::', $callable);
+        $class = get_class($instance);
+
+        if (isset($this->instances[$class])) {
+            throw new AlreadyRegisteredException($class);
         }
-        $reflection = is_array($callable)
-            ? new ReflectionMethod($callable[0], $callable[1])
-            : new ReflectionFunction($callable);
-        $dependencies = $this->resolveParameters($reflection);
-        return call_user_func($callable, ...$dependencies, ...$args);
+
+        $this->instances[$class] = $instance;
+        $this->alias($class, ...$aliases);
+
+        return $this;
+    }
+
+    /**
+     * Recursively resolves dependencies specified by the passed class'
+     * DEPENDENCIES constant, and the DEPENDENCIES specified by its parents.
+     *
+     * Overridden dependencies in child classes are disregarded, as those could
+     * potentially break something in a parent class!
+     *
+     * @param string $subclass Name of the class seeking chained dependencies.
+     *
+     * @return object[] Array of resolved dependencies keyed by property name.
+     */
+    private function resolveChainedDependencies(string $subclass): array
+    {
+        $chain = class_parents($subclass);
+        $chain[] = $subclass;
+        $dependencies = [];
+        foreach ($chain as $class) {
+            if (defined("$class::DEPENDENCIES")) {
+                $dependencies += $class::DEPENDENCIES;
+            }
+        }
+        $resolved = [];
+        foreach ($dependencies as $key => $id) {
+            $resolved[$key] = $this->get($id);
+        }
+        return $resolved;
     }
 
     /**
@@ -224,34 +252,6 @@ final class Container implements ContainerInterface
                 throw new CircularDependencyException($class);
             }
             $resolved[] = $this->get($class);
-        }
-        return $resolved;
-    }
-
-    /**
-     * Recursively resolves dependencies specified by the passed class'
-     * DEPENDENCIES constant, and the DEPENDENCIES specified by its parents.
-     *
-     * Overridden dependencies in child classes are disregarded, as those could
-     * potentially break something in a parent class!
-     *
-     * @param string $subclass Name of the class seeking chained dependencies.
-     *
-     * @return object[] Array of resolved dependencies keyed by property name.
-     */
-    private function resolveChainedDependencies(string $subclass): array
-    {
-        $chain = class_parents($subclass);
-        $chain[] = $subclass;
-        $dependencies = [];
-        foreach ($chain as $class) {
-            if (defined("$class::DEPENDENCIES")) {
-                $dependencies += $class::DEPENDENCIES;
-            }
-        }
-        $resolved = [];
-        foreach ($dependencies as $key => $id) {
-            $resolved[$key] = $this->get($id);
         }
         return $resolved;
     }

@@ -5,28 +5,6 @@ use Awful\Models\TaxonomyTerm;
 
 class TaxonomyQuery
 {
-    /** @var array */
-    protected $defaults = [
-        'field' => 'term_id',
-        'include_children' => true,
-        'operator' => 'IN',
-    ];
-
-    /** @var array */
-    protected $args;
-
-    /**
-     * @var string
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    private $relation;
-
-    /**
-     * @var TaxonomyQuery[]
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    private $queries;
-
     public static function and(self ...$queries): self
     {
         $new = new self('', []);
@@ -42,6 +20,28 @@ class TaxonomyQuery
         $new->queries = $queries;
         return $new;
     }
+
+    /** @var array */
+    protected $args;
+
+    /** @var array */
+    protected $defaults = [
+        'field' => 'term_id',
+        'include_children' => true,
+        'operator' => 'IN',
+    ];
+
+    /**
+     * @var TaxonomyQuery[]
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $queries;
+
+    /**
+     * @var string
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $relation;
 
     public function __construct(string $taxonomy, array $terms, array $options = [])
     {

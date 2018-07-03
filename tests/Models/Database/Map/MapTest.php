@@ -42,19 +42,6 @@ class MapTest extends AwfulTestCase
         $this->map->classForType('some unknown type');
     }
 
-    public function testTypeForClass()
-    {
-        $this->assertSame('type1', $this->map->typeForClass(MapTest\Cls1::class));
-        $this->assertSame('type2', $this->map->typeForClass(MapTest\Cls2::class));
-        $this->assertSame('type3', $this->map->typeForClass(MapTest\Cls3::class));
-    }
-
-    public function testTypeForClassUnregistered()
-    {
-        $this->expectException(UnregisteredClassException::class);
-        $this->map->typeForClass('some unknown class');
-    }
-
     public function testConstructorRejectsDuplicateType()
     {
         $this->expectException(DuplicateTypeException::class);
@@ -66,6 +53,19 @@ class MapTest extends AwfulTestCase
 
         new class($map) extends AbstractTypeMap {
         };
+    }
+
+    public function testTypeForClass()
+    {
+        $this->assertSame('type1', $this->map->typeForClass(MapTest\Cls1::class));
+        $this->assertSame('type2', $this->map->typeForClass(MapTest\Cls2::class));
+        $this->assertSame('type3', $this->map->typeForClass(MapTest\Cls3::class));
+    }
+
+    public function testTypeForClassUnregistered()
+    {
+        $this->expectException(UnregisteredClassException::class);
+        $this->map->typeForClass('some unknown class');
     }
 }
 

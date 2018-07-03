@@ -19,19 +19,19 @@ class GenericPost extends WordPressModel
     use WordPressModelWithMetaTable;
 
     /**
-     * Slug of the post type represented by this class.
-     *
-     * @var string
-     */
-    public const TYPE = '';
-
-    /**
      * If `true`, indicates that the post type represented by this class is
      * one of WordPress' defaults, meaning Awful should not try to register it.
      *
      * @var bool
      */
     public const IS_BUILTIN = false;
+
+    /**
+     * Slug of the post type represented by this class.
+     *
+     * @var string
+     */
+    public const TYPE = '';
 
     protected const WP_OBJECT_FIELDS = [
         'ID' => 'int',
@@ -76,11 +76,11 @@ class GenericPost extends WordPressModel
     }
 
     /**
-     * Cache of the WordPress post object representing this post.
+     * Cache of the post author user object.
      *
-     * @var WP_Post|null
+     * @var User|null
      */
-    private $wpPost;
+    private $author;
 
     /**
      * Cache of the post status.
@@ -97,39 +97,54 @@ class GenericPost extends WordPressModel
     private $title = '';
 
     /**
-     * Cache of the post author user object.
+     * Cache of the WordPress post object representing this post.
      *
-     * @var User|null
+     * @var WP_Post|null
      */
-    private $author;
+    private $wpPost;
+
+    /**
+     * Retrieves the author of this post.
+     *
+     * @return User|null The post's author, or null if the post doesn't exist or
+     *                   does not have an author.
+     */
+    final public function author(): ?User
+    {
+        if (!$this->author && ($wpPost = $this->wpPost())) {
+            $authorId = $wpPost->post_author;
+            $this->author = $authorId ? new User($this->entityManager(), (int) $authorId) : null;
+        }
+        return $this->author;
+    }
 
     final public function blockRecordColumn(): string
     {
         return Database::POST_COLUMN;
     }
 
-    final public function rootBlockType(): string
+    /**
+     * Retrieves the publish date of this post.
+     *
+     * @param string $format Optional date format string.
+     * @see https://codex.wordpress.org/Formatting_Date_and_Time for the
+     *      possible $format strings.
+     *
+     * @return string Formatted date string
+     */
+    final public function date(string $format = ''): string
     {
-        return 'Awful.RootBlocks.Post';
+        return $this->id ? ($this->callInSiteContext('get_the_date', $format, $this->id) ?: '') : '';
     }
 
     /**
-     * Fetches the WordPress object representing this post, if one exists.
+     * Retrieves the post excerpt.
      *
-     * @return WP_Post|null The `WP_Post` object corresponding with $this->id,
-     *                      or `null` if none exists.
+     * @return string The post excerpt saved on the post, if any.
      */
-    final public function wpPost(): ?WP_Post
+    final public function excerpt(): string
     {
-        if ($this->id && !$this->wpPost) {
-            $this->wpPost = $this->callInSiteContext('get_post', $this->id) ?: null;
-        }
-        return $this->wpPost;
-    }
-
-    final public function wpObject(): ?object
-    {
-        return $this->wpPost();
+        return $this->id ? ($this->callInSiteContext('get_the_excerpt', $this->id) ?: '') : '';
     }
 
     final public function exists(): bool
@@ -138,13 +153,22 @@ class GenericPost extends WordPressModel
     }
 
     /**
-     * Retrieves the post's type.
+     * Retrieves the last modified date of this post.
      *
-     * @return string The post type, or an empty string if no post exists.
+     * @param string $format Optional date format string.
+     * @see https://codex.wordpress.org/Formatting_Date_and_Time for the
+     *      possible $format strings.
+     *
+     * @return string Formatted date string
      */
-    final public function type(): string
+    final public function modifiedDate(string $format = ''): string
     {
-        return ($wpPost = $this->wpPost()) ? $wpPost->post_type : '';
+        return $this->id ? ($this->callInSiteContext('get_the_modified_date', $format, $this->id) ?: '') : '';
+    }
+
+    final public function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.Post';
     }
 
     /**
@@ -178,56 +202,32 @@ class GenericPost extends WordPressModel
     }
 
     /**
-     * Retrieves the publish date of this post.
+     * Retrieves the post's type.
      *
-     * @param string $format Optional date format string.
-     * @see https://codex.wordpress.org/Formatting_Date_and_Time for the
-     *      possible $format strings.
-     *
-     * @return string Formatted date string
+     * @return string The post type, or an empty string if no post exists.
      */
-    final public function date(string $format = ''): string
+    final public function type(): string
     {
-        return $this->id ? ($this->callInSiteContext('get_the_date', $format, $this->id) ?: '') : '';
+        return ($wpPost = $this->wpPost()) ? $wpPost->post_type : '';
+    }
+
+    final public function wpObject(): ?object
+    {
+        return $this->wpPost();
     }
 
     /**
-     * Retrieves the last modified date of this post.
+     * Fetches the WordPress object representing this post, if one exists.
      *
-     * @param string $format Optional date format string.
-     * @see https://codex.wordpress.org/Formatting_Date_and_Time for the
-     *      possible $format strings.
-     *
-     * @return string Formatted date string
+     * @return WP_Post|null The `WP_Post` object corresponding with $this->id,
+     *                      or `null` if none exists.
      */
-    final public function modifiedDate(string $format = ''): string
+    final public function wpPost(): ?WP_Post
     {
-        return $this->id ? ($this->callInSiteContext('get_the_modified_date', $format, $this->id) ?: '') : '';
-    }
-
-    /**
-     * Retrieves the author of this post.
-     *
-     * @return User|null The post's author, or null if the post doesn't exist or
-     *                   does not have an author.
-     */
-    final public function author(): ?User
-    {
-        if (!$this->author && ($wpPost = $this->wpPost())) {
-            $authorId = $wpPost->post_author;
-            $this->author = $authorId ? new User($this->entityManager(), (int) $authorId) : null;
+        if ($this->id && !$this->wpPost) {
+            $this->wpPost = $this->callInSiteContext('get_post', $this->id) ?: null;
         }
-        return $this->author;
-    }
-
-    /**
-     * Retrieves the post excerpt.
-     *
-     * @return string The post excerpt saved on the post, if any.
-     */
-    final public function excerpt(): string
-    {
-        return $this->id ? ($this->callInSiteContext('get_the_excerpt', $this->id) ?: '') : '';
+        return $this->wpPost;
     }
 
     final protected function metaType(): string

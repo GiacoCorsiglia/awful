@@ -3,21 +3,6 @@ namespace Awful\Models\Query;
 
 class MetaQuery
 {
-    /** @var array */
-    private $args;
-
-    /**
-     * @var string
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    private $relation;
-
-    /**
-     * @var MetaQuery[]
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    private $queries;
-
     public static function and(self ...$queries): self
     {
         $new = new self('', '');
@@ -33,6 +18,21 @@ class MetaQuery
         $new->queries = $queries;
         return $new;
     }
+
+    /** @var array */
+    private $args;
+
+    /**
+     * @var MetaQuery[]
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $queries;
+
+    /**
+     * @var string
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    private $relation;
 
     /**
      * @param string $key

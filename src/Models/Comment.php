@@ -37,6 +37,11 @@ class Comment extends WordPressModel
         return Database::COMMENT_COLUMN;
     }
 
+    final public function exists(): bool
+    {
+        return $this->id && $this->wpComment() !== null;
+    }
+
     final public function rootBlockType(): string
     {
         return 'Awful.RootBlocks.Comment';
@@ -59,11 +64,6 @@ class Comment extends WordPressModel
     final public function wpObject(): ?object
     {
         return $this->wpComment();
-    }
-
-    final public function exists(): bool
-    {
-        return $this->id && $this->wpComment() !== null;
     }
 
     final protected function metaType(): string

@@ -19,16 +19,6 @@ class BlockSetTest extends AwfulTestCase
         $this->assertSame($map, $set->blockTypeMap());
     }
 
-    public function testOwner()
-    {
-        $map = new BlockTypeMap([]);
-        $owner = $this->mockSite();
-
-        $set = new BlockSet($map, $owner, []);
-
-        $this->assertSame($owner, $set->owner());
-    }
-
     public function testAll()
     {
         $block1 = (object) ['uuid' => uuid()];
@@ -40,32 +30,6 @@ class BlockSetTest extends AwfulTestCase
             $block1->uuid => $block1,
             $block2->uuid => $block2,
         ], $set->all());
-    }
-
-    public function testGet()
-    {
-        $block1 = (object) ['uuid' => uuid()];
-        $block2 = (object) ['uuid' => uuid()];
-        $blocks = [$block1, $block2];
-        $set = new BlockSet(new BlockTypeMap([]), $this->mockSite(), $blocks);
-
-        $this->assertSame($block1, $set->get($block1->uuid));
-        $this->assertSame($block2, $set->get($block2->uuid));
-    }
-
-    public function testSet()
-    {
-        $block1 = (object) ['uuid' => uuid()];
-        $block2 = (object) ['uuid' => uuid(), 'data' => ['foo' => 'bar']];
-        $blocks = [$block1, $block2];
-        $set = new BlockSet(new BlockTypeMap([]), $this->mockSite(), $blocks);
-
-        $set->set($block1->uuid, ['fiz', 'buz']);
-        $this->assertSame(['fiz', 'buz'], $block1->data, 'Block 1 data referentially updated.');
-        $this->assertSame(['foo' => 'bar'], $block2->data, 'Block 2 data preserved');
-
-        $this->expectException(BlockNotFoundException::class);
-        $set->set('foobar', []);
     }
 
     public function testCreate()
@@ -113,6 +77,27 @@ class BlockSetTest extends AwfulTestCase
         $this->assertSame($uuid2, $created1->uuid);
     }
 
+    public function testGet()
+    {
+        $block1 = (object) ['uuid' => uuid()];
+        $block2 = (object) ['uuid' => uuid()];
+        $blocks = [$block1, $block2];
+        $set = new BlockSet(new BlockTypeMap([]), $this->mockSite(), $blocks);
+
+        $this->assertSame($block1, $set->get($block1->uuid));
+        $this->assertSame($block2, $set->get($block2->uuid));
+    }
+
+    public function testOwner()
+    {
+        $map = new BlockTypeMap([]);
+        $owner = $this->mockSite();
+
+        $set = new BlockSet($map, $owner, []);
+
+        $this->assertSame($owner, $set->owner());
+    }
+
     public function testRoot()
     {
         $owner = $this->mockSite();
@@ -121,5 +106,20 @@ class BlockSetTest extends AwfulTestCase
         $root = $set->root();
         $this->assertSame($owner->rootBlockType(), $root->type, 'It creates the root if needed');
         $this->assertSame($root, $set->root(), " It doesn't create the root twice.");
+    }
+
+    public function testSet()
+    {
+        $block1 = (object) ['uuid' => uuid()];
+        $block2 = (object) ['uuid' => uuid(), 'data' => ['foo' => 'bar']];
+        $blocks = [$block1, $block2];
+        $set = new BlockSet(new BlockTypeMap([]), $this->mockSite(), $blocks);
+
+        $set->set($block1->uuid, ['fiz', 'buz']);
+        $this->assertSame(['fiz', 'buz'], $block1->data, 'Block 1 data referentially updated.');
+        $this->assertSame(['foo' => 'bar'], $block2->data, 'Block 2 data preserved');
+
+        $this->expectException(BlockNotFoundException::class);
+        $set->set('foobar', []);
     }
 }

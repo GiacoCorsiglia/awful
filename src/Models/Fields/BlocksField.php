@@ -16,11 +16,6 @@ class BlocksField extends Field
         parent::__construct($args);
     }
 
-    public function toPhp($value, Model $model, string $fieldKey)
-    {
-        return new BlocksFieldInstance((array) $value, $model, $fieldKey, $this->args['types']);
-    }
-
     public function clean($value, Model $model): array
     {
         if (!$value) {
@@ -51,5 +46,10 @@ class BlocksField extends Field
         }
 
         return $value;
+    }
+
+    public function toPhp($value, Model $model, string $fieldKey)
+    {
+        return new BlocksFieldInstance((array) $value, $model, $fieldKey, $this->args['types']);
     }
 }

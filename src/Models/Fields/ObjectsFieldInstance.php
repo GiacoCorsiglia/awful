@@ -15,14 +15,39 @@ abstract class ObjectsFieldInstance implements ArrayAccess, IteratorAggregate, C
     /** @var object[] */
     protected $objects = [];
 
+    public function any(): bool
+    {
+        return (bool) $this->ids;
+    }
+
     public function count(): int
     {
         return count($this->objects);
     }
 
+    public function first(): ?object
+    {
+        return $this->objects[0] ?? null;
+    }
+
     public function getIterator(): Iterator
     {
         return new ArrayIterator($this->objects);
+    }
+
+    public function ids(): array
+    {
+        return $this->ids;
+    }
+
+    public function offsetExists($offset): bool
+    {
+        return isset($this->objects[$offset]);
+    }
+
+    public function offsetGet($offset): ?object
+    {
+        return $this->objects[$offset] ?? null;
     }
 
     public function offsetSet($offset, $object): void
@@ -39,11 +64,6 @@ abstract class ObjectsFieldInstance implements ArrayAccess, IteratorAggregate, C
         $this->emit();
     }
 
-    public function offsetExists($offset): bool
-    {
-        return isset($this->objects[$offset]);
-    }
-
     public function offsetUnset($offset): void
     {
         unset($this->objects[$offset]);
@@ -51,27 +71,7 @@ abstract class ObjectsFieldInstance implements ArrayAccess, IteratorAggregate, C
         $this->emit();
     }
 
-    public function offsetGet($offset): ?object
-    {
-        return $this->objects[$offset] ?? null;
-    }
-
-    public function ids(): array
-    {
-        return $this->ids;
-    }
-
-    public function any(): bool
-    {
-        return (bool) $this->ids;
-    }
-
-    public function first(): ?object
-    {
-        return $this->objects[0] ?? null;
-    }
+    abstract protected function emit(): void;
 
     abstract protected function validateAndGetId(object $object);
-
-    abstract protected function emit(): void;
 }

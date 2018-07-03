@@ -15,16 +15,34 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
     /** @var array */
     private $args;
 
-    /** @var */
-    private $wpSiteQuery;
-
     /** @var EntityManager */
     private $entityManager;
+
+    /** @var */
+    private $wpSiteQuery;
 
     public function __construct(EntityManager $entityManager, array $args = [])
     {
         $this->entityManager = $entityManager;
         $this->args = $args + $this->defaults();
+    }
+
+    public function archived(bool $archived = true): self
+    {
+        return $this->extend(['archived' => $archived]);
+    }
+
+    public function chunk(int $number, int $offset): self
+    {
+        return $this->extend([
+            'number' => $number,
+            'offset' => $offset,
+        ]);
+    }
+
+    public function deleted(bool $deleted = true): self
+    {
+        return $this->extend(['deleted' => $deleted]);
     }
 
     //
@@ -44,14 +62,6 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
         }
 
         return $this->objects;
-    }
-
-    public function wpSiteQuery(): WP_Site_Query
-    {
-        if ($this->objects === null) {
-            $this->fetch();
-        }
-        return $this->wpSiteQuery;
     }
 
     public function fetchById(int $id): ?Site
@@ -74,12 +84,9 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
         return $this->extend(['fields' => $fields]);
     }
 
-    public function chunk(int $number, int $offset): self
+    public function mature(bool $mature = true): self
     {
-        return $this->extend([
-            'number' => $number,
-            'offset' => $offset,
-        ]);
+        return $this->extend(['mature' => $mature]);
     }
 
     public function public(bool $public = true): self
@@ -87,24 +94,17 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
         return $this->extend(['public' => $public]);
     }
 
-    public function archived(bool $archived = true): self
-    {
-        return $this->extend(['archived' => $archived]);
-    }
-
-    public function mature(bool $mature = true): self
-    {
-        return $this->extend(['mature' => $mature]);
-    }
-
     public function spam(bool $spam = true): self
     {
         return $this->extend(['spam' => $spam]);
     }
 
-    public function deleted(bool $deleted = true): self
+    public function wpSiteQuery(): WP_Site_Query
     {
-        return $this->extend(['deleted' => $deleted]);
+        if ($this->objects === null) {
+            $this->fetch();
+        }
+        return $this->wpSiteQuery;
     }
 
     //

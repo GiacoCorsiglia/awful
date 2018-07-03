@@ -21,6 +21,19 @@ class TrueFalseFieldTest extends AwfulTestCase
         $this->model = $this->getMockForAbstractClass(Model::class);
     }
 
+    public function testCleanAcceptsBoolOrNull()
+    {
+        $this->assertSame(null, $this->field->clean(null, $this->model));
+        $this->assertSame(false, $this->field->clean(false, $this->model));
+        $this->assertSame(true, $this->field->clean(true, $this->model));
+    }
+
+    public function testCleanRejectsString()
+    {
+        $this->expectException(ValidationException::class);
+        $this->field->clean('', $this->model);
+    }
+
     public function testToPhp()
     {
         $this->assertSame(false, $this->field->toPhp(false, $this->model, ''));
@@ -34,18 +47,5 @@ class TrueFalseFieldTest extends AwfulTestCase
         $this->assertSame(true, $this->field->toPhp('foo', $this->model, ''));
         $this->assertSame(true, $this->field->toPhp(['foo'], $this->model, ''));
         $this->assertSame(true, $this->field->toPhp(new \stdClass(), $this->model, ''));
-    }
-
-    public function testCleanAcceptsBoolOrNull()
-    {
-        $this->assertSame(null, $this->field->clean(null, $this->model));
-        $this->assertSame(false, $this->field->clean(false, $this->model));
-        $this->assertSame(true, $this->field->clean(true, $this->model));
-    }
-
-    public function testCleanRejectsString()
-    {
-        $this->expectException(ValidationException::class);
-        $this->field->clean('', $this->model);
     }
 }

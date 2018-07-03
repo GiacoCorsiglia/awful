@@ -7,47 +7,6 @@ use Awful\Models\Database\EntityManager;
 
 class SiteTest extends AwfulTestCase
 {
-    public function testEntityManager()
-    {
-        $em = $this->createMock(EntityManager::class);
-        $site = new Site($em, is_multisite() ? 1 : 0);
-        $this->assertSame($em, $site->entityManager());
-    }
-
-    public function testWpSiteAndWpObject()
-    {
-        $this->skipWithoutMultisite();
-
-        $wpSite = $this->factory->blog->create_and_get();
-        $site = $this->instance($wpSite->blog_id);
-
-        // `get_site()` returns new instances.
-        $this->assertSame($wpSite->blog_id, $site->wpSite()->blog_id);
-        $this->assertSame($site->wpObject(), $site->wpSite());
-
-        $newSite = $this->instance(1234567); // No way this site exists in DB.
-        $this->assertSame(null, $newSite->wpSite());
-        $this->assertSame($newSite->wpObject(), $newSite->wpSite());
-    }
-
-    public function testExists()
-    {
-        if (is_multisite()) {
-            $wpSite = $this->factory->blog->create_and_get();
-            $this->assertTrue($this->instance($wpSite->blog_id)->exists());
-            $this->assertFalse($this->instance(1234567)->exists());
-        } else {
-            $this->assertTrue($this->instance()->exists());
-        }
-    }
-
-    public function testIdAndSiteId()
-    {
-        $siteId = is_multisite() ? 1 : 0;
-        $this->assertSame($siteId, $this->instance($siteId)->id());
-        $this->assertSame($siteId, $this->instance($siteId)->siteId());
-    }
-
     public function testBlockRecordColumn()
     {
         $this->assertSame(Database::SITE_COLUMN, $this->instance()->blockRecordColumn());
@@ -59,9 +18,22 @@ class SiteTest extends AwfulTestCase
         $this->assertSame(1, $this->instance()->blockRecordColumnValue());
     }
 
-    public function testRootBlockType()
+    public function testEntityManager()
     {
-        $this->assertSame('Awful.RootBlocks.Site', $this->instance()->rootBlockType());
+        $em = $this->createMock(EntityManager::class);
+        $site = new Site($em, is_multisite() ? 1 : 0);
+        $this->assertSame($em, $site->entityManager());
+    }
+
+    public function testExists()
+    {
+        if (is_multisite()) {
+            $wpSite = $this->factory->blog->create_and_get();
+            $this->assertTrue($this->instance($wpSite->blog_id)->exists());
+            $this->assertFalse($this->instance(1234567)->exists());
+        } else {
+            $this->assertTrue($this->instance()->exists());
+        }
     }
 
     public function testGetAndUpdateOption()
@@ -109,6 +81,34 @@ class SiteTest extends AwfulTestCase
             $this->assertSame(false, $site->getOption('test_option'));
             $this->assertSame(false, get_option('test_option'));
         }
+    }
+
+    public function testIdAndSiteId()
+    {
+        $siteId = is_multisite() ? 1 : 0;
+        $this->assertSame($siteId, $this->instance($siteId)->id());
+        $this->assertSame($siteId, $this->instance($siteId)->siteId());
+    }
+
+    public function testRootBlockType()
+    {
+        $this->assertSame('Awful.RootBlocks.Site', $this->instance()->rootBlockType());
+    }
+
+    public function testWpSiteAndWpObject()
+    {
+        $this->skipWithoutMultisite();
+
+        $wpSite = $this->factory->blog->create_and_get();
+        $site = $this->instance($wpSite->blog_id);
+
+        // `get_site()` returns new instances.
+        $this->assertSame($wpSite->blog_id, $site->wpSite()->blog_id);
+        $this->assertSame($site->wpObject(), $site->wpSite());
+
+        $newSite = $this->instance(1234567); // No way this site exists in DB.
+        $this->assertSame(null, $newSite->wpSite());
+        $this->assertSame($newSite->wpObject(), $newSite->wpSite());
     }
 
     private function instance(int $siteId = null): Site

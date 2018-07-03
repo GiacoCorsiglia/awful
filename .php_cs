@@ -6,8 +6,7 @@ $finder = PhpCsFixer\Finder::create()
     ->exclude('vendor')
     ->exclude('wordpress')
     // Include everything else
-    ->in(__DIR__)
-;
+    ->in(__DIR__);
 
 return PhpCsFixer\Config::create()
     ->setRules([
@@ -15,30 +14,37 @@ return PhpCsFixer\Config::create()
         '@PSR1' => true,
         '@PSR2' => true,
         'align_multiline_comment' => ['comment_type' => 'phpdocs_only'],
+        'array_indentation' => true,
         'array_syntax' => ['syntax' => 'short'],
         'binary_operator_spaces' => true,
         'blank_line_after_opening_tag' => true,
         'cast_spaces' => ['space' => 'single'],
         'class_attributes_separation' => true,
-        'class_attributes_separation' => true,
         'compact_nullable_typehint' => true,
         'concat_space' => ['spacing' => 'one'],
         'declare_equal_normalize' => ['space' => 'single'],
+        'escape_implicit_backslashes' => true,
+        'explicit_indirect_variable' => true,
+        'fully_qualified_strict_types' => true,
         'function_typehint_space' => true,
         'include' => true,
         'linebreak_after_opening_tag' => true,
         'list_syntax' => ['syntax' => 'short'],
         'lowercase_cast' => true,
+        'lowercase_static_reference' => true,
         'magic_constant_casing' => true,
         'method_chaining_indentation' => true,
-        'method_separation' => true,
+        'multiline_comment_opening_closing' => true,
+        'multiline_whitespace_before_semicolons' => ['strategy' => 'no_multi_line'],
         'native_function_casing' => true,
         'new_with_braces' => true,
         'no_blank_lines_after_class_opening' => true,
         'no_blank_lines_after_phpdoc' => true,
         'no_blank_lines_before_namespace' => true,
+        'no_empty_comment' => true,
         'no_empty_phpdoc' => true,
         'no_empty_statement' => true,
+        'no_extra_blank_lines' => true,
         'no_leading_import_slash' => true,
         'no_leading_namespace_whitespace' => true,
         'no_mixed_echo_print' => true,
@@ -60,6 +66,7 @@ return PhpCsFixer\Config::create()
         'not_operator_with_successor_space' => false,
         'not_operator_with_successor_space' => false,
         'object_operator_without_whitespace' => true,
+        'ordered_class_elements' => ['sortAlgorithm' => 'alpha', 'order' => ['use_trait', 'constant', 'constant_public', 'constant_protected', 'constant_private', 'property_static', 'property_public_static', 'property_protected_static', 'property_private_static', 'method_static', 'method_public_static', 'method_protected_static', 'method_private_static', 'property', 'property_public', 'property_protected', 'property_private', 'construct', 'destruct', 'magic', 'phpunit', 'method', 'method_public', 'method_protected', 'method_private', 'public', 'protected', 'private']],
         'ordered_imports' => ['sortAlgorithm' => 'alpha'],
         'phpdoc_add_missing_param_annotation' => ['only_untyped' => false],
         'phpdoc_align' => ['align' => 'left'],
@@ -74,6 +81,7 @@ return PhpCsFixer\Config::create()
         'phpdoc_trim_consecutive_blank_line_separation' => true,
         'phpdoc_types' => true,
         'phpdoc_var_without_name' => true,
+        'return_assignment' => true,
         'return_type_declaration' => true,
         'semicolon_after_instruction' => true,
         'short_scalar_cast' => true,
@@ -86,5 +94,4 @@ return PhpCsFixer\Config::create()
         'yoda_style' => false,
     ])
     ->setFinder($finder)
-    ->setCacheFile(__DIR__ . '/.php_cs.cache')
-;
+    ->setCacheFile(__DIR__ . '/.php_cs.cache');

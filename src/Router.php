@@ -6,9 +6,9 @@ use FastRoute\RouteCollector;
 
 abstract class Router
 {
-    private const REDIRECT_PREFIX = '@';
-
     private const METHOD_PREFIX = '#';
+
+    private const REDIRECT_PREFIX = '@';
 
     /** @var FilesystemCache */
     private $cache;
@@ -59,7 +59,7 @@ abstract class Router
                     }
 
                     if (!isset($parents[Controllers\Controller::class])) {
-                        throw new \Exception("Route '$route' mapped to a class that is not a \FH\Controllers\Controller subclass ('$controller_class')");
+                        throw new \Exception("Route '$route' mapped to a class that is not a \\FH\\Controllers\\Controller subclass ('$controller_class')");
                     }
                 }
             }
@@ -70,19 +70,6 @@ abstract class Router
             $r->addRoute(self::ALL_METHODS, trailingslashit($route), $handler);
             $r->addRoute(self::ALL_METHODS, untrailingslashit($route), $handler);
         }
-    }
-
-    /**
-     * Generates a simple route handler that redirects to the given URL when
-     * the route is matched.
-     *
-     * @param string $to URL to redirect to
-     *
-     * @return string Implementation detail.
-     */
-    final protected function redirectHandler(string $to): string
-    {
-        return self::REDIRECT_PREFIX . $to;
     }
 
     /**
@@ -102,17 +89,16 @@ abstract class Router
     }
 
     /**
-     * Extracts the URL to which to redirect from a route handler if applicable.
+     * Generates a simple route handler that redirects to the given URL when
+     * the route is matched.
      *
-     * @param string|mixed $handler
+     * @param string $to URL to redirect to
      *
-     * @return string|null The URL if $handler is a redirect handler, else null.
+     * @return string Implementation detail.
      */
-    private function asRedirectHandler($handler): ?string
+    final protected function redirectHandler(string $to): string
     {
-        if ($handler && is_string($handler) && $handler[0] === self::REDIRECT_PREFIX) {
-            return substr($handler, 1);
-        }
+        return self::REDIRECT_PREFIX . $to;
     }
 
     /**
@@ -127,6 +113,20 @@ abstract class Router
     {
         if ($handler && is_string($handler) && $handler[0] === self::METHOD_PREFIX) {
             return [$this, substr($handler, 1)];
+        }
+    }
+
+    /**
+     * Extracts the URL to which to redirect from a route handler if applicable.
+     *
+     * @param string|mixed $handler
+     *
+     * @return string|null The URL if $handler is a redirect handler, else null.
+     */
+    private function asRedirectHandler($handler): ?string
+    {
+        if ($handler && is_string($handler) && $handler[0] === self::REDIRECT_PREFIX) {
+            return substr($handler, 1);
         }
     }
 }

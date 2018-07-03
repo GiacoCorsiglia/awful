@@ -57,9 +57,9 @@ class Site extends WordPressModel
         $this->id = $this->siteId = $id;
     }
 
-    final public function entityManager(): EntityManager
+    public function allPosts(): GenericPostQuerySet
     {
-        return $this->entityManager;
+        return new GenericPostQuerySet($this);
     }
 
     final public function blockRecordColumn(): string
@@ -72,36 +72,9 @@ class Site extends WordPressModel
         return 1; // It's a boolean column.
     }
 
-    final public function rootBlockType(): string
+    final public function entityManager(): EntityManager
     {
-        return 'Awful.RootBlocks.Site';
-    }
-
-    final public function id(): int
-    {
-        return $this->id;
-    }
-
-    /**
-     * Fetches the WordPress object representing this site, if one exists.
-     *
-     * Will always return `null` if this isn't a multisite install.
-     *
-     * @return WP_Site|null The `WP_Term` object corresponding with $this->id,
-     *                      or `null` if none exists.
-     */
-    final public function wpSite(): ?WP_Site
-    {
-        if ($this->id && !$this->wpSite) {
-            // `$this->id === 0` always when `!is_multisite()`.
-            $this->wpSite = get_site($this->id);
-        }
-        return $this->wpSite;
-    }
-
-    final public function wpObject(): ?object
-    {
-        return $this->wpSite();
+        return $this->entityManager;
     }
 
     final public function exists(): bool
@@ -128,6 +101,16 @@ class Site extends WordPressModel
         return $this->callInSiteContext('get_option', $option, $default);
     }
 
+    final public function id(): int
+    {
+        return $this->id;
+    }
+
+    final public function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.Site';
+    }
+
     /**
      * Runs `update_option()` (or `delete_option()` if `$value` is `null`) for
      * `$this` site.
@@ -151,9 +134,26 @@ class Site extends WordPressModel
         }
     }
 
-    public function allPosts(): GenericPostQuerySet
+    final public function wpObject(): ?object
     {
-        return new GenericPostQuerySet($this);
+        return $this->wpSite();
+    }
+
+    /**
+     * Fetches the WordPress object representing this site, if one exists.
+     *
+     * Will always return `null` if this isn't a multisite install.
+     *
+     * @return WP_Site|null The `WP_Term` object corresponding with $this->id,
+     *                      or `null` if none exists.
+     */
+    final public function wpSite(): ?WP_Site
+    {
+        if ($this->id && !$this->wpSite) {
+            // `$this->id === 0` always when `!is_multisite()`.
+            $this->wpSite = get_site($this->id);
+        }
+        return $this->wpSite;
     }
 
     final protected function clone(): WordPressModel

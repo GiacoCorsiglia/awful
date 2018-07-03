@@ -10,7 +10,7 @@ abstract class Theme
      * @return string[]
      * @psalm-return class-string[]
      */
-    public function postTypes(): array
+    public function hooks(): array
     {
         return [];
     }
@@ -19,18 +19,9 @@ abstract class Theme
      * @return string[]
      * @psalm-return class-string[]
      */
-    public function hooks(): array
+    public function postTypes(): array
     {
         return [];
-    }
-
-    /**
-     * @return string
-     * @psalm-return class-string
-     */
-    public function userClass(): string
-    {
-        return User::class;
     }
 
     /**
@@ -40,5 +31,14 @@ abstract class Theme
     public function siteClass(): string
     {
         return Site::class;
+    }
+
+    /**
+     * @return string
+     * @psalm-return class-string
+     */
+    public function userClass(): string
+    {
+        return User::class;
     }
 }

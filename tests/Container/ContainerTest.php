@@ -7,33 +7,31 @@ use Awful\Container\Exceptions\CircularDependencyException;
 
 class ContainerTest extends AwfulTestCase
 {
-    public function testGetSelf()
+    public function testAlias()
     {
         $container = new Container();
 
-        $this->assertSame($container, $container->get(Container::class));
-    }
-
-    public function testSingleton()
-    {
-        $container = new Container();
-
-        $this->assertSame($container->get(Foo::class), $container->get(Foo::class));
-    }
-
-    public function testConstructorInjection()
-    {
-        $container = new Container();
-
-        // NOTE: Bar and Baz depend circularly on one another, but this should
-        // work just fine since Baz uses ChainedDependencies.
+        $container->alias(Bar::class, 'alias1', 'alias2');
         $bar = $container->get(Bar::class);
+        $this->assertSame($bar, $container->get('alias1'));
+        $this->assertSame($bar, $container->get('alias2'));
+    }
 
-        $foo = $container->get(Foo::class);
-        $baz = $container->get(Baz::class);
+    public function testCall()
+    {
+        $container = new Container();
 
-        $this->assertSame($foo, $bar->foo);
-        $this->assertSame($baz, $bar->baz);
+        $injected_bar = $container->call(function (Bar $injected_bar) {
+            return $injected_bar;
+        });
+        $bar = $container->get(Bar::class);
+        $this->assertSame($bar, $injected_bar);
+
+        $extra_arg = 'foo';
+        $ret = $container->call(function (Bar $injected_bar, $extra) {
+            return $extra;
+        }, $extra_arg);
+        $this->assertSame($extra_arg, $ret);
     }
 
     public function testChainedInjection()
@@ -57,14 +55,26 @@ class ContainerTest extends AwfulTestCase
         $container->get(Circular1::class);
     }
 
-    public function testAlias()
+    public function testConstructorInjection()
     {
         $container = new Container();
 
-        $container->alias(Bar::class, 'alias1', 'alias2');
+        // NOTE: Bar and Baz depend circularly on one another, but this should
+        // work just fine since Baz uses ChainedDependencies.
         $bar = $container->get(Bar::class);
-        $this->assertSame($bar, $container->get('alias1'));
-        $this->assertSame($bar, $container->get('alias2'));
+
+        $foo = $container->get(Foo::class);
+        $baz = $container->get(Baz::class);
+
+        $this->assertSame($foo, $bar->foo);
+        $this->assertSame($baz, $bar->baz);
+    }
+
+    public function testGetSelf()
+    {
+        $container = new Container();
+
+        $this->assertSame($container, $container->get(Container::class));
     }
 
     public function testRegister()
@@ -82,21 +92,11 @@ class ContainerTest extends AwfulTestCase
         $container->register($bar);
     }
 
-    public function testCall()
+    public function testSingleton()
     {
         $container = new Container();
 
-        $injected_bar = $container->call(function (Bar $injected_bar) {
-            return $injected_bar;
-        });
-        $bar = $container->get(Bar::class);
-        $this->assertSame($bar, $injected_bar);
-
-        $extra_arg = 'foo';
-        $ret = $container->call(function (Bar $injected_bar, $extra) {
-            return $extra;
-        }, $extra_arg);
-        $this->assertSame($extra_arg, $ret);
+        $this->assertSame($container->get(Foo::class), $container->get(Foo::class));
     }
 }
 

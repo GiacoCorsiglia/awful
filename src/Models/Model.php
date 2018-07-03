@@ -25,7 +25,7 @@ abstract class Model
     {
         if (!isset(self::$allFields[static::class])) {
             self::$allFields[static::class] = static::registerFields();
-    }
+        }
         return self::$allFields[static::class];
     }
 
@@ -38,7 +38,7 @@ abstract class Model
     protected static function registerFields(): array
     {
         return [];
-        }
+    }
 
     /** @var stdClass|null */
     private $block;
@@ -107,22 +107,54 @@ abstract class Model
         return $this;
     }
 
-    public function clean(): array
+    /**
+     * @return (string[])[]|null
+     * @psalm-return null|array<string, array<int, string>>
+     */
+    final public function cleanFields(): ?array
     {
         if ($this->block === null) {
             $this->block = $this->fetchBlockRecord();
         }
 
+        // Clean fields.
+        $data = $this->block->data;
         $cleanedData = [];
+        $errors = [];
         foreach (static::fields() as $key => $field) {
-            $value = $this->block->data[$key] ?? null;
+            $value = $data[$key] ?? null;
 
             if ($value === null && $field->isRequired()) {
-                throw new ValidationException("Field '$key' is required.");
+                $errors[$key] = ["Field '$key' is required."];
+                continue;
             }
 
-            $cleanedData[$key] = $field->clean($value, $this);
+            try {
+                $cleanedData[$key] = $field->clean($value, $this);
+            } catch (ValidationException $e) {
+                $errors[$key] = [$e->getMessage()];
+            }
         }
+
+        if ($errors) {
+            // Don't overwrite data if there were validation errors; instead,
+            // return those so the consumer can act on them.  (Presumably they
+            // will make their way to the client).
+            return $errors;
+        }
+
+        // Completely override the block with the cleaned data, removing any
+        // non-existent fields.
+        $this->blockSet()->set($this->block->uuid, $cleanedData);
+        // Clear the entire cache.
+        $this->formattedDataCache = [];
+
+        return null; // Indicates success
+    }
+
+    public function clean(): void
+    {
+    }
 
     public function reloadBlocks(): void
     {

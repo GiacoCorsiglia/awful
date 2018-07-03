@@ -19,9 +19,18 @@ class BlockSet
     /** @var WordPressModel */
     private $owner;
 
-    /** @var array */
+    /**
+     * @var stdClass[]
+     * @psalm-var array<string, stdClass>
+     */
     private $blocks;
 
+    /**
+     * @param BlockTypeMap   $blockTypeMap
+     * @param WordPressModel $owner
+     * @param stdClass[]     $blocks
+     * @psalm-param array<string|int, stdClass> $blocks
+     */
     public function __construct(
         BlockTypeMap $blockTypeMap,
         WordPressModel $owner,
@@ -47,6 +56,9 @@ class BlockSet
         return $this->owner;
     }
 
+    /**
+     * @return array<string, stdClass>
+     */
     public function all(): array
     {
         return $this->blocks;
@@ -93,14 +105,10 @@ class BlockSet
         return $this->create($type, [], $uuid);
     }
 
-    public function root(bool $create = true): stdClass
+    public function root(): stdClass
     {
         $type = $this->owner->rootBlockType();
-        $root = $this->firstOfType($type);
-        if (!$root && $create) {
-            $root = $this->create($type);
-        }
-        return $root;
+        return $this->firstOfType($type) ?: $this->create($type);
     }
 
     private function firstOfType(string $type): ?stdClass

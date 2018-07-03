@@ -54,10 +54,10 @@ abstract class Field implements JsonSerializable
     abstract public function toPhp($value, Model $model, string $fieldKey);
 
     /**
-     * Validates and optionally mutates the value before it is saved.
+     * Validates and optionally modifies the value before it is saved.
      *
-     * @param mixed $value
-     * @param Model $model
+     * @param null|bool|int|float|string|array $value
+     * @param Model                            $model
      *
      * @throws ValidationException
      *

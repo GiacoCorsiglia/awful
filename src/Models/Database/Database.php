@@ -208,6 +208,43 @@ class Database
         }
     }
 
+    /**
+     * @todo This should probably just take block IDs instead.
+     * @param  BlockQuery $blockQuery
+     * @param  string[]   $uuids
+     * @return void
+     */
+    public function deleteBlocksFor(BlockQuery $blockQuery, array $uuids): void
+    {
+        if (!$uuids) {
+            return;
+        }
+
+        $siteId = $blockQuery->siteId();
+
+        $switched = $siteId && get_current_blog_id() !== $siteId;
+        if ($switched) {
+            switch_to_blog($siteId);
+        }
+
+        $uuidPlaceholders = implode(',', array_fill(0, count($uuids), '%s'));
+        $sql = "DELETE FROM `{$this->table()}`
+            WHERE {$blockQuery->sql()}
+            AND `uuid` IN ($uuidPlaceholders)
+        ";
+
+        /**
+         * @psalm-suppress PossiblyNullArgument
+         * $wpdb->prepare will always return a string in this case.
+         */
+        $this->wpdb->query($this->wpdb->prepare($sql, $uuids));
+        $this->errorToException($this->wpdb->last_error);
+
+        if ($switched) {
+            restore_current_blog();
+        }
+    }
+
     private function table(): string
     {
         return "{$this->wpdb->prefix}awful_blocks";

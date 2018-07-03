@@ -244,6 +244,68 @@ class DatabaseTest extends AwfulTestCase
         $this->db->uninstall($siteId);
     }
 
+    public function testDeleteBlocksFor()
+    {
+        $siteId = is_multisite() ? 1 : 0;
+
+        $this->db->install($siteId);
+
+        if ($siteId) {
+            switch_to_blog($siteId);
+        }
+        $postId2 = $this->factory->post->create_and_get()->ID;
+        $postId1 = $this->factory->post->create_and_get()->ID;
+        if ($siteId) {
+            restore_current_blog();
+        }
+
+        $table = $this->db->tableForSite($siteId);
+
+        $idColumn = Database::ID_COLUMN;
+        $uuidColumn = Database::UUID_COLUMN;
+        $siteColumn = Database::SITE_COLUMN;
+        $postColumn = Database::POST_COLUMN;
+        $typeColumn = Database::TYPE_COLUMN;
+        $dataColumn = Database::DATA_COLUMN;
+
+        $this->wpdb->query("INSERT INTO `$table` (
+            `$uuidColumn`,
+            `$siteColumn`,
+            `$postColumn`,
+            `$typeColumn`,
+            `$dataColumn`
+        ) VALUES
+            ('uuid1', 1, NULL, 'type1', '{}'),
+            ('uuid2', 1, NULL, 'type2', '{}'),
+            ('uuid3', 1, NULL, 'type2', '{}'),
+            ('uuid1', 0, $postId1, 'type1', '{}'),
+            ('uuid2', 0, $postId1, 'type2', '{}'),
+            ('uuid4', 0, $postId1, 'type2', '{}')
+        ;");
+
+        $selectCount = function (string $where) use ($table) {
+            return $this->wpdb->get_var("SELECT COUNT(*) FROM `$table` WHERE $where");
+        };
+
+        $siteQuery = new BlockQueryForSite($siteId);
+        $postQuery = new BlockQueryForPosts($siteId, $postId1);
+
+        // Sanity check beforehand.
+        $this->assertSame('3', $selectCount($siteQuery->sql()));
+        $this->assertSame('3', $selectCount($postQuery->sql()));
+
+        // Run the deletion.
+        $this->db->deleteBlocksFor($siteQuery, ['uuid1', 'uuid3']);
+
+        // Ensure it worked.
+        $this->assertSame('1', $selectCount($siteQuery->sql()), 'Correct number of site blocks remain.');
+        $this->assertSame('0', $selectCount("{$siteQuery->sql()} AND `$uuidColumn` IN ('uuid1', 'uuid3')"), 'Correct site blocks were deleted.');
+
+        $this->assertSame('3', $selectCount($postQuery->sql()), 'It does not delete the post blocks.');
+
+        $this->db->uninstall($siteId);
+    }
+
     public function tearDown()
     {
         // Ensure all the tables are deleted even if the tests fail.

@@ -106,4 +106,9 @@ class User extends WordPressModel
     {
         return 'user';
     }
+
+    final protected function clone(): WordPressModel
+    {
+        return new static($this->entityManager, $this->id);
+    }
 }

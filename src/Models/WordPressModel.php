@@ -7,7 +7,7 @@ use stdClass;
 
 abstract class WordPressModel extends Model
 {
-    /** @var BlockSet */
+    /** @var null|BlockSet */
     private $blockSet;
 
     /**
@@ -28,12 +28,27 @@ abstract class WordPressModel extends Model
 
     abstract public function entityManager(): EntityManager;
 
+    abstract protected function clone(): self;
+
+    final public function cloneWithBlockSet(BlockSet $blockSet): self
+    {
+        $clone = $this->clone();
+        $clone->blockSet = $blockSet;
+        return $clone;
+    }
+
     final public function blockSet(): BlockSet
     {
         if ($this->blockSet === null) {
             $this->blockSet = $this->entityManager()->blockSetManager()->fetchBlockSet($this);
         }
         return $this->blockSet;
+    }
+
+    final public function reloadBlocks(): void
+    {
+        $this->blockSet = null;
+        parent::reloadBlocks();
     }
 
     final protected function fetchBlockRecord(): stdClass

@@ -153,4 +153,9 @@ class Site extends WordPressModel
     {
         return new GenericPostQuerySet($this);
     }
+
+    final protected function clone(): WordPressModel
+    {
+        return new static($this->entityManager, $this->id);
+    }
 }

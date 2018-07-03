@@ -49,8 +49,14 @@ abstract class Block extends Model
         return $this->blockSet;
     }
 
-    final public function fetchBlockRecord(): stdClass
+    final protected function fetchBlockRecord(): stdClass
     {
         return $this->blockSet->get($this->uuid) ?: $this->blockSet->createForClass(static::class, $this->uuid);
+    }
+
+    final public function reloadBlocks(): void
+    {
+        $this->blockSet = $this->owner->blockSet();
+        parent::reloadBlocks();
     }
 }

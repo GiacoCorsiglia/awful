@@ -4,6 +4,7 @@ namespace Awful\Models\Traits;
 use Awful\Models\Comment;
 use Awful\Models\Database\EntityManager;
 use Awful\Models\Site;
+use Awful\Models\WordPressModel;
 
 /**
  * For WordPress objects that are the child of a specific Site (or "blog") in
@@ -49,5 +50,10 @@ trait WordPressModelOwnedBySite
     final public function site(): Site
     {
         return $this->site;
+    }
+
+    final protected function clone(): WordPressModel
+    {
+        return new static($this->site, $this->id);
     }
 }

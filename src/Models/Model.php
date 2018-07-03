@@ -115,7 +115,10 @@ abstract class Model
             $cleanedData[$key] = $field->clean($value, $this);
         }
 
-        return $cleanedData;
+    public function reloadBlocks(): void
+    {
+        $this->block = null;
+        $this->formattedDataCache = [];
     }
 
     abstract public function blockSet(): BlockSet;

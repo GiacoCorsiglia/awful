@@ -194,7 +194,7 @@ class Database
         }
 
         $sql .= implode(',', $rows);
-        $sql .= ' ON DUPLICATE KEY UPDATE `data` = VALUES(`data`);';
+        $sql .= " ON DUPLICATE KEY UPDATE `$dataColumn` = VALUES(`$dataColumn`);";
 
         /**
          * @psalm-suppress PossiblyNullArgument

@@ -9,8 +9,25 @@ use stdClass;
 
 abstract class Model
 {
-    /** @var Field[][] */
+    /**
+     * @var Field[][]
+     * @psalm-var array<string, array<string, Field>>
+     */
     private static $allFields = [];
+
+    /**
+     * The set of fields for this class, memoized.
+     *
+     * @return Field[]
+     * @psalm-return array<string, Field>
+     */
+    final public static function fields(): array
+    {
+        if (!isset(self::$allFields[static::class])) {
+            self::$allFields[static::class] = static::registerFields();
+    }
+        return self::$allFields[static::class];
+    }
 
     /**
      * The set of fields for this class.
@@ -18,18 +35,10 @@ abstract class Model
      * @return Field[]
      * @psalm-return array<string, Field>
      */
-    public static function fields(): array
+    protected static function registerFields(): array
     {
         return [];
-    }
-
-    private static function field(string $key): ?Field
-    {
-        if (!isset(self::$allFields[static::class])) {
-            self::$allFields[static::class] = static::fields();
         }
-        return self::$allFields[static::class][$key] ?? null;
-    }
 
     /** @var stdClass|null */
     private $block;
@@ -49,7 +58,7 @@ abstract class Model
             return $this->formattedDataCache[$key];
         }
 
-        $field = static::field($key);
+        $field = static::fields()[$key] ?? null;
         if (!$field) {
             throw new FieldDoesNotExistException("There is no field '$key' on " . static::class);
         }

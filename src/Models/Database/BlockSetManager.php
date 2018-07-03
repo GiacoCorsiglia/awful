@@ -32,16 +32,7 @@ class BlockSetManager
 
     public function fetchBlockSet(WordPressModel $owner): BlockSet
     {
-        if ($owner instanceof Site) {
-            $blockQuery = new BlockQueryForSite($owner->id());
-        } else {
-            $blockQuery = new BlockQueryForSingleObject(
-                $owner->siteId(),
-                $owner->blockRecordColumn(),
-                $owner->blockRecordColumnValue()
-            );
-        }
-
+        $blockQuery = $this->ownerToBlockQuery($owner);
         return new BlockSet(
             $this->blockTypeMap,
             $owner,
@@ -73,6 +64,23 @@ class BlockSetManager
         }
 
         $this->db->saveBlocks($siteId, $allBlocks);
+    }
+
+    public function deleteBlocksFor(WordPressModel $owner, array $uuids): void
+    {
+        $this->db->deleteBlocksFor($this->ownerToBlockQuery($owner), $uuids);
+    }
+
+    private function ownerToBlockQuery(WordPressModel $owner): BlockQuery
+    {
+        if ($owner instanceof Site) {
+            return new BlockQueryForSite($owner->id());
+        }
+        return new BlockQueryForSingleObject(
+            $owner->siteId(),
+            $owner->blockRecordColumn(),
+            $owner->blockRecordColumnValue()
+        );
     }
 
     private function fetchBlockRecords(BlockQuery $blockQuery): array

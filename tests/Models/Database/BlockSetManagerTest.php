@@ -5,6 +5,7 @@ use Awful\AwfulTestCase;
 use Awful\Models\Database\Exceptions\SiteMismatchException;
 use Awful\Models\Database\Map\BlockTypeMap;
 use Awful\Models\Database\Query\BlockQueryForPosts;
+use Awful\Models\Database\Query\BlockQueryForSite;
 use Awful\Models\GenericPost;
 use function Awful\uuid;
 
@@ -212,5 +213,25 @@ class BlockSetManagerTest extends AwfulTestCase
         ]);
 
         $manager->save($bs1, $bs2);
+    }
+
+    public function testDeleteBlocksFor()
+    {
+        $siteId = is_multisite() ? 1 : 0;
+        $site = $this->mockSite($siteId);
+
+        $uuids = ['uuid1', 'uuid2'];
+
+        $db = $this->createMock(Database::class);
+        $db->expects($this->once())
+            ->method('deleteBlocksFor')
+            ->with($this->callback(function (BlockQueryForSite $bq) use ($siteId) {
+                return $bq->siteId() === $siteId;
+            }), $uuids);
+
+        $map = new BlockTypeMap([]);
+        $manager = new BlockSetManager($db, $map);
+
+        $manager->deleteBlocksFor($site, $uuids);
     }
 }

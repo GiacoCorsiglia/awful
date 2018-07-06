@@ -70,7 +70,6 @@ class DatabaseTest extends AwfulTestCase
         if ($siteId) {
             switch_to_blog($siteId);
         }
-        $postId2 = $this->factory->post->create_and_get()->ID;
         $postId1 = $this->factory->post->create_and_get()->ID;
         if ($siteId) {
             restore_current_blog();

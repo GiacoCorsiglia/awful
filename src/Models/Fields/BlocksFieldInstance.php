@@ -5,6 +5,7 @@ use Awful\Models\Block;
 use Awful\Models\Database\BlockSet;
 use Awful\Models\Database\Map\Exceptions\UnknownTypeException;
 use Awful\Models\Model;
+use Awful\Models\WordPressModel;
 
 class BlocksFieldInstance extends ObjectsFieldInstance
 {
@@ -28,6 +29,16 @@ class BlocksFieldInstance extends ObjectsFieldInstance
 
         $this->blockSet = $model->blockSet();
 
+        /** @var WordPressModel */
+        $owner = null;
+        if ($model instanceof Block) {
+            $owner = $model->owner();
+        } elseif ($model instanceof WordPressModel) {
+            $owner = $model;
+        } else {
+            throw new \Exception('Unknown model type.');
+        }
+
         $blockTypeMap = $this->blockSet->blockTypeMap();
         foreach ($uuids as $uuid) {
             $record = $this->blockSet->get($uuid);
@@ -47,7 +58,7 @@ class BlocksFieldInstance extends ObjectsFieldInstance
             }
 
             $this->ids[] = $uuid;
-            $this->objects[] = new $class($model, $uuid);
+            $this->objects[] = new $class($owner, $uuid);
         }
     }
 

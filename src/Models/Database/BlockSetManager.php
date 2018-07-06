@@ -33,6 +33,7 @@ class BlockSetManager
     public function deleteBlocksFor(WordPressModel $owner, array $uuids): void
     {
         $this->db->deleteBlocksFor($this->ownerToBlockQuery($owner), $uuids);
+        wp_cache_delete($owner->id(), self::CACHE_GROUP_PREFIX . $owner->blockRecordColumn());
     }
 
     public function fetchBlockSet(WordPressModel $owner): BlockSet
@@ -61,14 +62,25 @@ class BlockSetManager
 
         $allBlocks = [];
         foreach ($blockSets as $blockSet) {
-            if ($blockSet->owner()->siteId() !== $siteId) {
+            $owner = $blockSet->owner();
+            if ($owner->siteId() !== $siteId) {
                 throw new SiteMismatchException();
             }
 
-            $allBlocks = array_merge($allBlocks, array_values($blockSet->all()));
+            $column = $owner->blockRecordColumn();
+            $value = $owner->blockRecordColumnValue();
+            foreach ($blockSet->all() as $block) {
+                $block->{$column} = $value;
+                $allBlocks[] = $block;
+            }
         }
 
         $this->db->saveBlocks($siteId, $allBlocks);
+
+        foreach ($blockSets as $blockSet) {
+            $owner = $blockSet->owner();
+            wp_cache_delete($owner->id(), self::CACHE_GROUP_PREFIX . $owner->blockRecordColumn());
+        }
     }
 
     private function fetchBlockRecords(BlockQuery $blockQuery): array

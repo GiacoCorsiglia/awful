@@ -198,12 +198,6 @@ class BlockSetManagerTest extends AwfulTestCase
         ];
 
         $db = $this->createMock(Database::class);
-        $db->expects($this->once())
-            ->method('saveBlocks')
-            ->with($siteId, [
-                $block1,
-                $block2,
-            ]);
 
         $map = new BlockTypeMap([]);
         $manager = new BlockSetManager($db, $map);
@@ -217,7 +211,20 @@ class BlockSetManagerTest extends AwfulTestCase
             $block2,
         ]);
 
+        $db->expects($this->once())
+            ->method('saveBlocks')
+            ->with($siteId, $this->callback(function (array $blocks) use ($block1, $block2): bool {
+                // We don't care about the order.
+                return $blocks === [$block1, $block2] || $blocks === [$block2, $block1];
+            }));
+
+        // Run the save.
         $manager->save($bs1, $bs2);
+
+        // Ensure it referentially updates the blocks with the correct owner
+        // column values.
+        $this->assertSame($site->blockRecordColumnValue(), $block1->{$site->blockRecordColumn()});
+        $this->assertSame($post->blockRecordColumnValue(), $block2->{$post->blockRecordColumn()});
     }
 
     public function testSaveRejectsBlockSetsForMultipleSites()

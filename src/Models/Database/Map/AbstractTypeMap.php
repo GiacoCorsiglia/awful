@@ -21,7 +21,7 @@ abstract class AbstractTypeMap
 
     /**
      * @param array $classToTypesMap
-     * @psalm-param array<class-string, string[]|string> $classToTypesMap
+     * @psalm-param array<class-string, array<int, string>|string> $classToTypesMap
      */
     public function __construct(array $classToTypesMap)
     {

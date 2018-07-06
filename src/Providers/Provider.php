@@ -9,11 +9,19 @@ use Awful\Container\Container;
  */
 abstract class Provider
 {
+    /**
+     * @return string[]
+     * @psalm-return array<int, string>
+     */
     public function commands(): array
     {
         return [];
     }
 
+    /**
+     * @return string[]
+     * @psalm-return array<int, string>
+     */
     public function plugins(): array
     {
         return [];
@@ -23,6 +31,10 @@ abstract class Provider
     {
     }
 
+    /**
+     * @return string[]
+     * @psalm-return array<string, class-string>
+     */
     public function themes(): array
     {
         return [];

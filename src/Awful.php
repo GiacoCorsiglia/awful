@@ -21,20 +21,23 @@ final class Awful
     /**
      * @param Provider[] $providers
      * @psalm-param array<int, Provider> $providers
-     * @param array $blockClassMap
-     * @psalm-param array<class-string, string[]|string> $blockClassMap
+     * @param array $blockTypeMap
+     * @psalm-param array<class-string, array<int, string>|string> $blockTypeMap
      *
      * @return void
      */
-    public static function bootstrap(array $providers, array $blockClassMap): void
+    public static function bootstrap(array $providers, array $blockTypeMap): void
     {
         if (!defined('AWFUL_ENV')) {
             define('AWFUL_ENV', 'production');
         }
-        $GLOBALS['_awful_instance'] = new self($providers, $blockClassMap);
+        $GLOBALS['_awful_instance'] = new self($providers, $blockTypeMap);
     }
 
-    /** @var string[] */
+    /**
+     * @var string[]
+     * @psalm-var array<int, string>
+     */
     private $commands = [];
 
     /** @var Container */
@@ -43,7 +46,10 @@ final class Awful
     /** @var EntityManager */
     private $entityManager;
 
-    /** @var string[] */
+    /**
+     * @var string[]
+     * @psalm-var array<int, string>
+     */
     private $plugins = [];
 
     /**
@@ -58,7 +64,10 @@ final class Awful
      */
     private $setUserCallback;
 
-    /** @var string[] */
+    /**
+     * @var string[]
+     * @psalm-var array<string, class-string>
+     */
     private $themes = [];
 
     /**
@@ -71,7 +80,9 @@ final class Awful
      * @internal
      *
      * @param array $providers
+     * @psalm-param array<int, Provider> $providers
      * @param array $blockTypeMap
+     * @psalm-param array<class-string, array<int, string>|string> $blockTypeMap
      */
     private function __construct(array $providers, array $blockTypeMap)
     {

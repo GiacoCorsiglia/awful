@@ -3,13 +3,12 @@ sudo: false
 language: php
 
 php:
-  # - '7.1'
+  - '7.1'
   - '7.2'
-  # - nightly
 
 env:
-  # - WP_VERSION=4.9.4 WP_MULTISITE=0
-  # - WP_VERSION=4.9.4 WP_MULTISITE=1
+  - WP_VERSION=4.9.4 WP_MULTISITE=0
+  - WP_VERSION=4.9.4 WP_MULTISITE=1
   - WP_VERSION=latest WP_MULTISITE=0
   - WP_VERSION=latest WP_MULTISITE=1
 
@@ -29,6 +28,7 @@ before_script:
   - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
 
 script:
+  - vendor/bin/php-cs-fixer fix -v --diff --dry-run
   - vendor/bin/psalm
   - vendor/bin/phpunit
 

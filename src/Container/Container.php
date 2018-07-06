@@ -117,9 +117,14 @@ final class Container implements ContainerInterface
         return $this->instances[$class];
     }
 
+    /**
+     * @param string $id
+     *
+     * @return bool
+     */
     public function has($id): bool
     {
-        return class_exists($aliases[$id] ?? $id);
+        return class_exists($this->aliases[$id] ?? $id);
     }
 
     /**

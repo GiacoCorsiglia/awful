@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
-<psalm useDocblockTypes="true"
-    useAssertForType="true"
+<psalm
     rememberPropertyAssignmentsAfterCall="true"
+    strictBinaryOperands="true"
+    useAssertForType="true"
+    useDocblockTypes="true"
 >
     <projectFiles>
         <directory name="src" />

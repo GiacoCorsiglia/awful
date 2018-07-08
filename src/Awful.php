@@ -140,10 +140,12 @@ final class Awful
         //
 
         /** @psalm-suppress UndefinedConstant */
-        if (AWFUL_ENV === 'dev' && getenv('AWFUL_INSTALLING') === 'yes' && defined('WP_CLI') && WP_CLI) {
+        if (!defined('AWFUL_INSTALLED') || !AWFUL_INSTALLED) {
             // Just register the Awful CLI and bail to avoid DB errors.
-            /** @psalm-suppress UndefinedClass */
-            WP_CLI::add_command(AwfulCommand::commandName(), $this->container->get(AwfulCommand::class), AwfulCommand::registrationArguments());
+            if (defined('WP_CLI') && WP_CLI) {
+                /** @psalm-suppress UndefinedClass */
+                WP_CLI::add_command(AwfulCommand::commandName(), $this->container->get(AwfulCommand::class), AwfulCommand::registrationArguments());
+            }
             return;
         }
 

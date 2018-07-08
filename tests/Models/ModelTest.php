@@ -11,6 +11,26 @@ use function Awful\uuid;
 
 class ModelTest extends AwfulTestCase
 {
+    public function testCleanFieldsSetsDefaults()
+    {
+        $model = $this->mockModel([
+            'required' => 'foo',
+            'default' => null,
+        ]);
+
+        $this->assertNull($model->get('default'));
+        $this->assertNull($model->cleanFields());
+        $this->assertSame('the default', $model->get('default'));
+
+        $model = $this->mockModel([
+            'required' => 'foo',
+        ]);
+
+        $this->assertNull($model->get('default'));
+        $this->assertNull($model->cleanFields());
+        $this->assertSame('the default', $model->get('default'));
+    }
+
     public function testCleanFieldsWithInvalidField()
     {
         $model = $this->mockModel([
@@ -44,7 +64,7 @@ class ModelTest extends AwfulTestCase
         $optionalBefore = $model->get('optional');
         $this->assertSame('raw', $model->getRaw('optional'));
 
-        $this->assertSame(null, $model->cleanFields(), 'no errors');
+        $this->assertNull($model->cleanFields(), 'no errors');
 
         $this->assertSame('clean', $model->getRaw('optional'), 'cleaned value is set');
         $this->assertNotSame($optionalBefore, $model->get('optional'), 'cleanFields should reset formatted data cache');
@@ -76,7 +96,7 @@ class ModelTest extends AwfulTestCase
 
         $this->assertSame('bar', $model->getRaw('foo'));
         $this->assertSame(['buz'], $model->getRaw('fiz'));
-        $this->assertSame(null, $model->getRaw('non-existent'));
+        $this->assertNull($model->getRaw('non-existent'));
     }
 
     public function testReloadBlocks()
@@ -126,7 +146,7 @@ class ModelTest extends AwfulTestCase
     {
         MockModel::$registerFieldsCallCount = 0;
         $fields = MockModel::fields();
-        $this->assertSame(2, count($fields));
+        $this->assertSame(3, count($fields));
         $this->assertContainsOnlyInstancesOf(Field::class, $fields);
 
         $this->assertSame(MockModel::fields(), MockModel::fields(), 'The call was memoized');
@@ -193,6 +213,17 @@ class MockModel extends Model
                     if ($value === 'invalid') {
                         throw new ValidationException('invalid message');
                     }
+                    return $value;
+                }
+            },
+            'default' => new class(['default_value' => 'the default']) extends Field {
+                public function toPhp($value, Model $model, string $fieldKey)
+                {
+                    return $value;
+                }
+
+                public function clean($value, Model $model)
+                {
                     return $value;
                 }
             },

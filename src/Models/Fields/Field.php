@@ -16,6 +16,9 @@ abstract class Field implements JsonSerializable
      * @var mixed[]
      */
     protected const DEFAULTS = [
+        'default_value' => null,
+        'instructions' => '',
+        'label' => '',
         'required' => false,
     ];
 
@@ -32,7 +35,10 @@ abstract class Field implements JsonSerializable
     public function __construct(array $args = [])
     {
         $this->args = $args + static::DEFAULTS;
-        // TODO: Potentially add lots of assertions to validate config.
+
+        assert(is_bool($this->args['required']), "The 'required' option should be a bool.");
+        assert(is_string($this->args['instructions']), "The 'instructions' option should be a string.");
+        assert(is_string($this->args['label']), "The 'label' option should be a string.");
     }
 
     /**
@@ -46,6 +52,14 @@ abstract class Field implements JsonSerializable
      * @return mixed
      */
     abstract public function clean($value, Model $model);
+
+    /**
+     * @return null|bool|int|float|string|array
+     */
+    public function defaultValue()
+    {
+        return $this->args['default_value'];
+    }
 
     public function isRequired(): bool
     {

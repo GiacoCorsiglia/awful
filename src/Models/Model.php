@@ -67,7 +67,7 @@ abstract class Model
         $cleanedData = [];
         $errors = [];
         foreach (static::fields() as $key => $field) {
-            $value = $data[$key] ?? null;
+            $value = $data[$key] ?? $field->defaultValue();
 
             if ($value === null && $field->isRequired()) {
                 $errors[$key] = ["Field '$key' is required."];

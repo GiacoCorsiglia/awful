@@ -33,6 +33,40 @@ class TextFieldTest extends AwfulTestCase
         $this->field->clean(false, $this->model);
     }
 
+    public function testCleanWithLengthConstraintsTooLong()
+    {
+        $field = new TextField([
+            'minlength' => 5,
+            'maxlength' => 8,
+        ]);
+
+        $this->expectException(ValidationException::class);
+        $field->clean('123456789', $this->model);
+    }
+
+    public function testCleanWithLengthConstraintsTooShort()
+    {
+        $field = new TextField([
+            'minlength' => 5,
+            'maxlength' => 8,
+        ]);
+
+        $this->expectException(ValidationException::class);
+        $field->clean('1234', $this->model);
+    }
+
+    public function testCleanWithLengthConstraintsValid()
+    {
+        $field = new TextField([
+            'minlength' => 5,
+            'maxlength' => 8,
+        ]);
+
+        $this->assertSame('12345', $field->clean('12345', $this->model));
+        $this->assertSame('123456', $field->clean('123456', $this->model));
+        $this->assertSame('12345678', $field->clean('12345678', $this->model));
+    }
+
     public function testToPhp()
     {
         $this->assertSame('', $this->field->toPhp('', $this->model, ''));

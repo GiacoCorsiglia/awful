@@ -16,7 +16,7 @@ class BlocksField extends Field
 
     public function __construct(array $args = [])
     {
-        assert(every($args['types'], 'is_subclass_of', [Block::class]));
+        assert(!empty($args['types']) && every($args['types'], 'is_subclass_of', [Block::class]), "Expected non-empty array of Block subclasses for 'types'.");
 
         parent::__construct($args);
 

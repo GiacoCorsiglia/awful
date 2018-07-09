@@ -9,11 +9,20 @@ use function Awful\every;
 
 class BlocksField extends Field
 {
+    protected const DEFAULTS = Field::DEFAULTS + [
+        'min' => 0,
+        'max' => 0,
+    ];
+
     public function __construct(array $args = [])
     {
         assert(every($args['types'], 'is_subclass_of', [Block::class]));
 
         parent::__construct($args);
+
+        assert(is_int($this->args['min']) && $this->args['min'] >= 0, "Expected positive integer for 'min'.");
+        assert(is_int($this->args['max']) && $this->args['max'] >= 0, "Expected positive integer for 'max'.");
+        assert($this->args['max'] >= $this->args['min'], "Expected 'max' >= 'min'.");
     }
 
     public function clean($value, Model $model): array
@@ -24,6 +33,16 @@ class BlocksField extends Field
 
         if (!is_array($value)) {
             throw new ValidationException('Expected an array of uuids.');
+        }
+
+        $count = count($value);
+        $min = $this->args['min'];
+        if ($min && $count < $min) {
+            throw new ValidationException("Requires at least $min entries.");
+        }
+        $max = $this->args['max'];
+        if ($max && $count > $max) {
+            throw new ValidationException("May include at most $max entries.");
         }
 
         $blockSet = $model->blockSet();

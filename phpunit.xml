@@ -17,10 +17,10 @@
         </testsuite>
     </testsuites>
 
-	<!--
 	<filter>
     	<whitelist processUncoveredFilesFromWhitelist="true">
     		<directory suffix=".php">src</directory>
+
 			<exclude>
 			    <file>src/Router.php</file>
             	<file>src/Models/Network.php</file>
@@ -33,6 +33,7 @@
   		</whitelist>
 	</filter>
 
+	<!--
 	<logging>
 		<log
 			type="coverage-html"

@@ -15,21 +15,27 @@ matrix:
   allow_failures:
     - php: nightly
 
-install: composer install
+install:
+  - composer install
+  - composer require php-coveralls/php-coveralls '^2.0'
 
 before_script:
-  - |
-    if [ -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then
-      phpenv config-rm xdebug.ini
-    else
-      echo "xdebug.ini does not exist"
-    fi
+  # - |
+  #   if [ -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then
+  #     phpenv config-rm xdebug.ini
+  #   else
+  #     echo "xdebug.ini does not exist"
+  #   fi
   - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
+  - mkdir -p build/logs
 
 script:
   - vendor/bin/php-cs-fixer fix -v --diff --dry-run
   - vendor/bin/psalm
-  - vendor/bin/phpunit
+  - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+
+after_success:
+  - travis_retry php vendor/bin/php-coveralls --verbose
 
 addons:
   # Install MariaDB version which supports JSON

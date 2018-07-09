@@ -5,9 +5,9 @@ use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 
 /**
- * A field that represents a boolean choice.
+ * A field that represents a choice between `true` and `false`.
  */
-class TrueFalseField extends Field
+class BooleanField extends Field
 {
     public function clean($value, Model $model): ?bool
     {

@@ -5,7 +5,7 @@ use Awful\AwfulTestCase;
 use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 
-class TrueFalseFieldTest extends AwfulTestCase
+class BooleanFieldTest extends AwfulTestCase
 {
     /** @var TextField */
     private $field;
@@ -17,7 +17,7 @@ class TrueFalseFieldTest extends AwfulTestCase
     {
         parent::setUp();
 
-        $this->field = new TrueFalseField();
+        $this->field = new BooleanField();
         $this->model = $this->getMockForAbstractClass(Model::class);
     }
 

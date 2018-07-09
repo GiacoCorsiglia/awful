@@ -3,6 +3,7 @@
 WordPress development, made more awful.
 
 [![Build Status](https://travis-ci.org/GiacoCorsiglia/awful.svg?branch=master)](https://travis-ci.org/GiacoCorsiglia/awful)
+[![Coverage Status](https://coveralls.io/repos/github/GiacoCorsiglia/awful/badge.svg)](https://coveralls.io/github/GiacoCorsiglia/awful)
 
 **Very much a work in progress.**
 

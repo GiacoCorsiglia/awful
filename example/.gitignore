@@ -1,0 +1,11 @@
+# Composer dependencies.  (Normally the vendor directory would live here.)
+/vendor/
+# If you haven't installed Composer globally, you still shouldn't track it.
+composer.phar
+# Likewise with the WP CLI.
+wp-cli.phar
+
+# WordPress core.
+/public/wordpress/
+# WordPress uploads.
+/public/wp-content/uploads/

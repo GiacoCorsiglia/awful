@@ -2,9 +2,6 @@
 /vendor/
 composer.phar
 
-# Install WordPress for IDE features.
-/wordpress/
-
 # VSCode stuff (ignore everything but these config files).
 /.vscode/*
 !/.vscode/tasks.json

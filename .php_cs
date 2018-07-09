@@ -4,7 +4,7 @@
 $finder = PhpCsFixer\Finder::create()
     // Ignore dependencies
     ->exclude('vendor')
-    ->exclude('wordpress')
+    ->exclude('example/public/wordpress')
     // Include everything else
     ->in(__DIR__);
 

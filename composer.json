@@ -29,6 +29,11 @@
             "src/functions.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "AwfulExample\\": "example/src/"
+        }
+    },
     "require": {
         "php": ">=7.2",
         "nikic/fast-route": "^1.2",
@@ -43,6 +48,9 @@
         "psy/psysh": "^0.9",
         "vimeo/psalm": "^2.0",
         "wp-phpunit/wp-phpunit": "^4.9"
+    },
+    "extra": {
+        "wordpress-install-dir": "example/public/wordpress"
     },
     "config": {
         "sort-packages": true

@@ -28,12 +28,12 @@ class TextField extends Field
         'widget' => self::INPUT_WIDGET,
     ];
 
-    public function __construct(array $args)
+    public function __construct(array $args = [])
     {
         parent::__construct($args);
 
-        assert(is_int($this->args['minlength']) && $this->args['minlength'] > 0, "Expected positive integer for 'minlength'.");
-        assert(is_int($this->args['maxlength']) && $this->args['maxlength'] > 0, "Expected positive integer for 'maxlength'.");
+        assert(is_int($this->args['minlength']) && $this->args['minlength'] >= 0, "Expected positive integer for 'minlength'.");
+        assert(is_int($this->args['maxlength']) && $this->args['maxlength'] >= 0, "Expected positive integer for 'maxlength'.");
         assert($this->args['maxlength'] >= $this->args['minlength'], "Expected 'maxlength' >= 'minlength'.");
         assert(in_array($this->args['widget'], [self::INPUT_WIDGET, self::TEXTAREA_WIDGET]), "Expected supported 'widget'.");
     }

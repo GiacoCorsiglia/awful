@@ -29,6 +29,7 @@
             	<directory suffix=".php">src/Templates</directory>
             	<directory suffix=".php">src/Context</directory>
             	<file>src/render.php</file>
+            	<file>src/awful-bootstrap.php</file>
 			</exclude>
   		</whitelist>
 	</filter>

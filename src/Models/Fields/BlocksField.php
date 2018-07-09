@@ -34,6 +34,10 @@ class BlocksField extends Field
                 throw new ValidationException("Block '$uuid' does not exist.");
             }
 
+            if (empty($record->type)) {
+                throw new ValidationException("Block '$uuid' does not specify a type.");
+            }
+
             try {
                 $class = $blockTypeMap->classForType($record->type);
             } catch (UnknownTypeException $e) {

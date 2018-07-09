@@ -85,16 +85,16 @@ class GenericPost extends WordPressModel
     /**
      * Cache of the post status.
      *
-     * @var string
+     * @var string|null
      */
-    private $status = '';
+    private $status;
 
     /**
      * Cache of the post title.
      *
-     * @var string
+     * @var string|null
      */
-    private $title = '';
+    private $title;
 
     /**
      * Cache of the WordPress post object representing this post.

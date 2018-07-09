@@ -11,7 +11,7 @@ use Awful\Providers\CoreProvider;
 // the autoloader earlier in WordPress' bootstrap process (likely in
 // `wp-config.php`), you can remove this line.  Otherwise, update the path here
 // to match your setup.
-require __DIR__ . '../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 /**
  * This constant short-circuits Awful's initialization to avoid database errors.

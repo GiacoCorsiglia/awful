@@ -34,6 +34,7 @@ trait WordPressModelWithSiteContext
      */
     final protected function callInSiteContext(callable $callable, ...$args)
     {
+        /** @psalm-suppress RedundantConditionGivenDocblockType */
         assert($this->siteId !== null, 'Expected `$this->siteId` to be set');
 
         $switched = $this->siteId && get_current_blog_id() !== $this->siteId;

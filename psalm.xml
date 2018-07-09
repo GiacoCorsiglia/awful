@@ -7,11 +7,13 @@
 >
     <projectFiles>
         <directory name="src" />
+
         <ignoreFiles>
             <file name="src/Router.php" />
             <file name="src/Models/Network.php" />
             <directory name="src/Utilities" />
             <directory name="src/Templates" />
+            <file name="src/awful-bootstrap.php" />
             <file name="src/render.php" />
         </ignoreFiles>
     </projectFiles>

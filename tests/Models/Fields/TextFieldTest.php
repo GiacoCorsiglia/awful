@@ -67,6 +67,18 @@ class TextFieldTest extends AwfulTestCase
         $this->assertSame('12345678', $field->clean('12345678', $this->model));
     }
 
+    public function testCleanWithRegex()
+    {
+        $field = new TextField([
+            'regex' => '/^[a-z]*$/',
+        ]);
+
+        $this->assertSame('abc', $field->clean('abc', $this->model));
+
+        $this->expectException(ValidationException::class);
+        $field->clean('abc123', $this->model);
+    }
+
     public function testToPhp()
     {
         $this->assertSame('', $this->field->toPhp('', $this->model, ''));

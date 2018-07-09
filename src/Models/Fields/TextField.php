@@ -5,7 +5,11 @@ use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 
 /**
- * A single line text field.
+ * A single- or multi-line text field.
+ *
+ * The 'regex' accepts a regular expression to validate the input against.  If
+ * it is also a valid JavaScript regex, it will be used for client-side
+ * validation as well.
  */
 class TextField extends Field
 {
@@ -25,6 +29,7 @@ class TextField extends Field
         'default_value' => '',
         'minlength' => 0,
         'maxlength' => 0,
+        'regex' => '',
         'widget' => self::INPUT_WIDGET,
     ];
 
@@ -35,6 +40,7 @@ class TextField extends Field
         assert(is_int($this->args['minlength']) && $this->args['minlength'] >= 0, "Expected positive integer for 'minlength'.");
         assert(is_int($this->args['maxlength']) && $this->args['maxlength'] >= 0, "Expected positive integer for 'maxlength'.");
         assert($this->args['maxlength'] >= $this->args['minlength'], "Expected 'maxlength' >= 'minlength'.");
+        assert(is_string($this->args['regex']), "Expected a string for 'regex'.");
         assert(in_array($this->args['widget'], [self::INPUT_WIDGET, self::TEXTAREA_WIDGET]), "Expected supported 'widget'.");
     }
 
@@ -56,6 +62,10 @@ class TextField extends Field
         }
         if ($max && $length > $max) {
             throw new ValidationException("May be at most $max characters.");
+        }
+
+        if ($this->args['regex'] && !preg_match($this->args['regex'], $value)) {
+            throw new ValidationException('Invalid input.');
         }
 
         return $value;

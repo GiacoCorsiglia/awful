@@ -39,8 +39,8 @@ class AwfulTestCase extends WP_UnitTestCase
      */
     public static function methodPredicate(string $method, $return): Closure
     {
-        return function(object $object) use($method, $return): bool {
-            return $object->$method() === $return;
+        return function (object $object) use ($method, $return): bool {
+            return $object->{$method}() === $return;
         };
     }
 

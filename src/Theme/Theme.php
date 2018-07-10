@@ -1,10 +1,10 @@
 <?php
 namespace Awful\Theme;
 
+use Awful\Models\Page;
+use Awful\Models\Post;
 use Awful\Models\Site;
 use Awful\Models\User;
-use Awful\Models\Post;
-use Awful\Models\Page;
 
 abstract class Theme
 {

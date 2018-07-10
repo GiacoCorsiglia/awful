@@ -24,7 +24,6 @@
 			<exclude>
 			    <file>src/Router.php</file>
             	<file>src/Models/Network.php</file>
-				<directory suffix=".php">src/Models/Query</directory>
             	<directory suffix=".php">src/Utilities</directory>
             	<directory suffix=".php">src/Templates</directory>
             	<directory suffix=".php">src/Context</directory>

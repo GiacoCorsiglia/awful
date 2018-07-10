@@ -23,6 +23,8 @@ class SiteQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
     public function __construct(EntityManager $entityManager, array $args = [])
     {
+        assert(is_multisite());
+
         $this->entityManager = $entityManager;
         $this->args = $args + $this->defaults();
     }

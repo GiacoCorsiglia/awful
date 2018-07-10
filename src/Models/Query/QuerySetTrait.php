@@ -48,7 +48,7 @@ trait QuerySetTrait
         return new ArrayIterator($this->objects);
     }
 
-    public function offsetExists(int $objectId): bool
+    public function offsetExists($objectId): bool
     {
         if ($this->objects === null) {
             $this->objects = $this->fetch();
@@ -56,7 +56,7 @@ trait QuerySetTrait
         return isset($this->objects[$objectId]);
     }
 
-    public function offsetGet(int $objectId): ?object
+    public function offsetGet($objectId): ?object
     {
         if ($this->objects === null) {
             $this->objects = $this->fetch();
@@ -64,12 +64,12 @@ trait QuerySetTrait
         return $this->objects[$objectId] ?? null;
     }
 
-    public function offsetSet(int $offset, object $value): void
+    public function offsetSet($offset, $value): void
     {
         throw new ImmutabilityException();
     }
 
-    public function offsetUnset(int $offset): void
+    public function offsetUnset($offset): void
     {
         throw new ImmutabilityException();
     }

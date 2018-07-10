@@ -14,6 +14,36 @@ use WP_UnitTestCase;
  */
 class AwfulTestCase extends WP_UnitTestCase
 {
+    /**
+     * @param callable $predicate
+     * @psalm-param callable(mixed, int|string): bool $predicate
+     * @param array|\Iterable $array
+     * @param string $message
+     */
+    public static function assertArrayContainsPredicate(callable $predicate, $array, $message = '')
+    {
+        $found = false;
+        foreach ($array as $key => $value) {
+            if ($predicate($value, $key)) {
+                $found = true;
+                break;
+            }
+        }
+        static::assertTrue($found, $message);
+    }
+
+    /**
+     * @param string $method
+     * @param mixed $return
+     * @return Closure
+     */
+    public static function methodPredicate(string $method, $return): Closure
+    {
+        return function(object $object) use($method, $return): bool {
+            return $object->$method() === $return;
+        };
+    }
+
     protected function container()
     {
         return new Container();

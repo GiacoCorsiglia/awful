@@ -31,6 +31,7 @@ class SiteTest extends AwfulTestCase
             $wpSite = $this->factory->blog->create_and_get();
             $this->assertTrue($this->instance($wpSite->blog_id)->exists());
             $this->assertFalse($this->instance(1234567)->exists());
+            $this->assertFalse($this->instance(0)->exists());
         } else {
             $this->assertTrue($this->instance()->exists());
         }
@@ -107,7 +108,7 @@ class SiteTest extends AwfulTestCase
         $this->assertSame($site->wpObject(), $site->wpSite());
 
         $newSite = $this->instance(1234567); // No way this site exists in DB.
-        $this->assertSame(null, $newSite->wpSite());
+        $this->assertNull($newSite->wpSite());
         $this->assertSame($newSite->wpObject(), $newSite->wpSite());
     }
 

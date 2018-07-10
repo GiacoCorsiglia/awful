@@ -21,6 +21,11 @@ class AwfulTestCase extends WP_UnitTestCase
 
     protected function mockSite(int $id = 1): Site
     {
+        if (is_multisite() && !get_site($id)) {
+            $this->factory->blog->create([
+                'blog_id' => $id,
+            ]);
+        }
         $em = $this->createMock(EntityManager::class);
         return new Site($em, is_multisite() ? $id : 0);
     }

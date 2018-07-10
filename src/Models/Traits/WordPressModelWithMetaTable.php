@@ -18,13 +18,17 @@ trait WordPressModelWithMetaTable
         assert((bool) $key, 'Expected non-empty meta key');
 
         $value = $this->callMetaFunction('get', $key);
-        if (isset($value[0])) {
-            // WordPress supports multiple meta values per key.  If
-            // multiple exist, we'll let this be an array of each of the
-            // values.  But if only one exists, we'll collapse it down
-            // so the $key points directly to the single value.
-            return isset($value[1]) ? $value : $value[0];
+        // WordPress supports multiple meta values per key.
+        if (empty($value)) {
+            // Either no values exist and `$value === []`, or `$value === false`
+            // due to some error.
+            return null;
         }
+        if (isset($value[0]) && !isset($value[1])) {
+            // It's an array of length 1, so just return that single value.
+            return $value[0];
+        }
+        // Return the actual array of multiple values.
         return $value;
     }
 
@@ -64,7 +68,7 @@ trait WordPressModelWithMetaTable
      */
     private function callMetaFunction(string $name, ...$args)
     {
-        $func = "$name\\_{$this->metaType()}_meta";
+        $func = "{$name}_{$this->metaType()}_meta";
         if (method_exists($this, 'callInSiteContext')) {
             // For objects which use `WordPressModelWithSiteContext`.
             return $this->callInSiteContext($func, $this->id, ...$args);

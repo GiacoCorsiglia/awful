@@ -9,10 +9,10 @@ use function Awful\every;
 
 class BlocksField extends Field
 {
-    protected const DEFAULTS = Field::DEFAULTS + [
+    protected const DEFAULTS = [
         'min' => 0,
         'max' => 0,
-    ];
+    ] + Field::DEFAULTS;
 
     public function __construct(array $args = [])
     {

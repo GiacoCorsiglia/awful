@@ -13,10 +13,10 @@ use Awful\Models\Model;
  */
 class DecimalField extends Field
 {
-    protected const DEFAULTS = Field::DEFAULTS + [
+    protected const DEFAULTS = [
         'min' => -PHP_FLOAT_MAX,
         'max' => PHP_FLOAT_MAX,
-    ];
+    ] + Field::DEFAULTS;
 
     public function __construct(array $args = [])
     {

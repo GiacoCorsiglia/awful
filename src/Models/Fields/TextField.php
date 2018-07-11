@@ -25,13 +25,13 @@ class TextField extends Field
      */
     public const TEXTAREA_WIDGET = 'textarea';
 
-    protected const DEFAULTS = Field::DEFAULTS + [
+    protected const DEFAULTS = [
         'default_value' => '',
         'minlength' => 0,
         'maxlength' => 0,
         'regex' => '',
         'widget' => self::INPUT_WIDGET,
-    ];
+    ] + Field::DEFAULTS;
 
     public function __construct(array $args = [])
     {

@@ -12,10 +12,10 @@ use Awful\Models\Model;
  */
 class IntegerField extends Field
 {
-    protected const DEFAULTS = Field::DEFAULTS + [
+    protected const DEFAULTS = [
         'min' => PHP_INT_MIN,
         'max' => PHP_INT_MAX,
-    ];
+    ] + Field::DEFAULTS;
 
     public function __construct(array $args = [])
     {

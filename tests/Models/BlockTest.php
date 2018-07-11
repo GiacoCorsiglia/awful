@@ -98,7 +98,7 @@ class BlockTest extends AwfulTestCase
 }
 namespace Awful\Models\Block\BlockTest;
 
-use Awful\models\Block;
+use Awful\Models\Block;
 use Awful\Models\Fields\TextField;
 
 class TestBlock extends Block

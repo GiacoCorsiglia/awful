@@ -5,6 +5,7 @@
  */
 use Awful\Awful;
 use Awful\Providers\CoreProvider;
+use AwfulExample\Block1;
 use AwfulExample\ExampleProvider;
 
 // Activate the Composer autoloader, which enables referencing all Awful classes
@@ -26,5 +27,5 @@ Awful::bootstrap([
     new CoreProvider(),
     new ExampleProvider(),
 ], [
-    // Block types.
+    Block1::class => 'AwfulExample.Blocks.Block1',
 ]);

@@ -11,4 +11,11 @@ class ExampleProvider extends Provider
             ExamplePlugin::class,
         ];
     }
+
+    public function themes(): array
+    {
+        return [
+            'awful-example' => ExampleTheme::class,
+        ];
+    }
 }

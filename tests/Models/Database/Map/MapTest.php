@@ -67,6 +67,16 @@ class MapTest extends AwfulTestCase
         $this->expectException(UnregisteredClassException::class);
         $this->map->typeForClass('some unknown class');
     }
+
+    public function testTypeToClassMap()
+    {
+        $this->assertSame([
+            'type1' => MapTest\Cls1::class,
+            'type2' => MapTest\Cls2::class,
+            'type3' => MapTest\Cls3::class,
+            'type4' => MapTest\Cls3::class,
+        ], $this->map->typeToClassMap());
+    }
 }
 
 // Test classes

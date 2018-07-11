@@ -76,9 +76,8 @@ class SiteQuerySetTest extends AwfulTestCase
 
         $this->assertTrue($this->qs->archived(true)->wpSiteQuery()->query_vars['archived']);
         $this->assertTrue($this->qs->deleted(true)->wpSiteQuery()->query_vars['deleted']);
-        $this->assertTrue($this->qs->deleted(true)->wpSiteQuery()->query_vars['deleted']);
         $this->assertTrue($this->qs->mature(true)->wpSiteQuery()->query_vars['mature']);
-        $this->assertTrue($this->qs->mature(true)->wpSiteQuery()->query_vars['mature']);
+        $this->assertTrue($this->qs->public(true)->wpSiteQuery()->query_vars['public']);
         $this->assertTrue($this->qs->spam(true)->wpSiteQuery()->query_vars['spam']);
 
         $chunkedQueryVars = $this->qs->chunk(2, 5)->wpSiteQuery()->query_vars;

@@ -9,7 +9,10 @@ use Awful\Models\Database\BlockSetManager;
 use Awful\Models\Database\Database;
 use Awful\Models\Database\EntityManager;
 use Awful\Models\Database\Map\BlockTypeMap;
+use Awful\Models\Database\Map\PostTypeMap;
 use Awful\Models\Network;
+use Awful\Models\Registration\FieldHooks;
+use Awful\Models\Registration\ModelRegistrar;
 use Awful\Models\Site;
 use Awful\Models\User;
 use Awful\Providers\Provider;
@@ -195,11 +198,20 @@ final class Awful
             $this->setUser();
         }
 
+        $modelRegistrar = new ModelRegistrar($this->container);
+
+        $postTypes = $theme->postTypes();
+        $map = [];
+        foreach ($postTypes as $postTypeName => $postTypeClass) {
+            $map[$postTypeClass] = $postTypeName;
+            $modelRegistrar->registerPostType($postTypeClass);
+        }
+        $this->container->register($postTypeMap = new PostTypeMap($map));
+        $this->container->get(FieldHooks::class);
+
         foreach ($theme->hooks() as $hook) {
             $this->container->get($hook);
         }
-
-        $postTypes = $theme->postTypes();
     }
 
     /**

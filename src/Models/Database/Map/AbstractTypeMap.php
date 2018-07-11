@@ -66,4 +66,13 @@ abstract class AbstractTypeMap
         }
         return $this->classToTypeMap[$class];
     }
+
+    /**
+     * @return array
+     * @psalm-return array<string, class-string>
+     */
+    public function typeToClassMap(): array
+    {
+        return $this->typeToClassMap;
+    }
 }

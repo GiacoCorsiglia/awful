@@ -58,6 +58,11 @@ class GenericPost extends WordPressModel
         'comment_count' => 'int',
     ];
 
+    final public static function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.Post';
+    }
+
     /**
      * Returns the array of arguments that should be passed to WordPress'
      * `register_post_type()` when registering the `static::TYPE` post type.
@@ -164,11 +169,6 @@ class GenericPost extends WordPressModel
     final public function modifiedDate(string $format = ''): string
     {
         return $this->id ? ($this->callInSiteContext('get_the_modified_date', $format, $this->id) ?: '') : '';
-    }
-
-    final public function rootBlockType(): string
-    {
-        return 'Awful.RootBlocks.Post';
     }
 
     /**

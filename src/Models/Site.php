@@ -40,6 +40,11 @@ class Site extends WordPressModel
         return [];
     }
 
+    final public static function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.Site';
+    }
+
     /** @var EntityManager */
     private $entityManager;
 
@@ -104,11 +109,6 @@ class Site extends WordPressModel
     final public function id(): int
     {
         return $this->id;
-    }
-
-    final public function rootBlockType(): string
-    {
-        return 'Awful.RootBlocks.Site';
     }
 
     /**

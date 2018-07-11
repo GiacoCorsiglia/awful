@@ -29,6 +29,11 @@ class Comment extends WordPressModel
         'user_id' => 'string',
     ];
 
+    final public static function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.Comment';
+    }
+
     /** @var WP_Comment|null */
     private $wpComment;
 
@@ -40,11 +45,6 @@ class Comment extends WordPressModel
     final public function exists(): bool
     {
         return $this->id && $this->wpComment() !== null;
-    }
-
-    final public function rootBlockType(): string
-    {
-        return 'Awful.RootBlocks.Comment';
     }
 
     /**

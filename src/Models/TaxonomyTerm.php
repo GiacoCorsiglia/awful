@@ -18,6 +18,11 @@ class TaxonomyTerm extends WordPressModel
         'term_group' => 'int',
     ];
 
+    final public static function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.Term';
+    }
+
     /** @var WP_Term|null */
     private $wpTerm;
 
@@ -29,11 +34,6 @@ class TaxonomyTerm extends WordPressModel
     final public function exists(): bool
     {
         return $this->id && $this->wpTerm() !== null;
-    }
-
-    final public function rootBlockType(): string
-    {
-        return 'Awful.RootBlocks.Term';
     }
 
     final public function wpObject(): ?object

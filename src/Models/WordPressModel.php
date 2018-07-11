@@ -7,6 +7,8 @@ use stdClass;
 
 abstract class WordPressModel extends Model
 {
+    abstract public static function rootBlockType(): string;
+
     /** @var null|BlockSet */
     private $blockSet;
 
@@ -36,8 +38,6 @@ abstract class WordPressModel extends Model
         $this->blockSet = null;
         parent::reloadBlocks();
     }
-
-    abstract public function rootBlockType(): string;
 
     abstract public function siteId(): int;
 

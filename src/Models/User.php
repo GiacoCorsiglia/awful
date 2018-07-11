@@ -26,6 +26,11 @@ class User extends WordPressModel
         'deleted' => 'bool',
     ];
 
+    final public static function rootBlockType(): string
+    {
+        return 'Awful.RootBlocks.User';
+    }
+
     /** @var EntityManager */
     private $entityManager;
 
@@ -71,11 +76,6 @@ class User extends WordPressModel
     final public function isLoggedIn(): bool
     {
         return is_user_logged_in() && get_current_user_id() === $this->id;
-    }
-
-    final public function rootBlockType(): string
-    {
-        return 'Awful.RootBlocks.User';
     }
 
     final public function siteId(): int

@@ -6,6 +6,22 @@ use stdClass;
 
 abstract class Block extends Model
 {
+    /**
+     * The label for this block type in the UI.
+     * @var string
+     */
+    protected const LABEL = '';
+
+    /**
+     * The label for this block type in the UI.
+     *
+     * @return string
+     */
+    public static function label(): string
+    {
+        return static::LABEL;
+    }
+
     /** @var BlockSet */
     private $blockSet;
 

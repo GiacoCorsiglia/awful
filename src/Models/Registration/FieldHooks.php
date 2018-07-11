@@ -43,12 +43,18 @@ class FieldHooks
             return;
         }
 
+        /** @var WordPressModel */
         $post = new $postClass($this->context->site(), $wpPost->ID);
 
         $this->addMetaBox('post', $post);
     }
 
-    public function renderMetaBox($_, $box)
+    /**
+     * @param mixed $_
+     * @param mixed $box
+     * @return void
+     */
+    public function renderMetaBox($_, $box): void
     {
         echo '<h2>Awful</h2>';
 

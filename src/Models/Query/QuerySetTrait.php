@@ -14,14 +14,6 @@ trait QuerySetTrait
         return (bool) $this->count();
     }
 
-    public function array(): array
-    {
-        if ($this->objects === null) {
-            $this->objects = $this->fetch();
-        }
-        return $this->objects;
-    }
-
     public function count(): int
     {
         if ($this->objects === null) {
@@ -37,7 +29,7 @@ trait QuerySetTrait
         if ($this->objects === null) {
             $this->objects = $this->fetch();
         }
-        return reset($this->objects);
+        return reset($this->objects) ?: null;
     }
 
     public function getIterator(): ArrayIterator

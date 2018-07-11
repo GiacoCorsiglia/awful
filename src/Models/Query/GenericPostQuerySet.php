@@ -33,7 +33,7 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
     public function currentUserHasPermission(string $permission): self
     {
-        return $this->extend(['perm' => $permission]);
+        return $this->filter(['perm' => $permission]);
     }
 
     //
@@ -68,24 +68,29 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
     public function fetchByIds(int ...$ids): array
     {
-        return $this->extend(['post__in', $ids])->fetch();
+        return $this->filter(['post__in', $ids])->fetch();
     }
 
     public function fields(string $fields): self
     {
         assert(in_array($fields, ['ids', 'id=>parent']));
-        return $this->extend(['fields' => $fields]);
+        return $this->filter(['fields' => $fields]);
+    }
+
+    public function filter(array $args): self
+    {
+        return new static($this->site, $args + $this->args);
     }
 
     public function metaQuery(MetaQuery $meta_query): self
     {
-        return $this->extend(['meta_query' => $meta_query->toArray()]);
+        return $this->filter(['meta_query' => $meta_query->toArray()]);
     }
 
     public function mimeType(string ...$mime_types): self
     {
         assert($this->args['post_type'] === 'attachment');
-        return $this->extend(['post_mime_type' => $mime_types]);
+        return $this->filter(['post_mime_type' => $mime_types]);
     }
 
     public function orderBy(string ...$orders): self
@@ -105,7 +110,7 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
             $order_by_arg[] = $order;
         }
 
-        return $this->extend([
+        return $this->filter([
             'order' => $order_arg,
             'orderby' => $order_by_arg,
         ]);
@@ -119,12 +124,12 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
     public function password($value = true): self
     {
         if (is_string($value)) {
-            return $this->extend([
+            return $this->filter([
                 'has_password' => null,
                 'post_password' => $value,
             ]);
         }
-        return $this->extend(['has_password' => $value]);
+        return $this->filter(['has_password' => $value]);
     }
 
     public function search(string $keyword, bool $excludes = false): self
@@ -132,17 +137,17 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
         if ($excludes) {
             $keyword = "-$keyword";
         }
-        return $this->extend(['s' => $keyword]);
+        return $this->filter(['s' => $keyword]);
     }
 
     public function status(string ...$statuses): self
     {
-        return $this->extend(['post_status' => $statuses]);
+        return $this->filter(['post_status' => $statuses]);
     }
 
     public function taxonomyQuery(TaxonomyQuery $tax_query): self
     {
-        return $this->extend(['tax_query' => $tax_query->toArray()]);
+        return $this->filter(['tax_query' => $tax_query->toArray()]);
     }
 
     //
@@ -151,7 +156,7 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
     public function type(string ...$types): self
     {
-        return $this->extend(['post_type' => $types]);
+        return $this->filter(['post_type' => $types]);
     }
 
     public function wpQuery(): WP_Query
@@ -175,13 +180,5 @@ class GenericPostQuerySet implements ArrayAccess, Countable, IteratorAggregate
 
             'awful_prefetch_blocks' => true,
         ];
-    }
-
-    protected function extend(array $args): self
-    {
-        if ($this->objects !== null) {
-            throw new \BadMethodCallException('Cannot mutate PostQuerySet after fetch.');
-        }
-        return new static($this->site, $args + $this->args);
     }
 }

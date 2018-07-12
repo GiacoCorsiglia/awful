@@ -22,13 +22,13 @@ class BlocksField extends Field
 
         assert(is_int($this->args['min']) && $this->args['min'] >= 0, "Expected positive integer for 'min'.");
         assert(is_int($this->args['max']) && $this->args['max'] >= 0, "Expected positive integer for 'max'.");
-        assert($this->args['max'] >= $this->args['min'], "Expected 'max' >= 'min'.");
+        assert(!$this->args['max'] || !$this->args['min'] || $this->args['max'] >= $this->args['min'], "Expected 'max' >= 'min'.");
     }
 
     public function clean($value, Model $model): array
     {
-        if (!$value) {
-            return [];
+        if ($value === null) {
+            $value = [];
         }
 
         if (!is_array($value)) {
@@ -71,7 +71,7 @@ class BlocksField extends Field
         return $value;
     }
 
-    public function toPhp($value, Model $model, string $fieldKey)
+    public function toPhp($value, Model $model, string $fieldKey): BlocksFieldInstance
     {
         return new BlocksFieldInstance((array) $value, $model, $fieldKey, $this->args['types']);
     }

@@ -2,7 +2,6 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 
 class DecimalFieldTest extends AwfulTestCase
@@ -27,7 +26,7 @@ class DecimalFieldTest extends AwfulTestCase
             'max' => 5.5,
         ]);
 
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $field->clean(8.5, $this->model);
     }
 
@@ -37,13 +36,13 @@ class DecimalFieldTest extends AwfulTestCase
             'min' => -5.5,
         ]);
 
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $field->clean(-8.5, $this->model);
     }
 
     public function testCleanRejectsNumericString()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $this->field->clean('12', $this->model);
     }
 

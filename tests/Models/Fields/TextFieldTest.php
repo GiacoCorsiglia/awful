@@ -2,7 +2,6 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 
 class TextFieldTest extends AwfulTestCase
@@ -29,7 +28,7 @@ class TextFieldTest extends AwfulTestCase
 
     public function testCleanRejectsBool()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $this->field->clean(false, $this->model);
     }
 
@@ -40,7 +39,7 @@ class TextFieldTest extends AwfulTestCase
             'maxlength' => 8,
         ]);
 
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $field->clean('123456789', $this->model);
     }
 
@@ -51,7 +50,7 @@ class TextFieldTest extends AwfulTestCase
             'maxlength' => 8,
         ]);
 
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $field->clean('1234', $this->model);
     }
 
@@ -75,7 +74,7 @@ class TextFieldTest extends AwfulTestCase
 
         $this->assertSame('abc', $field->clean('abc', $this->model));
 
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $field->clean('abc123', $this->model);
     }
 

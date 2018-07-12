@@ -2,7 +2,6 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 
 class BooleanFieldTest extends AwfulTestCase
@@ -30,7 +29,7 @@ class BooleanFieldTest extends AwfulTestCase
 
     public function testCleanRejectsString()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $this->field->clean('', $this->model);
     }
 

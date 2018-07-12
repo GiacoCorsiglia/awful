@@ -3,6 +3,7 @@ namespace Awful;
 
 use Awful\Container\Container;
 use Awful\Models\Database\EntityManager;
+use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Site;
 use WP_UnitTestCase;
 
@@ -42,6 +43,11 @@ class AwfulTestCase extends WP_UnitTestCase
         return function (object $object) use ($method, $return): bool {
             return $object->{$method}() === $return;
         };
+    }
+
+    public function expectValidationException(): void
+    {
+        $this->expectException(ValidationException::class);
     }
 
     protected function container()

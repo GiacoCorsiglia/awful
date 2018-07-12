@@ -2,7 +2,6 @@
 namespace Awful\Models\Fields;
 
 use Awful\AwfulTestCase;
-use Awful\Models\Exceptions\ValidationException;
 use Awful\Models\Model;
 
 class IntegerFieldTest extends AwfulTestCase
@@ -27,7 +26,7 @@ class IntegerFieldTest extends AwfulTestCase
             'max' => 5,
         ]);
 
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $field->clean(8, $this->model);
     }
 
@@ -37,19 +36,19 @@ class IntegerFieldTest extends AwfulTestCase
             'min' => -5,
         ]);
 
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $field->clean(-8, $this->model);
     }
 
     public function testCleanRejectsFloat()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $this->field->clean(12.5, $this->model);
     }
 
     public function testCleanRejectsNumericString()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectValidationException();
         $this->field->clean('12', $this->model);
     }
 

@@ -33,12 +33,10 @@
   		</whitelist>
 	</filter>
 
-	<!--
+
 	<logging>
-		<log
-			type="coverage-html"
-			target="/tmp/report.html"
-		/>
+		<!-- <log type="coverage-text" showOnlySummary="true" target="php://stdout" /> -->
+		<!-- <log type="coverage-html" target="/tmp/report.html" /> -->
 	</logging>
-	-->
+
 </phpunit>

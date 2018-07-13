@@ -82,6 +82,10 @@ class FieldHooks
             'default',
             [$owner]
         );
+
+        add_action('admin_footer', function () {
+            echo '<script type="text/javascript" src="/awful.umd.js"></script>';
+        });
     }
 
     private function encodeBlockSet(WordPressModel $owner = null): string

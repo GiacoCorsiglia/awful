@@ -58,6 +58,10 @@ class FormHooks
 
     private function saveModel(WordPressModel $model): void
     {
+        if (empty($_POST['awful_data'])) {
+            return;
+        }
+
         $form = new Form(
             $this->blockTypeMap,
             $model->entityManager()->blockSetManager(),
